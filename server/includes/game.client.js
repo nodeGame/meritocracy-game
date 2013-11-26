@@ -65,11 +65,14 @@ stager.setOnInit(function() {
 
     node.on.data('results', function(values) {
         console.log('Received results.');
+        console.log(values);
         W.getElementById('submitOffer').disabled = '';
-        W.getElementbyId('divErrors').style.display = 'none';
+        W.getElementById('divErrors').style.display = 'none';
         W.getElementById('results').style.display = 'block';
         var groupTable = 'groupTable',
             othersTable = 'othersTable';
+        //Problem: bars is undefined !
+        bars = document.getElementById('mainframe').contentWindow.bars;
         bars.init(groupTable, values, 'P');
         bars.init(othersTable, values, 'G');
     });
@@ -279,11 +282,10 @@ function meritocracy() {
                 demand = W.getElementById('demand');
 
             if (!that.isValidContribution(contrib.value) || !that.isValidDemand(demand.value)) {
-                W.getElementById('divErrors').appendChild(document.createTextNode('Please enter a number between 0 and 10.')).appendChild(document.createElement('br'));
+                W.getElementById('divErrors').appendChild(document.createTextNode('Please enter a number between 0 and 10.'));
                 return;
             }
             node.emit('BID_DONE', contrib.value, demand.value);
-            b.onclick = function() {};
         };
 
     }, {

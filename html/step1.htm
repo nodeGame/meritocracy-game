@@ -1,5 +1,6 @@
 <!doctype html>
 <title>Step 1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <!-- Loading  nodeGame libraries and CSS -->
 <script src="/socket.io/socket.io.js"></script> 
@@ -9,6 +10,7 @@
 <!-- end -->
 <!-- Loading script and stylsheets needed -->
 <link rel="stylesheet" href="css/jqueryui.min.css" />
+<link rel="stylesheet" href="css/bootstrap.min.css" />
 <style type="text/css" media="screen">
 
 .ui-progressbar {
@@ -25,24 +27,63 @@
   font-size:10pt;
   text-shadow: 1px 1px 0 #fff;
 }
+.pushed-down {
+  margin-top:30px;
+}
+.mini-pushed-down {
+  margin-top:10px;
+}
+#results {
+  /*display:none;*/
+}
 </style>
 <!-- end -->
 <body>
   <noscript>
     Sorry, you need to enable javascript in order to play this game.
   </noscript>
-  <div>
-    <div>
-      <input type="number" value="5" />
-      <p>Your Contribution</p>
+
+  <div class="container pushed-down">
+    <div id="header" class="">
+      <div class="row">
+        <h3 class="col-md-6" align="right">Your Contribution</h3>
+        <div class="col-md-6 mini-pushed-down">
+          <input type="number" min="0" max="10" value="5" class="col-md-3 mini-pushed-down" />
+          <h4 class="col-md-3">
+            <button type="button" class="btn btn-default btn-sm">
+              <span class="glyphicon glyphicon-question-sign"></span>
+            </button>
+          </h4>
+        </div>
+      </div>
+
+      <div class="row">
+        <h3 class="col-md-6" align="right">Your Demand</h3>
+        <div class="col-md-6 mini-pushed-down">
+          <input type="number" min="0" max="10" value="5" class="col-md-3 mini-pushed-down" />
+          <h4 class="col-md-3">
+            <button type="button" class="btn btn-default btn-sm">
+              <span class="glyphicon glyphicon-question-sign"></span>
+            </button>
+          </h4>
+        </div>
+      </div>
+
+      <hr width="75%" />
     </div>
 
-    <div>
-      <div>
-        <input type="number" value="5" />
-        <p>Your Demand</p>
+    <div id="results" class="">
+      <h3 class="col-md-offset-3">Your Payoff: <strong><span id="payoff">1000</span></strong></h3>
+      <div class="row">
+        <div id="yourGroup" class="col-md-6">
+          asdfasdfasdf
+        </div>
+        <div id="otherGroups" class="col-md-6">
+          asdfasdfasdf
+        </div>
       </div>
     </div>
+
   </div>
 
   <script type="text/javascript" src="../js/jquery.js"></script>

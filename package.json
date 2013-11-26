@@ -1,6 +1,6 @@
 {
-  "name": "ultimatum",
-  "description": "Plays an ultimatum game with nodegame",
+  "name": "meritocracy",
+  "description": "Plays a meritocracy game with nodegame",
   "version": "0.0.1",
   "author": {
     "name": "Stefano Balietti",
@@ -11,19 +11,15 @@
   "main": "./index.html"
 ,
   "keywords": [
-    "ultimatum",
+    "meritocracy",
     "game theory"
   ]
 ,
-  "repository": {
-    "type": "git",
-     "url": "git://github.com/nodegame/ultimatum.git"
-  },
   "license": "MIT/X11"
 ,
   "engines": {
     "node": "*",
-    "nodegame": "0.2.0"
+    "nodegame": "1.0.0"
   }
 ,
 	"nodegame": {

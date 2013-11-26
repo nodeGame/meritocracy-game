@@ -46,16 +46,16 @@ var PLAYING_STAGE = 2;
 // - channel: the ServerChannel object in which this logic will be running.
 // - gameRoom: the GameRoom object in which this logic will be running. 
 module.exports = function(node, channel, gameRoom) {
- 
+
     // Reads in descil-mturk configuration.
     var confPath = path.resolve(__dirname, '..', 'descil.conf.js');
     var dk = require('descil-mturk')(confPath);
-//    dk.getCodes(function() {
-//        debugger
-//        if (!dk.codes.size()) {
-//            throw new Error('game.logic: no codes found.');
-//        }
-//    });
+    //    dk.getCodes(function() {
+    //        debugger
+    //        if (!dk.codes.size()) {
+    //            throw new Error('game.logic: no codes found.');
+    //        }
+    //    });
     dk.readCodes(function() {
         if (!dk.codes.size()) {
             throw new Errors('requirements.room: no codes found.');
@@ -86,7 +86,7 @@ module.exports = function(node, channel, gameRoom) {
 
     // Event handler registered in the init function are always valid.
     stager.setOnInit(function() {
-        console.log('********************** ultimatum room ' + counter++ + ' **********************');
+        console.log('********************** meritocracy room ' + counter+++' **********************');
 
         var disconnected;
         disconnected = {};
@@ -104,10 +104,9 @@ module.exports = function(node, channel, gameRoom) {
                     to: 'ALL'
                 }));
                 delete disconnected[p.id];
-            }
-            else {
+            } else {
                 // Player was not authorized, redirect to a warning page.
-                node.redirect('/ultimatum/unauth.htm', p.id);
+                node.redirect('/meritocracy/unauth.htm', p.id);
             }
 
         });
@@ -122,47 +121,47 @@ module.exports = function(node, channel, gameRoom) {
 
         // Update the Payoffs
         node.on.data('response', function(msg) {
-	    var resWin, bidWin, code, response;
+            var resWin, bidWin, code, response;
             response = msg.data;
 
-	    if (!response) {
+            if (!response) {
                 // TODO handle error.
                 return;
             }
 
-	    if (response.response === 'ACCEPT') {
-		resWin = parseInt(response.value);
-		bidWin = 100 - resWin;
-		
-		// Respondent payoff.
-		code = dk.codes.id.get(msg.from);
+            if (response.response === 'ACCEPT') {
+                resWin = parseInt(response.value);
+                bidWin = 100 - resWin;
+
+                // Respondent payoff.
+                code = dk.codes.id.get(msg.from);
                 if (!code) {
                     console.log('AAAH code not found!');
                     return;
                 }
 
-		code.win = (!code.win) ? resWin : code.win + resWin;
-		console.log('Added to respondent ' + msg.from + ' ' +
-                         response.value + ' ECU');
-		
-		// Bidder payoff
-		code = dk.codes.id.get(response.from);
-                
+                code.win = (!code.win) ? resWin : code.win + resWin;
+                console.log('Added to respondent ' + msg.from + ' ' +
+                    response.value + ' ECU');
+
+                // Bidder payoff
+                code = dk.codes.id.get(response.from);
+
                 if (!code) {
                     console.log('AAAH code not found for respondent 2!');
                     return;
                 }
 
-		code.win = (!code.win) ? bidWin : code.win + bidWin;
-		console.log('Added to bidder ' + response.from + ' ' +
-                         bidWin + ' ECU');
-	    }
-	});
+                code.win = (!code.win) ? bidWin : code.win + bidWin;
+                console.log('Added to bidder ' + response.from + ' ' +
+                    bidWin + ' ECU');
+            }
+        });
 
         console.log('init');
     });
 
-     // Event handler registered in the init function are always valid.
+    // Event handler registered in the init function are always valid.
     stager.setOnGameOver(function() {
         console.log('************** GAMEOVER ' + gameRoom.name + '****************');
         // TODO: update database.
@@ -185,7 +184,7 @@ module.exports = function(node, channel, gameRoom) {
         console.log('Quiz');
     }
 
-    function ultimatum() {
+    function meritocracy() {
         debugger
         console.log('Ultimatum');
         doMatch();
@@ -200,8 +199,8 @@ module.exports = function(node, channel, gameRoom) {
         console.log('endgame');
 
         console.log('FINAL PAYOFF PER PLAYER');
-	console.log('***********************');
-	
+        console.log('***********************');
+
         node.game.pl.each(function(p) {
             debugger
             code = dk.codes.id.get(p.id);
@@ -209,19 +208,19 @@ module.exports = function(node, channel, gameRoom) {
                 console.log('ERROR: no code in endgame:', p.id);
                 return;
             }
-            
+
             accesscode = code.AccessCode;
-	    exitcode = code.ExitCode;
-	    code.win = (code.win || 0) / 1000;
-	    dk.checkOut(accesscode, exitcode, code.win);
-	    node.say('WIN', p.id, code.win);
-            console.log(p.id, ': ' +  code.win);
-	});
-	
-	console.log('***********************');
-	
-	console.log('Game ended');
-    } 
+            exitcode = code.ExitCode;
+            code.win = (code.win || 0) / 1000;
+            dk.checkOut(accesscode, exitcode, code.win);
+            node.say('WIN', p.id, code.win);
+            console.log(p.id, ': ' + code.win);
+        });
+
+        console.log('***********************');
+
+        console.log('Game ended');
+    }
 
     function notEnoughPlayers() {
         console.log('Warning: not enough players!!');
@@ -243,25 +242,42 @@ module.exports = function(node, channel, gameRoom) {
     stager.addStage({
         id: 'precache',
         cb: precache,
-        minPlayers: [ 2, notEnoughPlayers ]
+        minPlayers: [2, notEnoughPlayers]
     });
 
     stager.addStage({
         id: 'instructions',
         cb: instructions,
-        minPlayers: [ 2, notEnoughPlayers ]
+        minPlayers: [2, notEnoughPlayers]
     });
 
     stager.addStage({
         id: 'quiz',
         cb: quiz,
-        minPlayers: [ 2, notEnoughPlayers ]
+        minPlayers: [2, notEnoughPlayers]
+    });
+
+    stager.addStep({
+        id: 'bid',
+        cb: function() {
+            console.log('bid');
+            return true;
+        },
+        minPlayers: [2, notEnoughPlayers]
+    });
+
+    stager.addStep({
+        id: 'results',
+        cb: function() {
+            node.say('results', 'ALL', [[34, 45], [12, 56], [78, 23], [34, 67]]);
+        },
+        minPlayers: [2, notEnoughPlayers]
     });
 
     stager.addStage({
-        id: 'ultimatum',
-        cb: ultimatum,
-        minPlayers: [ 2, notEnoughPlayers ]
+        id: 'meritocracy',
+        steps: ['bid', 'results'],
+        minPlayers: [2, notEnoughPlayers]
     });
 
     stager.addStage({
@@ -283,7 +299,7 @@ module.exports = function(node, channel, gameRoom) {
         .next('precache')
         .next('instructions')
         .next('quiz')
-        .repeat('ultimatum', REPEAT)
+        .repeat('meritocracy', REPEAT)
         .next('questionnaire')
         .next('endgame')
         .gameover();
@@ -292,7 +308,7 @@ module.exports = function(node, channel, gameRoom) {
     return {
         nodename: 'lgc' + counter,
         game_metadata: {
-            name: 'ultimatum',
+            name: 'meritocracy',
             version: '0.0.1'
         },
         game_settings: {

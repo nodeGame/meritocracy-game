@@ -1,10 +1,107 @@
 <!doctype html>
-<title>GAME 2</title>
-<link rel="stylesheet" type="text/css" href="css/style.css">
+<title>Step 1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<!-- Loading  nodeGame libraries and CSS -->
+<link rel='stylesheet' href='/stylesheets/fullheight.css'></link>
+<link rel='stylesheet' href='/stylesheets/noscript.css'></link>
+<!-- end -->
+<!-- Loading script and stylsheets needed -->
+<link rel="stylesheet" href="css/jqueryui.min.css" />
+<link rel="stylesheet" href="css/bootstrap.min.css" />
+<style type="text/css" media="screen">
+
+.ui-progressbar {
+  display:inline-block;
+  position: relative;
+  height: 20px;
+  width: 350px;
+}
+.progress-label {
+  position:absolute;
+  left: 45%;
+  font-weight: bold;
+  font-size:10pt;
+}
+.pushed-down {
+  margin-top:20px;
+}
+.mini-pushed-down {
+  margin-top:10px;
+}
+#divErrors {
+  color:red;
+}
+#results {
+  display:none;
+}
+</style>
+<!-- end -->
 <body>
-	 <div id="root">
-    <h2>Make an offer from 0 to 100 to another player</h2>
-		<input type="number" min="0" max="100" name="offer" id="offer" />
-		<input type="button" value="Submit" name="submitOffer" id="submitOffer" />
+  <noscript>
+    Sorry, you need to enable javascript in order to play this game.
+  </noscript>
+
+  <div class="container pushed-down">
+    <div id="header" class="">
+      <div class="row">
+        <h3 class="col-md-6" align="right">Your Contribution</h3>
+        <div class="col-md-6 mini-pushed-down">
+          <input type="number" min="0" max="10" id="contribution" class="col-md-2 mini-pushed-down" />
+          <h4 class="col-md-3">
+            <button type="button" class="btn btn-default btn-sm" onclick="alert('Some Help');">
+              <span class="glyphicon glyphicon-question-sign"></span> Help
+            </button>
+          </h4>
+        </div>
+      </div>
+
+      <div class="row">
+        <h3 class="col-md-6" align="right">Your Demand</h3>
+        <div class="col-md-6 mini-pushed-down">
+          <input type="number" min="0" max="10" id="demand" class="col-md-2 mini-pushed-down" />
+          <h4 class="col-md-3">
+            <button type="button" class="btn btn-default btn-sm" onclick="alert('Some Help');">
+              <span class="glyphicon glyphicon-question-sign"></span> Help
+            </button>
+          </h4>
+        </div>
+      </div>
+
+      <hr width="75%" />
+    </div>
+
+    <div id="results" class="">
+      <h3 align="center">Your Payoff: <strong><span id="payoff">1000</span></strong></h3>
+
+      <div class="row col-md-10 col-md-offset-1">
+
+        <div id="yourGroup" class="col-md-6">
+          <h4 align="center"><strong>Your Group</strong></h4>
+          <table id="groupTable" class="table"></table>
+        </div>
+
+        <div id="otherGroups" class="col-md-6">
+          <h4 align="center"><strong>Other Groups</strong></h4>
+          <table id="othersTable" class="table"></table>
+        </div>
+      </div>
+
+    </div>
+    <br />
+    <div id="divErrors" class="col-md-12"></div>
+    <br />
+    <button align="center" class="btn btn-lg btn-primary col-md-offset-4 col-md-4" id="submitOffer">Done</button>
   </div>
+
+  <script type="text/javascript" src="../js/jquery.js"></script>
+  <script type="text/javascript" src="../js/jqueryui.min.js"></script>
+  <script type="text/javascript" src="../js/merit.bars.js"></script>
+  <script type="text/javascript">
+  var values = [[34, 45], [12, 56], [78, 23], [34, 67]],
+      groupTable = 'groupTable',
+      othersTable = 'othersTable';
+  bars.init(groupTable, values, 'P');
+  bars.init(othersTable, values, 'G');
+  </script>
 </body>

@@ -79,7 +79,7 @@ stager.setOnInit(function() {
         W.getElementById('contribution').readOnly = true;
 
         b = W.getElementById('submitOffer');
-        
+
         b.onclick = function() {
             var contrib = W.getElementById('contribution'),
                 demand = W.getElementById('demand');
@@ -416,7 +416,8 @@ stager.addStage({
 stager.addStep({
     id: 'bid',
     cb: meritocracy,
-    done: clearFrame
+    done: clearFrame,
+    timer: 10000
 });
 
 stager.addStep({
@@ -426,6 +427,7 @@ stager.addStep({
 
         return true;
     },
+    timer: 10000
 });
 
 stager.addStage({
@@ -438,7 +440,6 @@ stager.addStage({
     // in the execution of a stage. It is probably not necessary in local
     // networks, and it is FALSE by default.
     syncOnLoaded: true,
-    timer: 200000
 });
 
 stager.addStage({

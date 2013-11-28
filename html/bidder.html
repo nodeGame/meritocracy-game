@@ -33,7 +33,10 @@
   color:red;
 }
 #results {
-  display:none;
+  visibility:hidden;
+}
+#submitOffer {
+  margin-bottom:30px;
 }
 </style>
 <!-- end -->
@@ -43,6 +46,27 @@
   </noscript>
 
   <div class="container pushed-down">
+
+    <div id="results" class="">
+      <h3 align="center">Your Payoff: <strong><span id="payoff">1000</span></strong></h3>
+
+      <div class="row col-md-10 col-md-offset-1">
+
+        <div id="yourGroup" class="col-md-6">
+          <h4 align="center"><strong>Your Group</strong></h4>
+          <table id="groupTable" class="table"></table>
+        </div>
+
+        <div id="otherGroups" class="col-md-6">
+          <h4 align="center"><strong>Other Groups</strong></h4>
+          <table id="othersTable" class="table"></table>
+        </div>
+      </div>
+
+    </div>
+
+    <hr width="75%" />
+
     <div id="header" class="">
       <div class="row">
         <h3 class="col-md-6" align="right">Your Contribution</h3>
@@ -68,25 +92,6 @@
         </div>
       </div>
 
-      <hr width="75%" />
-    </div>
-
-    <div id="results" class="">
-      <h3 align="center">Your Payoff: <strong><span id="payoff">1000</span></strong></h3>
-
-      <div class="row col-md-10 col-md-offset-1">
-
-        <div id="yourGroup" class="col-md-6">
-          <h4 align="center"><strong>Your Group</strong></h4>
-          <table id="groupTable" class="table"></table>
-        </div>
-
-        <div id="otherGroups" class="col-md-6">
-          <h4 align="center"><strong>Other Groups</strong></h4>
-          <table id="othersTable" class="table"></table>
-        </div>
-      </div>
-
     </div>
     <br />
     <div id="divErrors" class="col-md-12"></div>
@@ -98,5 +103,10 @@
   <script type="text/javascript" src="../js/jqueryui.min.js"></script>
   <script type="text/javascript" src="../js/merit.bars.js"></script>
   <script type="text/javascript">
+  var groupTable = 'groupTable',
+  othersTable = 'othersTable',
+  values=[[0, 0], [0, 0], [0, 0], [0, 0]];
+  bars.init(groupTable, values, 'P');
+  bars.init(othersTable, values, 'G');
   </script>
 </body>

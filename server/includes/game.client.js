@@ -68,7 +68,7 @@ stager.setOnInit(function() {
         console.log(values);
         W.getElementById('submitOffer').disabled = '';
         W.getElementById('divErrors').style.display = 'none';
-        W.getElementById('results').style.display = 'block';
+        W.getElementById('results').style.visibility = 'visible';
         var groupTable = 'groupTable',
             othersTable = 'othersTable';
         //Problem: bars is undefined !

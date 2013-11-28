@@ -65,16 +65,16 @@ stager.setOnInit(function() {
 
     node.on.data('results', function(values) {
         console.log('Received results.');
-        console.log(values);
+        values = values.data;
         W.getElementById('submitOffer').disabled = '';
         W.getElementById('divErrors').style.display = 'none';
         W.getElementById('results').style.visibility = 'visible';
-        var groupTable = 'groupTable',
-            othersTable = 'othersTable';
+        var groupTable = document.getElementById('mainframe').contentWindow.document.getElementById('groupTable'),
+            othersTable = document.getElementById('mainframe').contentWindow.document.getElementById('othersTable');
         //Problem: bars is undefined !
-        bars = document.getElementById('mainframe').contentWindow.bars;
-        bars.init(groupTable, values, 'P');
-        bars.init(othersTable, values, 'G');
+        node.game.bars = document.getElementById('mainframe').contentWindow.bars;
+        node.game.bars.init(groupTable, values, 'P');
+        node.game.bars.init(othersTable, values, 'G');
     });
 
     this.randomAccept = function(offer, other) {
@@ -282,7 +282,9 @@ function meritocracy() {
                 demand = W.getElementById('demand');
 
             if (!that.isValidContribution(contrib.value) || !that.isValidDemand(demand.value)) {
-                W.getElementById('divErrors').appendChild(document.createTextNode('Please enter a number between 0 and 10.'));
+                var p = document.createElement('p');
+                p.innerText='Please enter a number between 0 and 10.';
+                W.getElementById('divErrors').appendChild(p);
                 return;
             }
             node.emit('BID_DONE', contrib.value, demand.value);
@@ -424,7 +426,8 @@ stager.addStage({
     // This options introduces a little overhead in communications and delay
     // in the execution of a stage. It is probably not necessary in local
     // networks, and it is FALSE by default.
-    syncOnLoaded: true
+    syncOnLoaded: true,
+    timer: 200000
 });
 
 stager.addStage({
@@ -440,14 +443,15 @@ stager.addStage({
 
 stager.addStage({
     id: 'questionnaire',
-    cb: postgame
+    cb: postgame,
+    timer: 60000
 });
 
 
 // Now that all the stages have been added,
 // we can build the game plot
 
-var REPEAT = 30;
+var REPEAT = 20;
 
 stager.init()
     .next('precache')

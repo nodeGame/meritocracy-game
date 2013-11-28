@@ -5,18 +5,21 @@ var bars = function() {
 
         /**
          * Creates the bar for values.
-         * @param {string} location id of the table
+         * @param {object} location id of the table
          * @param {2d array} values   [i][0] = ith contrib, [i][1] = ith demand
          */
         init: function(location, values, letter) {
+            console.log(values, letter);
             var iter, value;
+            location = jQuery(location);
+            location.empty();
             for (iter in values) {
-                jQuery('#' + location).append('<tr><td><h4>' + letter + (parseInt(iter) + 1) + '</h4></td><td><div class="progContrib"><div class="progress-label">Contribution - <span class="contribVal"></span></div></div><br /><div class="progDemand"><div class="progress-label">Demand - <span class="demandVal"></span></div></div></td></tr>');
+                location.append('<tr><td><h4>' + letter + (parseInt(iter) + 1) + '</h4></td><td><div class="progContrib"><div class="progress-label">Contribution - <span class="contribVal"></span></div></div><br /><div class="progDemand"><div class="progress-label">Demand - <span class="demandVal"></span></div></div></td></tr>');
             }
-            var progDemand = jQuery('#' + location + ' .progDemand'),
-                progContrib = jQuery('#' + location + ' .progContrib'),
-                contribVal = jQuery('#' + location + ' .contribVal'),
-                demandVal = jQuery('#' + location + ' .demandVal');
+            var progDemand = location.find('.progDemand'),
+                progContrib = location.find('.progContrib'),
+                contribVal = location.find( '.contribVal'),
+                demandVal = location.find('.demandVal');
 
             for (iter = 0; iter < progDemand.length; iter++) {
                 value = values[iter][1];

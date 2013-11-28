@@ -32,6 +32,20 @@ game.globals = {};
 stager.setOnInit(function() {
     var that = this;
     var waitingForPlayers;
+    node.game.oldContribDemand = [
+        [
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0]
+        ],
+        [
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0]
+        ]
+    ];
 
     console.log('INIT PLAYER!');
 
@@ -50,40 +64,43 @@ stager.setOnInit(function() {
 
     this.other = null;
 
-    node.on('BID_DONE', function(contribution, demand, to) {
+    node.on('BID_DONE', function(contribution, demand, isTimeOut) {
         // TODO: check this timer obj.
         node.game.timer.stop();
         W.getElementById('submitOffer').disabled = 'disabled';
         node.set('bid', {
             demand: demand,
-            contribution: contribution
+            contribution: contribution,
+            isTimeOut: isTimeOut
         });
         console.log(' Your contribution: ' + contribution + '.');
         console.log(' Your demand: ' + demand + '.');
         node.done();
     });
 
+
+
     node.on.data('results', function(values) {
         console.log('Received results.');
         values = values.data;
+        node.game.oldContribDemand = values;
         W.getElementById('submitOffer').disabled = '';
         W.getElementById('divErrors').style.display = 'none';
-        W.getElementById('results').style.visibility = 'visible';
+        // W.getElementById('results').style.visibility = 'visible';
         var groupTable = document.getElementById('mainframe').contentWindow.document.getElementById('groupTable'),
             othersTable = document.getElementById('mainframe').contentWindow.document.getElementById('othersTable');
-        //Problem: bars is undefined !
         node.game.bars = document.getElementById('mainframe').contentWindow.bars;
-        node.game.bars.init(groupTable, values, 'P');
-        node.game.bars.init(othersTable, values, 'G');
+        node.game.bars.init(groupTable, values[0], 'P');
+        node.game.bars.init(othersTable, values[1], 'G');
+        W.getElementById('demand').style.border = 'none';
+        W.getElementById('contribution').style.border = 'none';
         W.getElementById('demand').readOnly = true;
         W.getElementById('contribution').readOnly = true;
 
         b = W.getElementById('submitOffer');
 
         b.onclick = function() {
-            var contrib = W.getElementById('contribution'),
-                demand = W.getElementById('demand');
-            node.emit('BID_DONE', contrib.value, demand.value);
+            node.done();
         };
     });
 
@@ -260,6 +277,12 @@ function meritocracy() {
     /////////////////////////////////////////////
     W.loadFrame('/meritocracy/html/bidder.html', function() {
 
+        var groupTable = document.getElementById('mainframe').contentWindow.document.getElementById('groupTable'),
+            othersTable = document.getElementById('mainframe').contentWindow.document.getElementById('othersTable');
+        node.game.bars = document.getElementById('mainframe').contentWindow.bars;
+        node.game.bars.init(groupTable, node.game.oldContribDemand[0], 'P');
+        node.game.bars.init(othersTable, node.game.oldContribDemand[1], 'G');
+
         // Start the timer after an offer was received.
         options = {
             milliseconds: 30000,
@@ -271,6 +294,7 @@ function meritocracy() {
         node.game.timer.restart(options);
 
         b = W.getElementById('submitOffer');
+
 
         node.env('auto', function() {
 
@@ -287,17 +311,49 @@ function meritocracy() {
             }, 4000);
         });
 
+        node.on('TIMEUP', function() {
+            console.log('TIMEUP !');
+            var isTimeOut = false;
+            var contrib = W.getElementById('contribution').value,
+                demand = W.getElementById('demand').value;
+
+            if (contrib == '' || contrib == node.game.oldContribDemand[0][0]) {
+                isTimeOut = true;
+                if (contrib == '' && node.game.getCurrentGameStage().round === 1) {
+                    contrib = Math.floor(Math.random() * 10);
+                }
+                else if (contrib == '') {
+                    contrib = node.game.oldContribDemand[0][0];
+                }
+            }
+
+            if (demand == '' || demand == node.game.oldContribDemand[0][1]) {
+                isTimeOut = true;
+                if (demand == '' && node.game.getCurrentGameStage().round === 1) {
+                    demand = Math.floor(Math.random() * 10);
+                }
+                else if (demand == '') {
+                    demand = node.game.oldContribDemand[0][1];
+                }
+            }
+
+            contrib = that.isValidDemand(contrib) ? contrib: node.game.oldContribDemand[0][0];
+            demand = that.isValidDemand(demand) ? demand: node.game.oldContribDemand[0][1];
+
+            node.emit('BID_DONE', contrib, demand, isTimeOut);
+        });
+
         b.onclick = function() {
             var contrib = W.getElementById('contribution'),
                 demand = W.getElementById('demand');
 
             if (!that.isValidContribution(contrib.value) || !that.isValidDemand(demand.value)) {
                 var p = document.createElement('p');
-                p.innerText='Please enter a number between 0 and 10.';
+                p.innerText = 'Please enter a number between 0 and 10.';
                 W.getElementById('divErrors').appendChild(p);
                 return;
             }
-            node.emit('BID_DONE', contrib.value, demand.value);
+            node.emit('BID_DONE', contrib.value, demand.value, false);
         };
 
     }, {
@@ -417,7 +473,11 @@ stager.addStep({
     id: 'bid',
     cb: meritocracy,
     done: clearFrame,
-    timer: 10000
+    // timer: 10000
+    timer: {
+        milliseconds: 10000,
+        timeup: 'TIMEUP'
+    }
 });
 
 stager.addStep({

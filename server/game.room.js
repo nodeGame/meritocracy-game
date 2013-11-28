@@ -97,47 +97,47 @@ module.exports = function(node, channel, room) {
 
     // Creating an authorization function for the players.
     // This is executed before the client the PCONNECT listener.
-    channel.player.authorization(function(header, cookies, room) {
-        var code;
-        console.log('game.room: checking auth.');
+    // channel.player.authorization(function(header, cookies, room) {
+    //     var code;
+    //     console.log('game.room: checking auth.');
 
-        // Weird thing.
-        if ('string' !== typeof cookies.player) {
-            console.log('no player: ', cookies.player)
-            return false;
-        }
+    //     // Weird thing.
+    //     if ('string' !== typeof cookies.player) {
+    //         console.log('no player: ', cookies.player)
+    //         return false;
+    //     }
 
-        // Weird thing.
-        if ('string' !== typeof cookies.token) {
-            console.log('no token: ', cookies.token)
-            return false;
-        }
+    //     // Weird thing.
+    //     if ('string' !== typeof cookies.token) {
+    //         console.log('no token: ', cookies.token)
+    //         return false;
+    //     }
 
-        code = dk.codeExists(cookies.token);
+    //     code = dk.codeExists(cookies.token);
 
-        // Code not existing.
-        if (!code) {
-            console.log('not existing token: ', cookies.token);
-            return false;
-        }
+    //     // Code not existing.
+    //     if (!code) {
+    //         console.log('not existing token: ', cookies.token);
+    //         return false;
+    //     }
 
-        // Code in use.
-        if (code.usage) {
-            console.log('token already in use: ', cookies.token);
-            return false;
-        }
+    //     // Code in use.
+    //     if (code.usage) {
+    //         console.log('token already in use: ', cookies.token);
+    //         return false;
+    //     }
 
-        // Mark the code as in use.
-        dk.incrementUsage(cookies.token);
+    //     // Mark the code as in use.
+    //     dk.incrementUsage(cookies.token);
 
-        // Client Authorized
-        return true;
-    });
+    //     // Client Authorized
+    //     return true;
+    // });
 
 
-    channel.player.clientIdGenerator(function(headers, cookies, ids, info) {
-        return cookies.token;
-    });
+    // channel.player.clientIdGenerator(function(headers, cookies, ids, info) {
+    //     return cookies.token;
+    // });
 
     // Creating an init function.
     // Event listeners registered here are valid for all the stages of the game.

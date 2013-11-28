@@ -4,7 +4,7 @@ var bars = function() {
     return {
 
         /**
-         * Creates the bar for values.
+         * Creates the progressbars for given values.
          * @param {object} location id of the table
          * @param {2d array} values   [i][0] = ith contrib, [i][1] = ith demand
          */

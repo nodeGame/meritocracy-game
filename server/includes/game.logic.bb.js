@@ -261,6 +261,11 @@ module.exports = function(node, channel, gameRoom) {
         id: 'bid',
         cb: function() {
             console.log('bid');
+            var i = 0;
+            node.game.pl.each(function(p) {
+                if (++i % 2 === 0) p.group = "a";
+                else p.group = "b";
+            });
             return true;
         },
         minPlayers: [2, notEnoughPlayers]
@@ -269,7 +274,9 @@ module.exports = function(node, channel, gameRoom) {
     stager.addStep({
         id: 'results',
         cb: function() {
-            node.say('results', 'ALL', [[34, 45], [12, 56], [78, 23], [34, 67]]);
+            console.log(node.game.memory.fetch());
+
+            node.say('results', 'ALL', [[[34, 45], [12, 56], [78, 23], [34, 67]], [[23, 64], [34, 87], [12, 67], [23, 45]]]);
         },
         minPlayers: [2, notEnoughPlayers]
     });
@@ -291,7 +298,7 @@ module.exports = function(node, channel, gameRoom) {
     });
 
     // Building the game plot.
-    var REPEAT = 30;
+    var REPEAT = 20;
 
     // Here we define the sequence of stages of the game (game plot).
     stager

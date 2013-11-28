@@ -75,6 +75,16 @@ stager.setOnInit(function() {
         node.game.bars = document.getElementById('mainframe').contentWindow.bars;
         node.game.bars.init(groupTable, values, 'P');
         node.game.bars.init(othersTable, values, 'G');
+        W.getElementById('demand').readOnly = true;
+        W.getElementById('contribution').readOnly = true;
+
+        b = W.getElementById('submitOffer');
+        
+        b.onclick = function() {
+            var contrib = W.getElementById('contribution'),
+                demand = W.getElementById('demand');
+            node.emit('BID_DONE', contrib.value, demand.value);
+        };
     });
 
     this.randomAccept = function(offer, other) {
@@ -413,6 +423,7 @@ stager.addStep({
     id: 'results',
     cb: function() {
         console.log('results');
+
         return true;
     },
 });

@@ -13,12 +13,17 @@ var bars = function() {
             var iter, value;
             location = jQuery(location);
             location.empty();
-            for (iter in values) {
-                location.append('<tr><td><h4>' + letter + (parseInt(iter) + 1) + '</h4></td><td><div class="progContrib"><div class="progress-label">Contribution - <span class="contribVal"></span></div></div><br /><div class="progDemand"><div class="progress-label">Demand - <span class="demandVal"></span></div></div></td></tr>');
+            if (letter === 'P') {
+                location.append('<tr><td><h4>You</h4></td><td><div class="progContrib"><div class="progress-label">Contribution - <span class="contribVal"></span></div></div><br /><div class="progDemand"><div class="progress-label">Demand - <span class="demandVal"></span></div></div></td></tr>');
+            } else {
+                location.append('<tr><td><h4>Your Group</h4></td><td><div class="progContrib"><div class="progress-label">Contribution - <span class="contribVal"></span></div></div><br /><div class="progDemand"><div class="progress-label">Demand - <span class="demandVal"></span></div></div></td></tr>');
+            }
+            for (iter=1; iter < values.length; iter++) {
+                location.append('<tr><td><h4>' + letter + (parseInt(iter, 10) + 1) + '</h4></td><td><div class="progContrib"><div class="progress-label">Contribution - <span class="contribVal"></span></div></div><br /><div class="progDemand"><div class="progress-label">Demand - <span class="demandVal"></span></div></div></td></tr>');
             }
             var progDemand = location.find('.progDemand'),
                 progContrib = location.find('.progContrib'),
-                contribVal = location.find( '.contribVal'),
+                contribVal = location.find('.contribVal'),
                 demandVal = location.find('.demandVal');
 
             for (iter = 0; iter < progDemand.length; iter++) {

@@ -10,17 +10,17 @@
 module.exports = function(node, channel, room) {
 
     var path = require('path');
-    
+
     // Reads in descil-mturk configuration.
     var confPath = path.resolve(__dirname, 'descil.conf.js');
-    
+
     // Load the code database.
     var dk = require('descil-mturk')(confPath);
-//    dk.getCodes(function() {
-//        if (!dk.codes.size()) {
-//            throw new Error('game.room: no codes found.');
-//        }
-//    });
+    //    dk.getCodes(function() {
+    //        if (!dk.codes.size()) {
+    //            throw new Error('game.room: no codes found.');
+    //        }
+    //    });
     dk.readCodes(function() {
         if (!dk.codes.size()) {
             throw new Errors('requirements.room: no codes found.');
@@ -42,7 +42,39 @@ module.exports = function(node, channel, room) {
     var stager = new node.Stager();
 
     // Loading the logic rules that will be used in each sub-gaming room.
-    var logicPath = __dirname + '/includes/game.logic';
+    var logicPathBB = __dirname + '/includes/game.logic.bb';
+    var logicPathEndo = __dirname + '/includes/game.logic.endo';
+    var logicPathExoRand = __dirname + '/includes/game.logic.exo.rand';
+    var logicPathExoLow = __dirname + '/includes/game.logic.exo.low';
+    var logicPathExoHigh = __dirname + '/includes/game.logic.exo.high';
+    var logicPathExoPerf = __dirname + '/includes/game.logic.exo.perf';
+
+    //The function to decide in which game room the users are going to be
+    var decideRoom = function(arrayRoom) {
+        //Implement logic here.
+        return arrayRoom[0];
+    };
+
+    // Creating the array for association between room and their logic
+    var arrayRoomLogic = [{
+        group: 'blackbox',
+        logicPath: logicPathBB,
+    }, {
+        group: 'endo',
+        logicPath: logicPathEndo,
+    }, {
+        group: 'ExoRandom',
+        logicPath: logicPathExoRand,
+    }, {
+        group: 'ExoLow',
+        logicPath: logicPathExoLow,
+    }, {
+        group: 'ExoHigh',
+        logicPath: logicPathExoHigh,
+    }, {
+        group: 'ExoPerfect',
+        logicPath: logicPathExoPerf,
+    }, ];
 
     // You can share objects with the included file. Include them in the
     // object passed as second parameter.
@@ -62,7 +94,7 @@ module.exports = function(node, channel, room) {
             return true;
         }
     });
-    
+
     // Creating an authorization function for the players.
     // This is executed before the client the PCONNECT listener.
     channel.player.authorization(function(header, cookies, room) {
@@ -80,21 +112,21 @@ module.exports = function(node, channel, room) {
             console.log('no token: ', cookies.token)
             return false;
         }
-        
+
         code = dk.codeExists(cookies.token);
-        
+
         // Code not existing.
-	if (!code) {
+        if (!code) {
             console.log('not existing token: ', cookies.token);
             return false;
         }
-        
+
         // Code in use.
-	if (code.usage) {
+        if (code.usage) {
             console.log('token already in use: ', cookies.token);
             return false;
-	}
-        
+        }
+
         // Mark the code as in use.
         dk.incrementUsage(cookies.token);
 
@@ -134,28 +166,28 @@ module.exports = function(node, channel, room) {
 
         // This callback is executed when a player connects to the channel.
         node.on.pconnect(function(p) {
-            var gameRoom, wRoom, tmpPlayerList;
+            var gameRoom, wRoom, tmpPlayerList, assignedRoom;
             var nPlayers, i, len;
             console.log('-----------Player connected ' + p.id);
-            
+
             node.remoteAlert('Your code has been marked as in use. Do not ' +
-                             'leave this page, otherwise you will not be ' +
-                             'able to join the experiment again.', p.id);
+                'leave this page, otherwise you will not be ' +
+                'able to join the experiment again.', p.id);
 
             // PlayerList object of waiting players.
             wRoom = room.clients.player;
             nPlayers = wRoom.size();
 
             // Send the client the waiting stage.
-            node.remoteSetup('game_metadata',  p.id, clientWait.metadata);
+            node.remoteSetup('game_metadata', p.id, clientWait.metadata);
             node.remoteSetup('plot', p.id, clientWait.plot);
             node.remoteCommand('start', p.id);
-            
+
             node.say('waitingRoom', 'ALL', {
                 poolSize: POOL_SIZE,
                 nPlayers: nPlayers
             });
-            
+
             // Wait to have enough clients connected.
             if (nPlayers < POOL_SIZE) {
                 return;
@@ -164,11 +196,14 @@ module.exports = function(node, channel, room) {
             console.log('-----------We have enough players: ' + wRoom.size());
 
             i = -1, len = Math.floor(nPlayers / GROUP_SIZE);
-            for ( ; ++i < len ; ) {
+            for (; ++i < len;) {
 
                 // Doing the random matching.
                 tmpPlayerList = wRoom.shuffle().limit(GROUP_SIZE);
-                
+
+                //Assigning a game room to this list of players
+                assignedRoom = decideRoom(arrayRoomLogic);
+
                 // Creating a sub gaming room.
                 // The object must contains the following information:
                 // - clients: a list of players (array or PlayerList)
@@ -176,27 +211,27 @@ module.exports = function(node, channel, room) {
                 // - channel: a reference to the channel of execution (ServerChannel)
                 // - group: a name to group together multiple game rooms (string)
                 gameRoom = channel.createGameRoom({
-                    group: 'ultimatum',
+                    group: assignedRoom.group,
                     clients: tmpPlayerList,
                     channel: channel,
-                    logicPath: logicPath
+                    logicPath: assignedRoom.logicPath
                 });
-                
-	        // Setting metadata, settings, and plot.
-                tmpPlayerList.each(function (p) {
+
+                // Setting metadata, settings, and plot.
+                tmpPlayerList.each(function(p) {
                     // Clearing the waiting stage.
                     node.remoteCommand('stop', p.id);
                     // Setting the actual game.
-                    node.remoteSetup('game_metadata',  p.id, client.metadata);
+                    node.remoteSetup('game_metadata', p.id, client.metadata);
                     node.remoteSetup('game_settings', p.id, client.settings);
                     node.remoteSetup('plot', p.id, client.plot);
                     node.remoteSetup('env', p.id, client.env);
                 });
-                
+
                 // Start the logic.
                 gameRoom.startGame();
             }
-            
+
             // TODO: node.game.pl.size() is unchanged.
             // We need to check with wRoom.size()
             nPlayers = room.clients.player.size();
@@ -213,10 +248,10 @@ module.exports = function(node, channel, room) {
             }
         });
     });
-    
+
     // This function will be executed once node.game.gameover() is called.
     stager.setOnGameOver(function() {
-	console.log('^^^^^^^^^^^^^^^^GAME OVER^^^^^^^^^^^^^^^^^^');
+        console.log('^^^^^^^^^^^^^^^^GAME OVER^^^^^^^^^^^^^^^^^^');
     });
 
     // Defining the game structure:
@@ -231,18 +266,18 @@ module.exports = function(node, channel, room) {
     // Returns all the information about this waiting room.
     return {
         nodename: 'wroom',
-	game_metadata: {
-	    name: 'wroom',
-	    version: '0.1.0'
-	},
-	game_settings: {
-	    publishLevel: 0
-	},
-	plot: stager.getState(),
+        game_metadata: {
+            name: 'wroom',
+            version: '0.1.0'
+        },
+        game_settings: {
+            publishLevel: 0
+        },
+        plot: stager.getState(),
         // If debug is true, the ErrorManager will throw errors 
         // also for the sub-rooms.
-	debug: true, 
-	verbosity: 0,
+        debug: true,
+        verbosity: 0,
         publishLevel: 2
     };
 };

@@ -34,16 +34,16 @@ stager.setOnInit(function() {
     var waitingForPlayers;
     node.game.oldContribDemand = [
         [
-            [0, 0],
-            [0, 0],
-            [0, 0],
-            [0, 0]
+            [undefined, undefined],
+            [undefined, undefined],
+            [undefined, undefined],
+            [undefined, undefined]
         ],
         [
-            [0, 0],
-            [0, 0],
-            [0, 0],
-            [0, 0]
+            [undefined, undefined],
+            [undefined, undefined],
+            [undefined, undefined],
+            [undefined, undefined]
         ]
     ];
 
@@ -319,26 +319,26 @@ function meritocracy() {
             var contrib = W.getElementById('contribution').value,
                 demand = W.getElementById('demand').value;
 
-            if (contrib == '' || contrib == node.game.oldContribDemand[0][0]) {
+            if (contrib == '' || contrib == node.game.oldContribDemand[0][0][0]) {
                 isTimeOut = true;
                 if (contrib == '' && node.game.getCurrentGameStage().round === 1) {
                     contrib = Math.floor(Math.random() * 10);
                 } else if (contrib == '') {
-                    contrib = node.game.oldContribDemand[0][0];
+                    contrib = node.game.oldContribDemand[0][0][0];
                 }
             }
 
-            if (demand == '' || demand == node.game.oldContribDemand[0][1]) {
+            if (demand == '' || demand == node.game.oldContribDemand[0][0][1]) {
                 isTimeOut = true;
                 if (demand == '' && node.game.getCurrentGameStage().round === 1) {
                     demand = Math.floor(Math.random() * 10);
                 } else if (demand == '') {
-                    demand = node.game.oldContribDemand[0][1];
+                    demand = node.game.oldContribDemand[0][0][1];
                 }
             }
 
-            contrib = that.isValidDemand(contrib) ? contrib : node.game.oldContribDemand[0][0];
-            demand = that.isValidDemand(demand) ? demand : node.game.oldContribDemand[0][1];
+            contrib = that.isValidDemand(contrib) ? contrib : node.game.oldContribDemand[0][0][0];
+            demand = that.isValidDemand(demand) ? demand : node.game.oldContribDemand[0][0][1];
 
             node.emit('BID_DONE', contrib, demand, isTimeOut);
         });

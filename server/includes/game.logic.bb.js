@@ -51,7 +51,7 @@ module.exports = function(node, channel, gameRoom) {
     var confPath = path.resolve(__dirname, '..', 'descil.conf.js');
     var dk = require('descil-mturk')(confPath);
     //    dk.getCodes(function() {
-    //        debugger
+    debugger
     //        if (!dk.codes.size()) {
     //            throw new Error('game.logic: no codes found.');
     //        }
@@ -90,6 +90,11 @@ module.exports = function(node, channel, gameRoom) {
 
         var disconnected;
         disconnected = {};
+
+        node.game.groupNames = ['einstein', 'knuth', 'turing', 'feynmann'];
+        node.game.memory.on('insert', function(data) {
+            data.group = node.game.pl.selexec('id', '=', data.player).first().group;
+        });
 
         // Reconnections must be handled by the game developer.
         node.on.preconnect(function(p) {
@@ -175,17 +180,17 @@ module.exports = function(node, channel, gameRoom) {
     }
 
     function instructions() {
-        debugger
+        // debugger
         console.log('Instructions');
     }
 
     function quiz() {
-        debugger
+        // debugger
         console.log('Quiz');
     }
 
     function meritocracy() {
-        debugger
+        // debugger
         console.log('Ultimatum');
         doMatch();
     }
@@ -202,7 +207,7 @@ module.exports = function(node, channel, gameRoom) {
         console.log('***********************');
 
         node.game.pl.each(function(p) {
-            debugger
+            // debugger
             code = dk.codes.id.get(p.id);
             if (!code) {
                 console.log('ERROR: no code in endgame:', p.id);
@@ -263,12 +268,8 @@ module.exports = function(node, channel, gameRoom) {
             console.log('bid');
             var i = 0;
             node.game.pl.each(function(p) {
-                if (++i % 2 === 0)  {
-                    p.group = "a";
-                }
-                else {
-                    p.group = "b";
-                }
+                p.gorup = node.game.groupNames[i % 4];
+                i += 1;
             });
             return true;
         },
@@ -279,62 +280,114 @@ module.exports = function(node, channel, gameRoom) {
         id: 'results',
         cb: function() {
             console.log(node.game.memory.fetch());
+            debugger;
 
-// [ { stage: { stage: 2, step: 1, round: 1 },
-//     player: '642511127749458',
-//     key: 'bid',
-//     value: { demand: 5, contribution: 4, isTimeOut: true },
-//     time: 1386078693607 },
-//   { stage: { stage: 2, step: 1, round: 1 },
-//     player: '231675965012982',
-//     key: 'bid',
-//     value: { demand: 6, contribution: 7, isTimeOut: true },
-//     time: 1386078693618 },
-//   { stage: { stage: 2, step: 1, round: 2 },
-//     player: '642511127749458',
-//     key: 'bid',
-//     value: { demand: 45, contribution: 34, isTimeOut: true },
-//     time: 1386078714852 },
-//   { stage: { stage: 2, step: 1, round: 2 },
-//     player: '231675965012982',
-//     key: 'bid',
-//     value: { demand: 45, contribution: 34, isTimeOut: true },
-//     time: 1386078715622 },
-//   { stage: { stage: 2, step: 1, round: 3 },
-//     player: '642511127749458',
-//     key: 'bid',
-//     value: { demand: 45, contribution: 34, isTimeOut: true },
-//     time: 1386078736864 },
-//   { stage: { stage: 2, step: 1, round: 3 },
-//     player: '231675965012982',
-//     key: 'bid',
-//     value: { demand: 45, contribution: 34, isTimeOut: true },
-//     time: 1386078737621 },
-//   { stage: { stage: 2, step: 1, round: 4 },
-//     player: '642511127749458',
-//     key: 'bid',
-//     value: { demand: 45, contribution: 34, isTimeOut: true },
-//     time: 1386078758876 },
-//   { stage: { stage: 2, step: 1, round: 4 },
-//     player: '231675965012982',
-//     key: 'bid',
-//     value: { demand: 45, contribution: 34, isTimeOut: true },
-//     time: 1386078759619 } ]
+            // [ { stage: { stage: 2, step: 1, round: 1 },
+            //     player: '642511127749458',
+            //     key: 'bid',
+            //     value: { demand: 5, contribution: 4, isTimeOut: true },
+            //     time: 1386078693607 },
+            //   { stage: { stage: 2, step: 1, round: 1 },
+            //     player: '231675965012982',
+            //     key: 'bid',
+            //     value: { demand: 6, contribution: 7, isTimeOut: true },
+            //     time: 1386078693618 },
+            //   { stage: { stage: 2, step: 1, round: 2 },
+            //     player: '642511127749458',
+            //     key: 'bid',
+            //     value: { demand: 45, contribution: 34, isTimeOut: true },
+            //     time: 1386078714852 },
+            //   { stage: { stage: 2, step: 1, round: 2 },
+            //     player: '231675965012982',
+            //     key: 'bid',
+            //     value: { demand: 45, contribution: 34, isTimeOut: true },
+            //     time: 1386078715622 },
+            //   { stage: { stage: 2, step: 1, round: 3 },
+            //     player: '642511127749458',
+            //     key: 'bid',
+            //     value: { demand: 45, contribution: 34, isTimeOut: true },
+            //     time: 1386078736864 },
+            //   { stage: { stage: 2, step: 1, round: 3 },
+            //     player: '231675965012982',
+            //     key: 'bid',
+            //     value: { demand: 45, contribution: 34, isTimeOut: true },
+            //     time: 1386078737621 },
+            //   { stage: { stage: 2, step: 1, round: 4 },
+            //     player: '642511127749458',
+            //     key: 'bid',
+            //     value: { demand: 45, contribution: 34, isTimeOut: true },
+            //     time: 1386078758876 },
+            //   { stage: { stage: 2, step: 1, round: 4 },
+            //     player: '231675965012982',
+            //     key: 'bid',
+            //     value: { demand: 45, contribution: 34, isTimeOut: true },
+            //     time: 1386078759619 } ]
 
-            node.say('results', 'ALL', [
-                [
-                    [34, 45],
-                    [12, 56],
-                    [78, 23],
-                    [34, 67]
-                ],
-                [
-                    [23, 64],
-                    [34, 87],
-                    [12, 67],
-                    [23, 45]
-                ]
-            ]);
+
+            // Get values for each group
+            var name,
+                groupContrib,
+                groupDemand,
+                group,
+                groupValues = [],
+                currentStage = node.game.getCurrentGameStage().stage,
+                currentStep = node.game.getCurrentGameStage().step,
+                currentRound = node.game.getCurrentGameStage().round;
+
+            var receivedData = node.game.memory.select('stage.stage', '=', currentStage).and('stage.step', '=', currentStep).and('stage.round', '=', currentRound).execute().fetch();
+
+            for (name in node.game.groupNames) {
+                group = receivedData.select('group', '=', name).execute().fetch();
+                groupContrib = group.reduce(function(pv, cv) {
+                    return pv + cv.value.contribution;
+                }, 0) / 4;
+                groupDemand = group.reduce(function(pv, cv) {
+                    return pv + cv.value.demand;
+                }, 0) / 4;
+                groupValues[name] = [groupContrib, groupDemand];
+            }
+
+            node.game.pl.each(function(p) {
+                var groupsBars = [],
+                    playersBars = [],
+                    finalBars,
+                    player,
+                    otherPlayers,
+                    group,
+                    otherGroups;
+
+                player = receivedData.select('player', '=', p.id).execute().first();
+                player = [player.value.contribution, player.value.demand];
+                otherPlayers = receivedData.select('group', '=', p.group).and('player', '!=', p.id).execute().fetch();
+                playersBars.push(player);
+                for (player in otherPlayers) {
+                    playersBars.push([player.value.contribution, player.value.demand]);
+                }
+                group = groupValues[p.group];
+                groupsBars.push(group);
+                otherGroups = node.game.groupNames;
+                otherGroups.splice(otherGroups.indexOf(p.group), 1);
+                for (group in otherGroups) {
+                    groupsBars.push(groupValues[group]);
+                }
+                finalBars = [playersBars, groupsBars];
+                node.say('results', p.id, finalBars);
+            });
+
+            // node.say('results', 'ALL', [
+            //     [
+            //         [34, 45],
+            //         [12, 56],
+            //         [78, 23],
+            //         [34, 67]
+            //     ],
+            //     [
+            //         [23, 64],
+            //         [34, 87],
+            //         [12, 67],
+            //         [23, 45]
+            //     ]
+            // ]);
         },
         minPlayers: [2, notEnoughPlayers]
     });

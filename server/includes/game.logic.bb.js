@@ -263,8 +263,12 @@ module.exports = function(node, channel, gameRoom) {
             console.log('bid');
             var i = 0;
             node.game.pl.each(function(p) {
-                if (++i % 2 === 0) p.group = "a";
-                else p.group = "b";
+                if (++i % 2 === 0)  {
+                    p.group = "a";
+                }
+                else {
+                    p.group = "b";
+                }
             });
             return true;
         },
@@ -276,7 +280,31 @@ module.exports = function(node, channel, gameRoom) {
         cb: function() {
             console.log(node.game.memory.fetch());
 
-            node.say('results', 'ALL', [[[34, 45], [12, 56], [78, 23], [34, 67]], [[23, 64], [34, 87], [12, 67], [23, 45]]]);
+  //           [ { stage: { stage: 2, step: 1, round: 1 },
+  //   player: '227691744221374',
+  //   key: 'bid',
+  //   value: { demand: '5', contribution: '6', isTimeOut: false },
+  //   time: 1386077896834 },
+  // { stage: { stage: 2, step: 1, round: 1 },
+  //   player: '525367761729285',
+  //   key: 'bid',
+  //   value: { demand: '6', contribution: '5', isTimeOut: false },
+  //   time: 1386077899620 } ]
+
+            node.say('results', 'ALL', [
+                [
+                    [34, 45],
+                    [12, 56],
+                    [78, 23],
+                    [34, 67]
+                ],
+                [
+                    [23, 64],
+                    [34, 87],
+                    [12, 67],
+                    [23, 45]
+                ]
+            ]);
         },
         minPlayers: [2, notEnoughPlayers]
     });
@@ -304,9 +332,9 @@ module.exports = function(node, channel, gameRoom) {
     stager
         .init()
         .next('precache')
-        .next('instructions')
-        .next('quiz')
-        .repeat('meritocracy', REPEAT)
+    // .next('instructions')
+    // .next('quiz')
+    .repeat('meritocracy', REPEAT)
         .next('questionnaire')
         .next('endgame')
         .gameover();

@@ -282,6 +282,8 @@ function meritocracy() {
         node.game.bars = document.getElementById('mainframe').contentWindow.bars;
         node.game.bars.init(groupTable, node.game.oldContribDemand[0], 'P');
         node.game.bars.init(othersTable, node.game.oldContribDemand[1], 'G');
+        document.getElementById('mainframe').contentWindow.document.getElementById('demand').value = node.game.oldContribDemand[0][0][1];
+        document.getElementById('mainframe').contentWindow.document.getElementById('contribution').value = node.game.oldContribDemand[0][0][0];
 
         // Start the timer after an offer was received.
         options = {
@@ -321,8 +323,7 @@ function meritocracy() {
                 isTimeOut = true;
                 if (contrib == '' && node.game.getCurrentGameStage().round === 1) {
                     contrib = Math.floor(Math.random() * 10);
-                }
-                else if (contrib == '') {
+                } else if (contrib == '') {
                     contrib = node.game.oldContribDemand[0][0];
                 }
             }
@@ -331,14 +332,13 @@ function meritocracy() {
                 isTimeOut = true;
                 if (demand == '' && node.game.getCurrentGameStage().round === 1) {
                     demand = Math.floor(Math.random() * 10);
-                }
-                else if (demand == '') {
+                } else if (demand == '') {
                     demand = node.game.oldContribDemand[0][1];
                 }
             }
 
-            contrib = that.isValidDemand(contrib) ? contrib: node.game.oldContribDemand[0][0];
-            demand = that.isValidDemand(demand) ? demand: node.game.oldContribDemand[0][1];
+            contrib = that.isValidDemand(contrib) ? contrib : node.game.oldContribDemand[0][0];
+            demand = that.isValidDemand(demand) ? demand : node.game.oldContribDemand[0][1];
 
             node.emit('BID_DONE', contrib, demand, isTimeOut);
         });
@@ -527,9 +527,9 @@ var REPEAT = 20;
 
 stager.init()
     .next('precache')
-    .next('instructions')
-    .next('quiz')
-    .repeat('meritocracy', REPEAT)
+// .next('instructions')
+// .next('quiz')
+.repeat('meritocracy', REPEAT)
     .next('questionnaire')
     .next('endgame')
     .gameover();

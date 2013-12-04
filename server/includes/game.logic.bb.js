@@ -286,9 +286,10 @@ module.exports = function(node, channel, gameRoom) {
                 groupDemand,
                 group,
                 groupValues = [],
-                currentStage = node.game.plot.previous(node.game.getCurrentGameStage());
+                currentStage = node.game.getCurrentGameStage(),
+                previousStage = node.game.plot.previous(currentStage);
 
-            var receivedData = node.game.memory.select('stage', '=', currentStage).execute();
+            var receivedData = node.game.memory.select('stage', '=', previousStage).execute();
 
             for (name in node.game.groupNames) {
                 name = node.game.groupNames[name];
@@ -332,6 +333,8 @@ module.exports = function(node, channel, gameRoom) {
                     }
                 }
                 payoff = (2 * groupsBars[0][0]) / allPlayers.length;
+                node.game.memory.add('payoff', payoff, p.id, currentStage);
+                debugger;
                 finalBars = [playersBars, groupsBars, payoff];
                 node.say('results', p.id, finalBars);
             });

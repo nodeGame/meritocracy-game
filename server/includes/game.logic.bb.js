@@ -94,7 +94,6 @@ module.exports = function(node, channel, gameRoom) {
         node.game.groupNames = ['einstein', 'knuth', 'turing', 'feynmann'];
         node.game.memory.on('insert', function(data) {
             data.group = node.game.pl.selexec('id', '=', data.player).first().group;
-            // data.stage = node.game.getCurrentGameStage();
         });
 
         // Reconnections must be handled by the game developer.
@@ -281,49 +280,6 @@ module.exports = function(node, channel, gameRoom) {
     stager.addStep({
         id: 'results',
         cb: function() {
-            console.log(node.game.memory.fetch());
-            // [ { stage: { stage: 2, step: 1, round: 1 },
-            //     player: '642511127749458',
-            //     key: 'bid',
-            //     value: { demand: 5, contribution: 4, isTimeOut: true },
-            //     time: 1386078693607 },
-            //   { stage: { stage: 2, step: 1, round: 1 },
-            //     player: '231675965012982',
-            //     key: 'bid',
-            //     value: { demand: 6, contribution: 7, isTimeOut: true },
-            //     time: 1386078693618 },
-            //   { stage: { stage: 2, step: 1, round: 2 },
-            //     player: '642511127749458',
-            //     key: 'bid',
-            //     value: { demand: 45, contribution: 34, isTimeOut: true },
-            //     time: 1386078714852 },
-            //   { stage: { stage: 2, step: 1, round: 2 },
-            //     player: '231675965012982',
-            //     key: 'bid',
-            //     value: { demand: 45, contribution: 34, isTimeOut: true },
-            //     time: 1386078715622 },
-            //   { stage: { stage: 2, step: 1, round: 3 },
-            //     player: '642511127749458',
-            //     key: 'bid',
-            //     value: { demand: 45, contribution: 34, isTimeOut: true },
-            //     time: 1386078736864 },
-            //   { stage: { stage: 2, step: 1, round: 3 },
-            //     player: '231675965012982',
-            //     key: 'bid',
-            //     value: { demand: 45, contribution: 34, isTimeOut: true },
-            //     time: 1386078737621 },
-            //   { stage: { stage: 2, step: 1, round: 4 },
-            //     player: '642511127749458',
-            //     key: 'bid',
-            //     value: { demand: 45, contribution: 34, isTimeOut: true },
-            //     time: 1386078758876 },
-            //   { stage: { stage: 2, step: 1, round: 4 },
-            //     player: '231675965012982',
-            //     key: 'bid',
-            //     value: { demand: 45, contribution: 34, isTimeOut: true },
-            //     time: 1386078759619 } ]
-
-
             // Get values for each group
             var name,
                 groupContrib,
@@ -353,7 +309,8 @@ module.exports = function(node, channel, gameRoom) {
                     player,
                     allPlayers,
                     group,
-                    otherGroups;
+                    otherGroups,
+                    payoff;
 
                 player = receivedData.select('player', '=', p.id).execute().first();
                 player = [player.value.contribution, player.value.demand];
@@ -374,7 +331,8 @@ module.exports = function(node, channel, gameRoom) {
                         groupsBars.push(groupValues[group]);
                     }
                 }
-                finalBars = [playersBars, groupsBars];
+                payoff = (2 * groupsBars[0][0]) / allPlayers.length;
+                finalBars = [playersBars, groupsBars, payoff];
                 node.say('results', p.id, finalBars);
             });
         },

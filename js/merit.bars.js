@@ -11,6 +11,7 @@ var bars = function() {
         init: function(location, values, letter) {
             console.log(values, letter);
             var iter, value;
+            var letters = ['.', '.a', '.b', '.c', '.d', '.e', '.f'];
             location = jQuery(location);
             location.empty();
             if (letter === 'P') {
@@ -19,7 +20,7 @@ var bars = function() {
                 location.append('<tr><td><h4>Your Group</h4></td><td><div class="progContrib"><div class="progress-label">Contribution - <span class="contribVal"></span></div></div><br /><div class="progDemand"><div class="progress-label">Demand - <span class="demandVal"></span></div></div></td></tr>');
             }
             for (iter=1; iter < values.length; iter++) {
-                location.append('<tr><td><h4>' + letter + (parseInt(iter, 10) + 1) + '</h4></td><td><div class="progContrib"><div class="progress-label">Contribution - <span class="contribVal"></span></div></div><br /><div class="progDemand"><div class="progress-label">Demand - <span class="demandVal"></span></div></div></td></tr>');
+                location.append('<tr><td><h4>' + letter + letters[iter] + '</h4></td><td><div class="progContrib"><div class="progress-label">Contribution - <span class="contribVal"></span></div></div><br /><div class="progDemand"><div class="progress-label">Demand - <span class="demandVal"></span></div></div></td></tr>');
             }
             var progDemand = location.find('.progDemand'),
                 progContrib = location.find('.progContrib'),

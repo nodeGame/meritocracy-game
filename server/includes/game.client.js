@@ -44,7 +44,8 @@ stager.setOnInit(function() {
             ['', ''],
             ['', ''],
             ['', '']
-        ]
+        ],
+        ''
     ];
 
     console.log('INIT PLAYER!');
@@ -75,6 +76,8 @@ stager.setOnInit(function() {
         });
         console.log(' Your contribution: ' + contribution + '.');
         console.log(' Your demand: ' + demand + '.');
+        document.getElementById('mainframe').contentWindow.document.getElementById('demand').value = demand;
+        document.getElementById('mainframe').contentWindow.document.getElementById('contribution').value = contribution;
         node.done();
     });
 
@@ -88,10 +91,12 @@ stager.setOnInit(function() {
         W.getElementById('divErrors').style.display = 'none';
         // W.getElementById('results').style.visibility = 'visible';
         var groupTable = document.getElementById('mainframe').contentWindow.document.getElementById('groupTable'),
-            othersTable = document.getElementById('mainframe').contentWindow.document.getElementById('othersTable');
+            othersTable = document.getElementById('mainframe').contentWindow.document.getElementById('othersTable'),
+            payoffSpan = document.getElementById('mainframe').contentWindow.document.getElementById('payoff');
         node.game.bars = document.getElementById('mainframe').contentWindow.bars;
         node.game.bars.init(groupTable, values[0], 'P');
         node.game.bars.init(othersTable, values[1], 'G');
+        payoffSpan.innerHTML = values[2];
         W.getElementById('demand').style.border = 'none';
         W.getElementById('contribution').style.border = 'none';
         W.getElementById('demand').readOnly = true;
@@ -284,7 +289,7 @@ function meritocracy() {
         node.game.bars.init(othersTable, node.game.oldContribDemand[1], 'G');
         document.getElementById('mainframe').contentWindow.document.getElementById('demand').value = ''; //parseInt(node.game.oldContribDemand[0][0][1]) === NaN ? 0 : parseInt(node.game.oldContribDemand) ;
         document.getElementById('mainframe').contentWindow.document.getElementById('contribution').value = ''; //parseInt(node.game.oldContribDemand[0][0][0]) === NaN ? 0 : parseInt(node.game.oldContribDemand) ;
-
+        document.getElementById('mainframe').contentWindow.document.getElementById('payoff').innerHTML = node.game.oldContribDemand[2];
         // Start the timer after an offer was received.
         options = {
             milliseconds: 30000,

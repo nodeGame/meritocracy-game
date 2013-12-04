@@ -94,6 +94,7 @@ module.exports = function(node, channel, gameRoom) {
         node.game.groupNames = ['einstein', 'knuth', 'turing', 'feynmann'];
         node.game.memory.on('insert', function(data) {
             data.group = node.game.pl.selexec('id', '=', data.player).first().group;
+            // data.stage = node.game.getCurrentGameStage();
         });
 
         // Reconnections must be handled by the game developer.
@@ -268,7 +269,8 @@ module.exports = function(node, channel, gameRoom) {
             console.log('bid');
             var i = 0;
             node.game.pl.each(function(p) {
-                p.gorup = node.game.groupNames[i % 4];
+                p.group = node.game.groupNames[i % 4];
+                // p.group = node.game.groupNames[0];
                 i += 1;
             });
             return true;
@@ -280,8 +282,6 @@ module.exports = function(node, channel, gameRoom) {
         id: 'results',
         cb: function() {
             console.log(node.game.memory.fetch());
-            debugger;
-
             // [ { stage: { stage: 2, step: 1, round: 1 },
             //     player: '642511127749458',
             //     key: 'bid',
@@ -330,13 +330,12 @@ module.exports = function(node, channel, gameRoom) {
                 groupDemand,
                 group,
                 groupValues = [],
-                currentStage = node.game.getCurrentGameStage().stage,
-                currentStep = node.game.getCurrentGameStage().step,
-                currentRound = node.game.getCurrentGameStage().round;
+                currentStage = node.game.plot.previous(node.game.getCurrentGameStage());
 
-            var receivedData = node.game.memory.select('stage.stage', '=', currentStage).and('stage.step', '=', currentStep).and('stage.round', '=', currentRound).execute().fetch();
+            var receivedData = node.game.memory.select('stage', '=', currentStage).execute();
 
             for (name in node.game.groupNames) {
+                name = node.game.groupNames[name];
                 group = receivedData.select('group', '=', name).execute().fetch();
                 groupContrib = group.reduce(function(pv, cv) {
                     return pv + cv.value.contribution;
@@ -352,42 +351,32 @@ module.exports = function(node, channel, gameRoom) {
                     playersBars = [],
                     finalBars,
                     player,
-                    otherPlayers,
+                    allPlayers,
                     group,
                     otherGroups;
 
                 player = receivedData.select('player', '=', p.id).execute().first();
                 player = [player.value.contribution, player.value.demand];
-                otherPlayers = receivedData.select('group', '=', p.group).and('player', '!=', p.id).execute().fetch();
+                allPlayers = receivedData.select('group', '=', p.group).execute().fetch();
                 playersBars.push(player);
-                for (player in otherPlayers) {
-                    playersBars.push([player.value.contribution, player.value.demand]);
+                for (player in allPlayers) {
+                    player = allPlayers[player];
+                    if (player.player !== p.id) {
+                        playersBars.push([player.value.contribution, player.value.demand]);
+                    }
                 }
                 group = groupValues[p.group];
                 groupsBars.push(group);
                 otherGroups = node.game.groupNames;
-                otherGroups.splice(otherGroups.indexOf(p.group), 1);
                 for (group in otherGroups) {
-                    groupsBars.push(groupValues[group]);
+                    group = otherGroups[group];
+                    if (p.group !== group) {
+                        groupsBars.push(groupValues[group]);
+                    }
                 }
                 finalBars = [playersBars, groupsBars];
                 node.say('results', p.id, finalBars);
             });
-
-            // node.say('results', 'ALL', [
-            //     [
-            //         [34, 45],
-            //         [12, 56],
-            //         [78, 23],
-            //         [34, 67]
-            //     ],
-            //     [
-            //         [23, 64],
-            //         [34, 87],
-            //         [12, 67],
-            //         [23, 45]
-            //     ]
-            // ]);
         },
         minPlayers: [2, notEnoughPlayers]
     });

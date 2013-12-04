@@ -34,16 +34,16 @@ stager.setOnInit(function() {
     var waitingForPlayers;
     node.game.oldContribDemand = [
         [
-            [undefined, undefined],
-            [undefined, undefined],
-            [undefined, undefined],
-            [undefined, undefined]
+            ['', ''],
+            ['', ''],
+            ['', ''],
+            ['', '']
         ],
         [
-            [undefined, undefined],
-            [undefined, undefined],
-            [undefined, undefined],
-            [undefined, undefined]
+            ['', ''],
+            ['', ''],
+            ['', ''],
+            ['', '']
         ]
     ];
 
@@ -282,8 +282,8 @@ function meritocracy() {
         node.game.bars = document.getElementById('mainframe').contentWindow.bars;
         node.game.bars.init(groupTable, node.game.oldContribDemand[0], 'P');
         node.game.bars.init(othersTable, node.game.oldContribDemand[1], 'G');
-        document.getElementById('mainframe').contentWindow.document.getElementById('demand').value = node.game.oldContribDemand[0][0][1];
-        document.getElementById('mainframe').contentWindow.document.getElementById('contribution').value = node.game.oldContribDemand[0][0][0];
+        document.getElementById('mainframe').contentWindow.document.getElementById('demand').value = ''; //parseInt(node.game.oldContribDemand[0][0][1]) === NaN ? 0 : parseInt(node.game.oldContribDemand) ;
+        document.getElementById('mainframe').contentWindow.document.getElementById('contribution').value = ''; //parseInt(node.game.oldContribDemand[0][0][0]) === NaN ? 0 : parseInt(node.game.oldContribDemand) ;
 
         // Start the timer after an offer was received.
         options = {
@@ -316,23 +316,23 @@ function meritocracy() {
         node.on('TIMEUP', function() {
             console.log('TIMEUP !');
             var isTimeOut = false;
-            var contrib = W.getElementById('contribution').value,
-                demand = W.getElementById('demand').value;
+            var contrib = parseInt(W.getElementById('contribution').value),
+                demand = parseInt(W.getElementById('demand').value);
 
-            if (contrib == '' || contrib == node.game.oldContribDemand[0][0][0]) {
+            if (isNaN(contrib) || contrib == node.game.oldContribDemand[0][0][0]) {
                 isTimeOut = true;
-                if (contrib == '' && node.game.getCurrentGameStage().round === 1) {
-                    contrib = Math.floor(Math.random() * 10);
-                } else if (contrib == '') {
+                if (isNaN(contrib) && node.game.getCurrentGameStage().round === 1) {
+                    contrib = Math.round(Math.random() * 10);
+                } else if (isNaN(contrib)) {
                     contrib = node.game.oldContribDemand[0][0][0];
                 }
             }
 
-            if (demand == '' || demand == node.game.oldContribDemand[0][0][1]) {
+            if (isNaN(demand) || demand == node.game.oldContribDemand[0][0][1]) {
                 isTimeOut = true;
-                if (demand == '' && node.game.getCurrentGameStage().round === 1) {
-                    demand = Math.floor(Math.random() * 10);
-                } else if (demand == '') {
+                if (isNaN(demand) && node.game.getCurrentGameStage().round === 1) {
+                    demand = Math.round(Math.random() * 10);
+                } else if (isNaN(demand)) {
                     demand = node.game.oldContribDemand[0][0][1];
                 }
             }
@@ -344,16 +344,17 @@ function meritocracy() {
         });
 
         b.onclick = function() {
-            var contrib = W.getElementById('contribution'),
-                demand = W.getElementById('demand');
+            var contrib = parseInt(W.getElementById('contribution').value),
+                demand = parseInt(W.getElementById('demand').value);
 
-            if (!that.isValidContribution(contrib.value) || !that.isValidDemand(demand.value)) {
+            if (!that.isValidContribution(contrib) || !that.isValidDemand(demand)) {
                 var p = document.createElement('p');
                 p.innerText = 'Please enter a number between 0 and 10.';
+                p.textContent = 'Please enter a number between 0 and 10.';
                 W.getElementById('divErrors').appendChild(p);
                 return;
             }
-            node.emit('BID_DONE', contrib.value, demand.value, false);
+            node.emit('BID_DONE', contrib, demand, false);
         };
 
     }, {

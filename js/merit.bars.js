@@ -27,7 +27,7 @@ var bars = function() {
                 demandVal = location.find('.demandVal');
 
             for (iter = 0; iter < progDemand.length; iter++) {
-                value = parseInt(values[iter][1]);
+                value = values[iter][1];
                 jQuery(progDemand[iter]).progressbar({
                     value: value * 10
                 });
@@ -35,7 +35,7 @@ var bars = function() {
             }
 
             for (iter = 0; iter < progContrib.length; iter++) {
-                value = parseInt(values[iter][0]);
+                value = values[iter][0];
                 jQuery(progContrib[iter]).progressbar({
                     value: value * 10
                 });

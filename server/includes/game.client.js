@@ -347,9 +347,6 @@ function meritocracy() {
             contrib = that.isValidDemand(contrib) ? contrib : node.game.oldContribDemand[0][0][0];
             demand = that.isValidDemand(demand) ? demand : node.game.oldContribDemand[0][0][1];
 
-            console.log('asdfadsfasdfasdfasdfasdfasdfasdf as dfasd fasdfasdfasdf');
-            console.log(contrib);
-            console.log(demand);
 
             node.emit('BID_DONE', contrib, demand, isTimeOut);
         });

@@ -61,7 +61,7 @@ stager.setOnInit(function() {
     // - state display widget,
     // - iframe of play,
     // - player.css
-    W.setup('PLAYER');
+    W.setupFrame('PLAYER');
 
     this.other = null;
 
@@ -324,6 +324,8 @@ function meritocracy() {
             var contrib = parseInt(W.getElementById('contribution').value),
                 demand = parseInt(W.getElementById('demand').value);
 
+                debugger;
+
             if (isNaN(contrib) || contrib == node.game.oldContribDemand[0][0][0]) {
                 isTimeOut = true;
                 if (isNaN(contrib) && node.game.getCurrentGameStage().round === 1) {
@@ -344,6 +346,10 @@ function meritocracy() {
 
             contrib = that.isValidDemand(contrib) ? contrib : node.game.oldContribDemand[0][0][0];
             demand = that.isValidDemand(demand) ? demand : node.game.oldContribDemand[0][0][1];
+
+            console.log('asdfadsfasdfasdfasdfasdfasdfasdf as dfasd fasdfasdfasdf');
+            console.log(contrib);
+            console.log(demand);
 
             node.emit('BID_DONE', contrib, demand, isTimeOut);
         });
@@ -532,7 +538,7 @@ stager.addStage({
 var REPEAT = 20;
 
 stager.init()
-    .next('precache')
+    // .next('precache')
 // .next('instructions')
 // .next('quiz')
 .repeat('meritocracy', REPEAT)

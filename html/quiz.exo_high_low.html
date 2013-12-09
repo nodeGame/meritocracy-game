@@ -2,6 +2,11 @@
 <title>Meritocracy Quiz</title>
 
 <link rel="stylesheet" type="text/css" href="css/quiz.css">
+<style type="text/css">
+tr, th, td, table {
+  text-align:center;
+}
+</style>
 <body>
 
   <div id="container_quiz">
@@ -57,10 +62,9 @@
           <span id="likeliness_result" class="quiz_result"></span>
           <form name="likeliness" id="likeliness">
             <p> Given the following setup: </p>
-            <center>
-              <table>
+              <table align="center">
                 <thead>
-                  <th><td>Player/s</td><td>Contribution to Group Account</td></th>
+                  <tr><th>Player/s</th><th>Contribution to Group Account</th></tr>
                 </thead>
                 <tbody>
                   <tr><td>You</td><td>5</td></tr>
@@ -69,7 +73,6 @@
                   <tr><td>Other 4 players</td><td>0</td></tr>
                 </tbody>
               </table>
-            </center>
             <p> what will your position be in the ranking ? </p>
             <p>
               <input type="radio" name="likeliness" value="anyRank"> I am equally likely to take any rank (always false)<br>

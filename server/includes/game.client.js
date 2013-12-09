@@ -48,7 +48,8 @@ stager.setOnInit(function() {
         ''
     ];
 
-    window.currentGroup = node.game.currentGroup;
+    // Change so that roomtype is set as decided in game.room
+    node.game.roomType = node.env('roomType');
 
     console.log('INIT PLAYER!');
 
@@ -229,7 +230,7 @@ function instructions() {
 function quiz() {
     var that = this;
 
-    W.loadFrame('/meritocracy/html/quiz.html', function() {
+    W.loadFrame('/meritocracy/html/quiz.' + node.game.roomType + '.html', function() {
 
     });
     console.log('Quiz');
@@ -475,7 +476,7 @@ stager.addStage({
     //  - an object containing properties _milliseconds_, and _timeup_
     //     the latter being the name of the event to fire (default DONE)
     // - or a function returning the number of milliseconds.
-    timer: 60000,
+    timer: 6000000,
     done: clearFrame
 });
 
@@ -539,10 +540,10 @@ stager.init()
 // .next('precache')
 // .next('instructions')
 .next('quiz')
-    .repeat('meritocracy', REPEAT)
-    .next('questionnaire')
-    .next('endgame')
-    .gameover();
+// .repeat('meritocracy', REPEAT)
+// .next('questionnaire')
+// .next('endgame')
+.gameover();
 
 // We serialize the game sequence before sending it.
 game.plot = stager.getState();

@@ -58,16 +58,16 @@ module.exports = function(node, channel, room) {
         group: 'endo',
         logicPath: logicPath,
     }, {
-        group: 'ExoRandom',
+        group: 'exo_random',
         logicPath: logicPath,
     }, {
-        group: 'ExoLow',
+        group: 'exo_low',
         logicPath: logicPath,
     }, {
-        group: 'ExoHigh',
+        group: 'exo_high',
         logicPath: logicPath,
     }, {
-        group: 'ExoPerfect',
+        group: 'exo_perfect',
         logicPath: logicPath,
     }, ];
 
@@ -221,7 +221,7 @@ module.exports = function(node, channel, room) {
                     node.remoteSetup('game_settings', p.id, client.settings);
                     node.remoteSetup('plot', p.id, client.plot);
                     node.remoteSetup('env', p.id, client.env);
-                    node.remoteSetup('room_type', p.id, assignedRoom.group);
+                    node.remoteSetup('env', p.id, {roomType: assignedRoom.group});
                 });
 
                 // Start the logic.

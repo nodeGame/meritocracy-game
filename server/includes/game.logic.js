@@ -51,7 +51,6 @@ module.exports = function(node, channel, gameRoom) {
     var confPath = path.resolve(__dirname, '..', 'descil.conf.js');
     var dk = require('descil-mturk')(confPath);
     //    dk.getCodes(function() {
-    debugger
     //        if (!dk.codes.size()) {
     //            throw new Error('game.logic: no codes found.');
     //        }
@@ -87,6 +86,9 @@ module.exports = function(node, channel, gameRoom) {
     // Event handler registered in the init function are always valid.
     stager.setOnInit(function() {
         console.log('********************** meritocracy room ' + counter+++' **********************');
+
+        // Todo: Change s.t. roomType is what game.room has decided
+        node.game.roomType = node.env('roomType');
 
         var disconnected;
         disconnected = {};
@@ -175,6 +177,67 @@ module.exports = function(node, channel, gameRoom) {
 
     // Functions
 
+    function blackBoxSendResults() {
+
+        var name,
+            groupContrib,
+            groupDemand,
+            group,
+            groupValues = [],
+            currentStage = node.game.getCurrentGameStage(),
+            previousStage = node.game.plot.previous(currentStage);
+
+        var receivedData = node.game.memory.select('stage', '=', previousStage).execute();
+
+        for (name in node.game.groupNames) {
+            name = node.game.groupNames[name];
+            group = receivedData.select('group', '=', name).execute().fetch();
+            groupContrib = group.reduce(function(pv, cv) {
+                return pv + cv.value.contribution;
+            }, 0) / 4;
+            groupDemand = group.reduce(function(pv, cv) {
+                return pv + cv.value.demand;
+            }, 0) / 4;
+            groupValues[name] = [groupContrib, groupDemand];
+        }
+
+        node.game.pl.each(function(p) {
+            var groupsBars = [],
+                playersBars = [],
+                finalBars,
+                player,
+                allPlayers,
+                group,
+                otherGroups,
+                payoff;
+
+            player = receivedData.select('player', '=', p.id).execute().first();
+            player = [player.value.contribution, player.value.demand];
+            allPlayers = receivedData.select('group', '=', p.group).execute().fetch();
+            playersBars.push(player);
+            for (player in allPlayers) {
+                player = allPlayers[player];
+                if (player.player !== p.id) {
+                    playersBars.push([player.value.contribution, player.value.demand]);
+                }
+            }
+            group = groupValues[p.group];
+            groupsBars.push(group);
+            otherGroups = node.game.groupNames;
+            for (group in otherGroups) {
+                group = otherGroups[group];
+                if (p.group !== group) {
+                    groupsBars.push(groupValues[group]);
+                }
+            }
+            payoff = (2 * groupsBars[0][0]) / allPlayers.length;
+            node.game.memory.add('payoff', payoff, p.id, currentStage);
+            finalBars = [playersBars, groupsBars, payoff];
+            node.say('results', p.id, finalBars);
+        });
+
+    }
+
     function precache() {
         console.log('Pre-Cache');
     }
@@ -185,7 +248,6 @@ module.exports = function(node, channel, gameRoom) {
     }
 
     function quiz() {
-        // debugger
         console.log('Quiz');
     }
 
@@ -281,63 +343,7 @@ module.exports = function(node, channel, gameRoom) {
         id: 'results',
         cb: function() {
             // Get values for each group
-            var name,
-                groupContrib,
-                groupDemand,
-                group,
-                groupValues = [],
-                currentStage = node.game.getCurrentGameStage(),
-                previousStage = node.game.plot.previous(currentStage);
-
-            var receivedData = node.game.memory.select('stage', '=', previousStage).execute();
-
-            for (name in node.game.groupNames) {
-                name = node.game.groupNames[name];
-                group = receivedData.select('group', '=', name).execute().fetch();
-                groupContrib = group.reduce(function(pv, cv) {
-                    return pv + cv.value.contribution;
-                }, 0) / 4;
-                groupDemand = group.reduce(function(pv, cv) {
-                    return pv + cv.value.demand;
-                }, 0) / 4;
-                groupValues[name] = [groupContrib, groupDemand];
-            }
-
-            node.game.pl.each(function(p) {
-                var groupsBars = [],
-                    playersBars = [],
-                    finalBars,
-                    player,
-                    allPlayers,
-                    group,
-                    otherGroups,
-                    payoff;
-
-                player = receivedData.select('player', '=', p.id).execute().first();
-                player = [player.value.contribution, player.value.demand];
-                allPlayers = receivedData.select('group', '=', p.group).execute().fetch();
-                playersBars.push(player);
-                for (player in allPlayers) {
-                    player = allPlayers[player];
-                    if (player.player !== p.id) {
-                        playersBars.push([player.value.contribution, player.value.demand]);
-                    }
-                }
-                group = groupValues[p.group];
-                groupsBars.push(group);
-                otherGroups = node.game.groupNames;
-                for (group in otherGroups) {
-                    group = otherGroups[group];
-                    if (p.group !== group) {
-                        groupsBars.push(groupValues[group]);
-                    }
-                }
-                payoff = (2 * groupsBars[0][0]) / allPlayers.length;
-                node.game.memory.add('payoff', payoff, p.id, currentStage);
-                debugger;
-                finalBars = [playersBars, groupsBars, payoff];
-                node.say('results', p.id, finalBars);
-            });
+            blackBoxSendResults();
         },
         minPlayers: [2, notEnoughPlayers]
     });
@@ -364,13 +370,13 @@ module.exports = function(node, channel, gameRoom) {
     // Here we define the sequence of stages of the game (game plot).
     stager
         .init()
-        // .next('precache')
+    // .next('precache')
     // .next('instructions')
-    // .next('quiz')
-    .repeat('meritocracy', REPEAT)
-        .next('questionnaire')
-        .next('endgame')
-        .gameover();
+    .next('quiz')
+    // .repeat('meritocracy', REPEAT)
+    // .next('questionnaire')
+    // .next('endgame')
+    .gameover();
 
     // Here we group together the definition of the game logic.
     return {

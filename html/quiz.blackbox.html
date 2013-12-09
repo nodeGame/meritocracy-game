@@ -1,0 +1,71 @@
+<!doctype html>
+<title>Ultimatum Quiz</title>
+
+<link rel="stylesheet" type="text/css" href="css/quiz.css">
+<body>
+
+  <div id="container_quiz">
+    <h1>Before starting the game answer the following questions:</h1>
+    
+    <div id="quiz"> 
+      <dl>
+
+        <dt><strong>Q.1</strong></dt>        
+        <dd>
+          <span id="coinsEveryRound_result" class="quiz_result"></span>
+          <form name="coinsEveryRound" id="coinsEveryRound">
+            <p> How many coins do you get every of the 20 rounds ? </p>
+            <p>
+              <input type="radio" name="coinsEveryRound" value="20"> 20<br>
+              <input type="radio" name="coinsEveryRound" value="10"> 10<br>
+              <input type="radio" name="coinsEveryRound" value="5"> 5<br>
+              <input type="radio" name="coinsEveryRound" value="other"> other / not clear from instructions
+            </p>
+          </form>
+        </dd>
+
+        <dt><strong>Q.2</strong></dt>        
+        <dd>
+          <span id="lowestPayement_result" class="quiz_result"></span>
+          <form name="lowestPayement" id="lowestPayement">
+            <p> If you put 5 in your personal box and 5 in the black box, what is the lowest payment you know you are guaranteed from this round ? </p>
+            <p>
+              <input type="radio" name="lowestPayement" value="0"> 0<br>
+              <input type="radio" name="lowestPayement" value="5"> 5<br>
+              <input type="radio" name="lowestPayement" value="10"> 10<br>
+              <input type="radio" name="lowestPayement" value="other"> other / not clear from instructions
+            </p>
+          </form>
+        </dd>
+
+        <dt><strong>Q.3</strong></dt>        
+        <dd>
+          <span id="leastGuarantee_result" class="quiz_result"></span>
+          <form name="leastGuarantee" id="leastGuarantee">
+            <p> If you put 5 in your personal box and 5 in the black box, and all others do the same, how much are you guaranteed from this round? </p>
+            <p>
+              <input type="radio" name="leastGuarantee" value="0"> 0<br>
+              <input type="radio" name="leastGuarantee" value="5"> 5<br>
+              <input type="radio" name="leastGuarantee" value="20"> 20<br>
+              <input type="radio" name="leastGuarantee" value="other"> other / not clear from instructions
+            </p>
+          </form>
+        </dd>
+
+      </dl>
+      <div id="done_box">
+        <button onclick='javascript:QUIZ.checkAnswers(this);' id="submitQuiz">Click here to check your answers, and start the game. <br>Correct answers <span id="answers_counter">0 / 2</span></button>
+      </div>
+    </div>
+  </div>
+  
+</div>
+</body>
+<script src="/meritocracy/js/quiz.js"></script>
+<script type="text/javascript">
+QUIZ = QUIZ({
+  coinsEveryRound: 10,
+  lowestPayement: 5,
+  leastGuarantee: 5,
+});
+</script>

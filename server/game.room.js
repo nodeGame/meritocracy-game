@@ -58,7 +58,7 @@ module.exports = function(node, channel, room) {
         group: 'endo',
         logicPath: logicPath,
     }, {
-        group: 'exo_random',
+        group: 'random',
         logicPath: logicPath,
     }, {
         group: 'exo_low',

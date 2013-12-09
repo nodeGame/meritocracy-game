@@ -230,9 +230,13 @@ function instructions() {
 function quiz() {
     var that = this;
 
-    W.loadFrame('/meritocracy/html/quiz.' + node.game.roomType + '.html', function() {
+    if (/low|high/g.test(node.game.roomType)) {
+        W.loadFrame('/meritocracy/html/quiz.exo_high_low.html', function() {});
 
-    });
+    } else {
+        W.loadFrame('/meritocracy/html/quiz.' + node.game.roomType + '.html', function() {});
+    }
+
     console.log('Quiz');
 }
 

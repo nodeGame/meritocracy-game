@@ -28,10 +28,10 @@
         <dd>
           <span id="lowestPayement_result" class="quiz_result"></span>
           <form name="lowestPayement" id="lowestPayement">
-            <p> If you put 5 in your personal box and 5 in the black box, what is the lowest payment you know you are guaranteed from this round ? </p>
+            <p> If you contribute 5, what is the lowest payment you are guaranteed from this round ? </p>
             <p>
-              <input type="radio" name="lowestPayement" value="0"> 0<br>
               <input type="radio" name="lowestPayement" value="5"> 5<br>
+              <input type="radio" name="lowestPayement" value="7.5"> 7.5<br>
               <input type="radio" name="lowestPayement" value="10"> 10<br>
               <input type="radio" name="lowestPayement" value="other"> other / not clear from instructions
             </p>
@@ -42,12 +42,34 @@
         <dd>
           <span id="leastGuarantee_result" class="quiz_result"></span>
           <form name="leastGuarantee" id="leastGuarantee">
-            <p> If you put 5 in your personal box and 5 in the black box, and all others do the same, how much are you guaranteed from this round ? </p>
+            <p> If you contribute 5, and all others do the same, how much are you guaranteed from this round ? </p>
             <p>
-              <input type="radio" name="leastGuarantee" value="0"> 0<br>
-              <input type="radio" name="leastGuarantee" value="5"> 5<br>
+              <input type="radio" name="leastGuarantee" value="7.5"> 7.5<br>
+              <input type="radio" name="leastGuarantee" value="15"> 15<br>
               <input type="radio" name="leastGuarantee" value="20"> 20<br>
               <input type="radio" name="leastGuarantee" value="other"> other / not clear from instructions
+            </p>
+          </form>
+        </dd>
+
+        <dt><strong>Q.4</strong></dt>        
+        <dd>
+          <span id="likeliness_result" class="quiz_result"></span>
+          <form name="likeliness" id="likeliness">
+            <p> Given the following setup: </p>
+            <table>
+              <th><td>Player/s</td><td>Contribution to Group Account</td></th>
+              <tr><td>You</td><td>5</td></tr>
+              <tr><td>Other 7 players</td><td>5</td></tr>
+              <tr><td>Other 4 players</td><td>10</td></tr>
+              <tr><td>Other 4 players</td><td>0</td></tr>
+            <p> what will your position be in the ranking ? </p>
+            </table>
+            <p>
+              <input type="radio" name="likeliness" value="anyRank"> I am equally likely to take any rank (always false)<br>
+              <input type="radio" name="likeliness" value="always"> I will always be ranked between the 5th and 12th positions (all equally likely for me), and never a higher or lower rank<br>
+              <input type="radio" name="likeliness" value="average"> On average I will be ranked in the middle (my expected rank is 8.5)<br>
+              <input type="radio" name="likeliness" value="other"> other / not clear from instructions
             </p>
           </form>
         </dd>
@@ -65,7 +87,8 @@
 <script type="text/javascript">
 QUIZ = QUIZ({
   coinsEveryRound: 10,
-  lowestPayement: 5,
-  leastGuarantee: 5,
+  lowestPayement: 7.5,
+  leastGuarantee: 15,
+  likeliness: 'average'
 });
 </script>

@@ -7,13 +7,6 @@ var QUIZ = function(answers) {
 
     var results = {};
 
-    // debugger;
-    // answers = answers || {
-    //     coinsEveryRound: 10,
-    //     lowestPayement: 5,
-    //     leastGuarantee: 5,
-    // };
-
     node.env('auto', function() {
         node.set('QUIZ', results);
         node.timer.randomEmit('DONE', 2000);
@@ -31,7 +24,6 @@ var QUIZ = function(answers) {
         J.each(document.forms, function(a) {
             if (!results[a.name]) results[a.name] = [];
             correct = checkAnswer(a);
-
             if (correct) {
                 W.highlight(a, 'ERR');
                 document.getElementById(a.id + '_result').innerHTML = 'Wrong, try again';

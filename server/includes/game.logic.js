@@ -88,7 +88,7 @@ module.exports = function(node, channel, gameRoom) {
         console.log('********************** meritocracy room ' + counter+++' **********************');
 
         // Todo: Change s.t. roomType is what game.room has decided
-        node.game.roomType = node.env('roomType');
+        node.game.roomType = gameRoom.group;
 
         var disconnected;
         disconnected = {};

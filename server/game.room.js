@@ -42,12 +42,7 @@ module.exports = function(node, channel, room) {
     var stager = new node.Stager();
 
     // Loading the logic rules that will be used in each sub-gaming room.
-    var logicPathBB = __dirname + '/includes/game.logic.bb';
-    var logicPathEndo = __dirname + '/includes/game.logic.endo';
-    var logicPathExoRand = __dirname + '/includes/game.logic.exo.rand';
-    var logicPathExoLow = __dirname + '/includes/game.logic.exo.low';
-    var logicPathExoHigh = __dirname + '/includes/game.logic.exo.high';
-    var logicPathExoPerf = __dirname + '/includes/game.logic.exo.perf';
+    var logicPath = __dirname + '/includes/game.logic';
 
     //The function to decide in which game room the users are going to be
     var decideRoom = function(arrayRoom) {
@@ -58,22 +53,22 @@ module.exports = function(node, channel, room) {
     // Creating the array for association between room and their logic
     var arrayRoomLogic = [{
         group: 'blackbox',
-        logicPath: logicPathBB,
+        logicPath: logicPath,
     }, {
         group: 'endo',
-        logicPath: logicPathEndo,
+        logicPath: logicPath,
     }, {
         group: 'ExoRandom',
-        logicPath: logicPathExoRand,
+        logicPath: logicPath,
     }, {
         group: 'ExoLow',
-        logicPath: logicPathExoLow,
+        logicPath: logicPath,
     }, {
         group: 'ExoHigh',
-        logicPath: logicPathExoHigh,
+        logicPath: logicPath,
     }, {
         group: 'ExoPerfect',
-        logicPath: logicPathExoPerf,
+        logicPath: logicPath,
     }, ];
 
     // You can share objects with the included file. Include them in the
@@ -226,6 +221,7 @@ module.exports = function(node, channel, room) {
                     node.remoteSetup('game_settings', p.id, client.settings);
                     node.remoteSetup('plot', p.id, client.plot);
                     node.remoteSetup('env', p.id, client.env);
+                    node.remoteSetup('room_type', p.id, assignedRoom.group);
                 });
 
                 // Start the logic.

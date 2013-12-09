@@ -48,6 +48,8 @@ stager.setOnInit(function() {
         ''
     ];
 
+    window.currentGroup = node.game.currentGroup;
+
     console.log('INIT PLAYER!');
 
     // Hide the waiting for other players message.
@@ -226,6 +228,7 @@ function instructions() {
 
 function quiz() {
     var that = this;
+
     W.loadFrame('/meritocracy/html/quiz.html', function() {
 
     });
@@ -323,8 +326,6 @@ function meritocracy() {
             var isTimeOut = false;
             var contrib = parseInt(W.getElementById('contribution').value),
                 demand = parseInt(W.getElementById('demand').value);
-
-                debugger;
 
             if (isNaN(contrib) || contrib == node.game.oldContribDemand[0][0][0]) {
                 isTimeOut = true;
@@ -535,10 +536,10 @@ stager.addStage({
 var REPEAT = 20;
 
 stager.init()
-    // .next('precache')
+// .next('precache')
 // .next('instructions')
-// .next('quiz')
-.repeat('meritocracy', REPEAT)
+.next('quiz')
+    .repeat('meritocracy', REPEAT)
     .next('questionnaire')
     .next('endgame')
     .gameover();

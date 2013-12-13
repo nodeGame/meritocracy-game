@@ -25,8 +25,18 @@ var Database = require('nodegame-db').Database;
 // Variable _node_ is shared by the requiring module
 // (game.room.js) through `channel.require` method.
 var ngdb = new Database(module.parent.exports.node);
-var mdb = ngdb.getLayer('MongoDB');
+var mdb = ngdb.getLayer('MongoDB', {
+    dbName: 'meritocracy_db',
+    collectionName: 'user_data'
+});
+mdb.connect(function() {
 
+debugger;
+            mdb.store({groupValues: 1});
+    
+});
+// debugger;
+// 
 var ngc = require('nodegame-client');
 var Stager = ngc.Stager;
 var stepRules = ngc.stepRules;
@@ -87,7 +97,6 @@ module.exports = function(node, channel, gameRoom) {
     stager.setOnInit(function() {
         console.log('********************** meritocracy room ' + counter+++' **********************');
 
-        // Todo: Change s.t. roomType is what game.room has decided
         node.game.roomType = gameRoom.group;
 
         var disconnected;
@@ -175,69 +184,116 @@ module.exports = function(node, channel, gameRoom) {
         channel.destroyGameRoom(gameRoom.name);
     });
 
-    // Functions
+    // Game Types Objects
 
-    function blackBoxSendResults() {
-
-        var name,
-            groupContrib,
-            groupDemand,
-            group,
-            groupValues = [],
-            currentStage = node.game.getCurrentGameStage(),
-            previousStage = node.game.plot.previous(currentStage);
-
-        var receivedData = node.game.memory.select('stage', '=', previousStage).execute();
-
-        for (name in node.game.groupNames) {
-            name = node.game.groupNames[name];
-            group = receivedData.select('group', '=', name).execute().fetch();
-            groupContrib = group.reduce(function(pv, cv) {
-                return pv + cv.value.contribution;
-            }, 0) / 4;
-            groupDemand = group.reduce(function(pv, cv) {
-                return pv + cv.value.demand;
-            }, 0) / 4;
-            groupValues[name] = [groupContrib, groupDemand];
-        }
-
-        node.game.pl.each(function(p) {
-            var groupsBars = [],
-                playersBars = [],
-                finalBars,
-                player,
-                allPlayers,
+    node.game.blackbox = {
+        sendResults: function() {
+            var name,
+                groupContrib,
+                groupDemand,
                 group,
-                otherGroups,
-                payoff;
+                groupValues = [],
+                currentStage = node.game.getCurrentGameStage(),
+                previousStage = node.game.plot.previous(currentStage);
 
-            player = receivedData.select('player', '=', p.id).execute().first();
-            player = [player.value.contribution, player.value.demand];
-            allPlayers = receivedData.select('group', '=', p.group).execute().fetch();
-            playersBars.push(player);
-            for (player in allPlayers) {
-                player = allPlayers[player];
-                if (player.player !== p.id) {
-                    playersBars.push([player.value.contribution, player.value.demand]);
-                }
+            var receivedData = node.game.memory.select('stage', '=', previousStage).execute();
+
+            for (name in node.game.groupNames) {
+                name = node.game.groupNames[name];
+                group = receivedData.select('group', '=', name).execute().fetch();
+                groupContrib = group.reduce(function(pv, cv) {
+                    return pv + cv.value.contribution;
+                }, 0) / 4;
+                groupDemand = group.reduce(function(pv, cv) {
+                    return pv + cv.value.demand;
+                }, 0) / 4;
+                groupValues[name] = [groupContrib, groupDemand];
             }
-            group = groupValues[p.group];
-            groupsBars.push(group);
-            otherGroups = node.game.groupNames;
-            for (group in otherGroups) {
-                group = otherGroups[group];
-                if (p.group !== group) {
-                    groupsBars.push(groupValues[group]);
-                }
-            }
-            payoff = (2 * groupsBars[0][0]) / allPlayers.length;
-            node.game.memory.add('payoff', payoff, p.id, currentStage);
-            finalBars = [playersBars, groupsBars, payoff];
-            node.say('results', p.id, finalBars);
+function getAllFromDB() {
+    var ngdb = new Database(module.parent.exports.node);
+    var mdb = ngdb.getLayer('MongoDB', {
+        dbName: 'meritocracy_db',
+        collectionName: 'user_data',
+    });
+    mdb.connect(function() {
+        var db = mdb.getDbObj();
+        var collection = db.collection('user_data');
+        collection.find().toArray(function(err, data) {
+            console.log('data in user_data:', data[0]);
+            console.log();
+            sets = data;
+            mdb.disconnect();
         });
+    });
+}
+debugger;
+            mdb.store({groupValues: groupValues});
+            debugger;
 
-    }
+            node.game.pl.each(function(p) {
+                var groupsBars = [],
+                    playersBars = [],
+                    finalBars,
+                    player,
+                    allPlayers,
+                    group,
+                    otherGroups,
+                    payoff;
 
+                player = receivedData.select('player', '=', p.id).execute().first();
+                player = [player.value.contribution, player.value.demand];
+                allPlayers = receivedData.select('group', '=', p.group).execute().fetch();
+                playersBars.push(player);
+                for (player in allPlayers) {
+                    player = allPlayers[player];
+                    if (player.player !== p.id) {
+                        playersBars.push([player.value.contribution, player.value.demand]);
+                    }
+                }
+                group = groupValues[p.group];
+                groupsBars.push(group);
+                otherGroups = node.game.groupNames;
+                for (group in otherGroups) {
+                    group = otherGroups[group];
+                    if (p.group !== group) {
+                        groupsBars.push(groupValues[group]);
+                    }
+                }
+                payoff = (2 * groupsBars[0][0]) / allPlayers.length;
+                node.game.memory.add('payoff', payoff, p.id, currentStage);
+                finalBars = [playersBars, groupsBars, payoff];
+                node.say('results', p.id, finalBars);
+            });
+        },
+    };
+
+    node.game.random = {
+        sendResults: function() {
+
+        },
+    };
+    node.game.endo = {
+        sendResults: function() {
+
+        },
+    };
+    node.game.exo_high = {
+        sendResults: function() {
+
+        },
+    };
+    node.game.exo_low = {
+        sendResults: function() {
+
+        },
+    };
+    node.game.exo_perfect = {
+        sendResults: function() {
+
+        },
+    };
+
+    // Functions
     function precache() {
         console.log('Pre-Cache');
     }
@@ -343,7 +399,7 @@ module.exports = function(node, channel, gameRoom) {
         id: 'results',
         cb: function() {
             // Get values for each group
-            blackBoxSendResults();
+            node.game[node.game.roomType].sendResults();
         },
         minPlayers: [2, notEnoughPlayers]
     });
@@ -372,8 +428,8 @@ module.exports = function(node, channel, gameRoom) {
         .init()
     // .next('precache')
     // .next('instructions')
-    .next('quiz')
-    // .repeat('meritocracy', REPEAT)
+    // .next('quiz')
+    .repeat('meritocracy', REPEAT)
     // .next('questionnaire')
     // .next('endgame')
     .gameover();

@@ -193,6 +193,7 @@ function instructions() {
     // passed as second parameter.
     //
     /////////////////////////////////////////////
+
     W.loadFrame('/meritocracy/html/instructions.html', function() {
 
         var b = W.getElementById('read');
@@ -223,7 +224,48 @@ function instructions() {
             node.timer.randomEmit('DONE', 2000);
         });
 
+
+        if (/low|high/g.test(node.game.roomType)) {
+            document.getElementById('mainframe').contentWindow.document.getElementById('lowhigh').style.display = 'inline';
+
+        } else {
+            document.getElementById('mainframe').contentWindow.document.getElementById(node.game.roomType).style.display = 'inline';
+        }
+
     });
+
+
+    // W.loadFrame('/meritocracy/html/instructions.html', function() {
+
+    //     var b = W.getElementById('read');
+    //     b.onclick = function() {
+    //         node.done();
+    //     };
+
+    //     ////////////////////////////////////////////////
+    //     // nodeGame hint:
+    //     //
+    //     // node.env executes a function conditionally to
+    //     // the environments defined in the configuration
+    //     // options.
+    //     //
+    //     // If the 'auto' environment was set to TRUE,
+    //     // then the function will be executed
+    //     //
+    //     ////////////////////////////////////////////////
+    //     node.env('auto', function() {
+
+    //         //////////////////////////////////////////////
+    //         // nodeGame hint:
+    //         //
+    //         // Emit an event randomly in a time interval
+    //         // from 0 to 2000 milliseconds
+    //         //
+    //         //////////////////////////////////////////////
+    //         node.timer.randomEmit('DONE', 2000);
+    //     });
+
+    // });
     console.log('Instructions');
 }
 
@@ -543,8 +585,8 @@ var REPEAT = 20;
 stager.init()
 // .next('precache')
 // .next('instructions')
-.next('quiz')
-// .repeat('meritocracy', REPEAT)
+// .next('quiz')
+.repeat('meritocracy', REPEAT)
 // .next('questionnaire')
 // .next('endgame')
 .gameover();

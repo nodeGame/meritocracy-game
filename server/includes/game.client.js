@@ -584,8 +584,8 @@ var REPEAT = 20;
 
 stager.init()
 // .next('precache')
-// .next('instructions')
-// .next('quiz')
+.next('instructions')
+.next('quiz')
 .repeat('meritocracy', REPEAT)
 // .next('questionnaire')
 // .next('endgame')

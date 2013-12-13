@@ -29,12 +29,7 @@ var mdb = ngdb.getLayer('MongoDB', {
     dbName: 'meritocracy_db',
     collectionName: 'user_data'
 });
-mdb.connect(function() {
-
-debugger;
-            mdb.store({groupValues: 1});
-    
-});
+mdb.connect(function() {});
 // debugger;
 // 
 var ngc = require('nodegame-client');
@@ -427,8 +422,8 @@ debugger;
     stager
         .init()
     // .next('precache')
-    // .next('instructions')
-    // .next('quiz')
+    .next('instructions')
+    .next('quiz')
     .repeat('meritocracy', REPEAT)
     // .next('questionnaire')
     // .next('endgame')

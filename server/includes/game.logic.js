@@ -187,7 +187,7 @@ module.exports = function(node, channel, gameRoom) {
                 groupContrib,
                 groupDemand,
                 group,
-                groupValues = [],
+                groupValues = {},
                 currentStage = node.game.getCurrentGameStage(),
                 previousStage = node.game.plot.previous(currentStage);
 
@@ -204,26 +204,9 @@ module.exports = function(node, channel, gameRoom) {
                 }, 0) / 4;
                 groupValues[name] = [groupContrib, groupDemand];
             }
-function getAllFromDB() {
-    var ngdb = new Database(module.parent.exports.node);
-    var mdb = ngdb.getLayer('MongoDB', {
-        dbName: 'meritocracy_db',
-        collectionName: 'user_data',
-    });
-    mdb.connect(function() {
-        var db = mdb.getDbObj();
-        var collection = db.collection('user_data');
-        collection.find().toArray(function(err, data) {
-            console.log('data in user_data:', data[0]);
-            console.log();
-            sets = data;
-            mdb.disconnect();
-        });
-    });
-}
-debugger;
-            mdb.store({groupValues: groupValues});
-            debugger;
+            mdb.store({
+                groupValues: groupValues
+            });
 
             node.game.pl.each(function(p) {
                 var groupsBars = [],
@@ -256,6 +239,20 @@ debugger;
                 }
                 payoff = (2 * groupsBars[0][0]) / allPlayers.length;
                 node.game.memory.add('payoff', payoff, p.id, currentStage);
+                mdb.store({
+                    player: p,
+                    playerValues: {
+                        contribution: playersBars[0][0],
+                        demand: playersBars[0][1],
+                    },
+                    payoff: payoff,
+                    stage: currentStage,
+                    sameGroupValues: playersBars,
+                    groupAverage: groupsBars[0],
+                    timeup: ?????,
+                    playersRanking: ?????,
+                    playersRankingNoise: ????,
+                });
                 finalBars = [playersBars, groupsBars, payoff];
                 node.say('results', p.id, finalBars);
             });
@@ -421,10 +418,10 @@ debugger;
     // Here we define the sequence of stages of the game (game plot).
     stager
         .init()
-    // .next('precache')
-    .next('instructions')
-    .next('quiz')
-    .repeat('meritocracy', REPEAT)
+        // .next('precache')
+        // .next('instructions')
+        // .next('quiz')
+        .repeat('meritocracy', REPEAT)
     // .next('questionnaire')
     // .next('endgame')
     .gameover();

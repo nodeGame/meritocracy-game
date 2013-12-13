@@ -167,8 +167,8 @@ function precache() {
     W.preCache([
         '/meritocracy/html/instructions.html',
         '/meritocracy/html/quiz.html',
-        //'/meritocracy/html/bidder.html',  // these two are cached by following
-        //'/meritocracy/html/resp.html',    // loadFrame calls (for demonstration)
+        // '/meritocracy/html/bidder.html',  // these two are cached by following
+        // '/meritocracy/html/resp.html',    // loadFrame calls (for demonstration)
         '/meritocracy/html/postgame.html',
         '/meritocracy/html/ended.html'
     ], function() {
@@ -583,10 +583,10 @@ stager.addStage({
 var REPEAT = 20;
 
 stager.init()
-// .next('precache')
-.next('instructions')
-.next('quiz')
-.repeat('meritocracy', REPEAT)
+    // .next('precache')
+    // .next('instructions')
+    // .next('quiz')
+    .repeat('meritocracy', REPEAT)
 // .next('questionnaire')
 // .next('endgame')
 .gameover();

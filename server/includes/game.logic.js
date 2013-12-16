@@ -66,6 +66,29 @@ module.exports = function(node, channel, gameRoom) {
         }
     });
 
+    function savePlayerValues(p, playersBars, payoff, currentStage, groupsBars, groupValues, timeup, ranking, noiseRanking) {
+        var rank = ranking.indexOf(p.id),
+            noiseRank;
+        mdb.store({
+            player: p.id,
+            gorup: p.group,
+            contribution: playersBars[0][0],
+            demand: playersBars[0][1],
+            payoff: payoff,
+            stage: currentStage,
+            sameGroupValues: playersBars,
+            groupAverage: groupsBars[0],
+            groupValues: groupValues,
+            timeup: timeup,
+            rank: rank,
+            noiseRank: noiseRank,
+            playersRanking: ranking,
+            playersRankingNoise: noiseRanking,
+            nodename: node.nodename,
+            condition: node.game.roomType,
+        });
+    }
+
     function doMatch() {
         var g, bidder, respondent, data_b, data_r;
 
@@ -182,31 +205,57 @@ module.exports = function(node, channel, gameRoom) {
     // Game Types Objects
 
     node.game.blackbox = {
-        sendResults: function() {
-            var name,
-                groupContrib,
-                groupDemand,
+        getGroupValues: function(receivedData) {
+            var groupValues = {},
+                averageContribution,
+                averageDemand,
                 group,
-                groupValues = {},
-                currentStage = node.game.getCurrentGameStage(),
-                previousStage = node.game.plot.previous(currentStage);
+                name,
+                groupContrib,
+                groupDemand;
 
-            var receivedData = node.game.memory.select('stage', '=', previousStage).execute();
+            averageContribution = function(pv, cv) {
+                return pv + cv.value.contribution;
+            };
+
+            averageDemand = function(pv, cv) {
+                return pv + cv.value.demand;
+            };
 
             for (name in node.game.groupNames) {
                 name = node.game.groupNames[name];
                 group = receivedData.select('group', '=', name).execute().fetch();
-                groupContrib = group.reduce(function(pv, cv) {
-                    return pv + cv.value.contribution;
-                }, 0) / 4;
-                groupDemand = group.reduce(function(pv, cv) {
-                    return pv + cv.value.demand;
-                }, 0) / 4;
+                groupContrib = group.reduce(averageContribution, 0) / 4;
+                groupDemand = group.reduce(averageDemand, 0) / 4;
                 groupValues[name] = [groupContrib, groupDemand];
             }
-            mdb.store({
-                groupValues: groupValues
-            });
+        },
+
+        sortContribution: function(o1, o2) {
+            if (o1.value.contribution > o2.value.contribution) {
+                return 1;
+            }
+            if (o1.value.contribution < o2.value.contribution) {
+                return 2;
+            }
+            return 0;
+        },
+
+        sendResults: function() {
+            var groupValues,
+                currentStage = node.game.getCurrentGameStage(),
+                previousStage = node.game.plot.previous(currentStage),
+                ranking,
+                noiseRanking;
+
+            var receivedData = node.game.memory.select('stage', '=', previousStage).execute();
+
+            receivedData.globalComparator = this.sortContribution;
+
+            ranking = receivedData.reverse().fetchValues('player').player;
+            noiseRanking = ranking;
+
+            groupValues = this.getGroupValues(receivedData);
 
             node.game.pl.each(function(p) {
                 var groupsBars = [],
@@ -216,9 +265,11 @@ module.exports = function(node, channel, gameRoom) {
                     allPlayers,
                     group,
                     otherGroups,
-                    payoff;
+                    payoff,
+                    timeup;
 
                 player = receivedData.select('player', '=', p.id).execute().first();
+                timeup = player.value.isTimeOut;
                 player = [player.value.contribution, player.value.demand];
                 allPlayers = receivedData.select('group', '=', p.group).execute().fetch();
                 playersBars.push(player);
@@ -239,20 +290,9 @@ module.exports = function(node, channel, gameRoom) {
                 }
                 payoff = (2 * groupsBars[0][0]) / allPlayers.length;
                 node.game.memory.add('payoff', payoff, p.id, currentStage);
-                mdb.store({
-                    player: p,
-                    playerValues: {
-                        contribution: playersBars[0][0],
-                        demand: playersBars[0][1],
-                    },
-                    payoff: payoff,
-                    stage: currentStage,
-                    sameGroupValues: playersBars,
-                    groupAverage: groupsBars[0],
-                    timeup: ?????,
-                    playersRanking: ?????,
-                    playersRankingNoise: ????,
-                });
+                debugger;
+                savePlayerValues(p, playersBars, payoff, currentStage, groupsBars, groupValues, timeup, ranking, noiseRanking);
+                debugger;
                 finalBars = [playersBars, groupsBars, payoff];
                 node.say('results', p.id, finalBars);
             });
@@ -260,9 +300,7 @@ module.exports = function(node, channel, gameRoom) {
     };
 
     node.game.random = {
-        sendResults: function() {
-
-        },
+        sendResults: function() {},
     };
     node.game.endo = {
         sendResults: function() {
@@ -418,10 +456,10 @@ module.exports = function(node, channel, gameRoom) {
     // Here we define the sequence of stages of the game (game plot).
     stager
         .init()
-        // .next('precache')
-        // .next('instructions')
-        // .next('quiz')
-        .repeat('meritocracy', REPEAT)
+    // .next('precache')
+    // .next('instructions')
+    // .next('quiz')
+    .repeat('meritocracy', REPEAT)
     // .next('questionnaire')
     // .next('endgame')
     .gameover();

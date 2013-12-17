@@ -325,16 +325,6 @@ module.exports = function(node, channel, gameRoom) {
             return groupValues;
         },
 
-        sortContribution: function(o1, o2) {
-            if (o1.value.contribution > o2.value.contribution) {
-                return 1;
-            }
-            if (o1.value.contribution < o2.value.contribution) {
-                return 2;
-            }
-            return 0;
-        },
-
         getPayoff: function(groupsBars, allPlayers, currentStage, p) {
             var payoff = (2 * groupsBars[0][0]) / allPlayers.length;
             node.game.memory.add('payoff', payoff, p.id, currentStage);
@@ -351,9 +341,7 @@ module.exports = function(node, channel, gameRoom) {
 
             var receivedData = node.game.memory.select('stage', '=', previousStage).execute();
 
-            receivedData.globalComparator = this.sortContribution;
-
-            ranking = receivedData.reverse().fetchValues('player').player;
+            ranking = receivedData.sort('value.contribution').reverse().fetchValues('player').player;
             noiseRanking = ranking;
 
             groupValues = this.getGroupValues(receivedData);
@@ -403,8 +391,6 @@ module.exports = function(node, channel, gameRoom) {
     node.game.random = {
         getGroupValues: node.game.blackbox.getGroupValues,
 
-        sortContribution: node.game.blackbox.sortContribution,
-
         getPayoff: node.game.blackbox.getPayoff,
 
         sendResults: function() {
@@ -417,9 +403,7 @@ module.exports = function(node, channel, gameRoom) {
 
             var receivedData = node.game.memory.select('stage', '=', previousStage).execute();
 
-            receivedData.globalComparator = this.sortContribution;
-
-            ranking = receivedData.reverse().fetchValues('player').player;
+            ranking = receivedData.sort('value.contribution').reverse().fetchValues('player').player;
             noiseRanking = ranking;
 
             groupValues = this.getGroupValues(receivedData);
@@ -469,8 +453,6 @@ module.exports = function(node, channel, gameRoom) {
     node.game.endo = {
         getGroupValues: node.game.blackbox.getGroupValues,
 
-        sortContribution: node.game.blackbox.sortContribution,
-
         getPayoff: node.game.blackbox.getPayoff,
 
         sendResults: function() {
@@ -483,9 +465,7 @@ module.exports = function(node, channel, gameRoom) {
 
             var receivedData = node.game.memory.select('stage', '=', previousStage).execute();
 
-            receivedData.globalComparator = this.sortContribution;
-
-            ranking = receivedData.reverse().fetchValues('player').player;
+            ranking = receivedData.sort('value.contribution').reverse().fetchValues('player').player;
             noiseRanking = ranking;
 
             groupValues = this.getGroupValues(receivedData);
@@ -539,19 +519,7 @@ module.exports = function(node, channel, gameRoom) {
 
         getGroupValues: node.game.blackbox.getGroupValues,
 
-        sortContribution: node.game.blackbox.sortContribution,
-
         getPayoff: node.game.blackbox.getPayoff,
-
-        sortNoiseContribution: function(o1, o2) {
-            if (o1.value.noiseContribution > o2.value.noiseContribution) {
-                return 1;
-            }
-            if (o1.value.noiseContribution < o2.value.noiseContribution) {
-                return 2;
-            }
-            return 0;
-        },
 
         sendResults: function() {
             var groupValues,
@@ -564,16 +532,14 @@ module.exports = function(node, channel, gameRoom) {
 
             var receivedData = node.game.memory.select('stage', '=', previousStage).execute();
 
-            receivedData.globalComparator = this.sortContribution;
-            ranking = receivedData.reverse().fetchValues('player').player;
+            ranking = receivedData.sort('value.contribution').reverse().fetchValues('player').player;
 
             groupValues = this.getGroupValues(receivedData);
 
             for (iter in receivedData.db){
                 receivedData.db[iter].value.noiseContribution = receivedData.db[iter].value.contribution + this.normDistrNoise();
             }
-            receivedData.globalComparator = this.sortNoiseContribution;
-            noiseRanking = receivedData.reverse().fetchValues('player').player;
+            noiseRanking = receivedData.sort('value.noiseContribution').reverse().fetchValues('player').player;
 
             node.game.pl.each(function(p) {
                 var groupsBars = [],
@@ -624,19 +590,7 @@ module.exports = function(node, channel, gameRoom) {
 
         getGroupValues: node.game.blackbox.getGroupValues,
 
-        sortContribution: node.game.blackbox.sortContribution,
-
         getPayoff: node.game.blackbox.getPayoff,
-
-        sortNoiseContribution: function(o1, o2) {
-            if (o1.value.noiseContribution > o2.value.noiseContribution) {
-                return 1;
-            }
-            if (o1.value.noiseContribution < o2.value.noiseContribution) {
-                return 2;
-            }
-            return 0;
-        },
 
         sendResults: function() {
             var groupValues,
@@ -650,16 +604,14 @@ module.exports = function(node, channel, gameRoom) {
             debugger;
             var receivedData = node.game.memory.select('stage', '=', previousStage).execute();
 
-            receivedData.globalComparator = this.sortContribution;
-            ranking = receivedData.reverse().fetchValues('player').player;
+            ranking = receivedData.sort('value.contribution').reverse().fetchValues('player').player;
 
             groupValues = this.getGroupValues(receivedData);
 
             for (iter in receivedData.db){
                 receivedData.db[iter].value.noiseContribution = receivedData.db[iter].value.contribution + this.normDistrNoise();
             }
-            receivedData.globalComparator = this.sortNoiseContribution;
-            noiseRanking = receivedData.reverse().fetchValues('player').player;
+            noiseRanking = receivedData.sort('value.noiseContribution').reverse().fetchValues('player').player;
 
             node.game.pl.each(function(p) {
                 var groupsBars = [],
@@ -706,8 +658,6 @@ module.exports = function(node, channel, gameRoom) {
     node.game.exo_perfect = {
         getGroupValues: node.game.blackbox.getGroupValues,
 
-        sortContribution: node.game.blackbox.sortContribution,
-
         getPayoff: node.game.blackbox.getPayoff,
 
         sendResults: function() {
@@ -720,9 +670,7 @@ module.exports = function(node, channel, gameRoom) {
 
             var receivedData = node.game.memory.select('stage', '=', previousStage).execute();
 
-            receivedData.globalComparator = this.sortContribution;
-
-            ranking = receivedData.reverse().fetchValues('player').player;
+            ranking = receivedData.sort('value.contribution').reverse().fetchValues('player').player;
             noiseRanking = ranking;
 
             groupValues = this.getGroupValues(receivedData);

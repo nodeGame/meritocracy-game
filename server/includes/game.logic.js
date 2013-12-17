@@ -46,6 +46,10 @@ var counter = 0;
 var MIN_PLAYERS = 2;
 var PLAYING_STAGE = 2;
 
+// Parameteres to generate noise:
+var NOISE_HIGH = 4;
+var NOISE_LOW = 2;
+
 // Here we export the logic function. Receives three parameters:
 // - node: the NodeGameClient object.
 // - channel: the ServerChannel object in which this logic will be running.
@@ -66,15 +70,20 @@ module.exports = function(node, channel, gameRoom) {
         }
     });
 
-    function savePlayerValues(p, playersBars, payoff, currentStage, groupsBars, groupValues, timeup, ranking, noiseRanking) {
+    function savePlayerValues(p, playersBars, payoff, currentStage, groupsBars, groupValues, timeup, ranking, noiseRanking, noiseContribution) {
         var rank = ranking.indexOf(p.id) + 1,
             noiseRank = noiseRanking.indexOf(p.id) + 1;
+        //     change payoff and add return
+        if (typeof noiseContribution === 'undefined') {
+            noiseContribution = playersBars[0][0];
+        }
         mdb.store({
             player: p.id,
             group: p.group,
             contribution: playersBars[0][0],
             demand: playersBars[0][1],
             payoff: payoff,
+            groupReturn: payoff + playersBars[0][0],
             stage: currentStage,
             sameGroupValues: playersBars,
             groupAverage: groupsBars[0],
@@ -82,6 +91,7 @@ module.exports = function(node, channel, gameRoom) {
             timeup: timeup,
             rank: rank,
             noiseRank: noiseRank,
+            noiseContribution: noiseContribution,
             playersRanking: ranking,
             playersRankingNoise: noiseRanking,
             nodename: node.nodename,
@@ -325,8 +335,9 @@ module.exports = function(node, channel, gameRoom) {
             return groupValues;
         },
 
-        getPayoff: function(groupsBars, allPlayers, currentStage, p) {
+        getPayoff: function(groupsBars, allPlayers, currentStage, p, pContrib) {
             var payoff = (2 * groupsBars[0][0]) / allPlayers.length;
+            payoff = payoff - pContrib;
             node.game.memory.add('payoff', payoff, p.id, currentStage);
             return payoff;
         },
@@ -359,6 +370,7 @@ module.exports = function(node, channel, gameRoom) {
 
                 player = receivedData.select('player', '=', p.id).execute().first();
                 timeup = player.value.isTimeOut;
+                noiseContribution = player.value.
                 player = [player.value.contribution, player.value.demand];
 
                 allPlayers = receivedData.select('group', '=', p.group).execute().fetch();
@@ -380,7 +392,7 @@ module.exports = function(node, channel, gameRoom) {
                     }
                 }
 
-                payoff = self.getPayoff(groupsBars, allPlayers, currentStage, p);
+                payoff = self.getPayoff(groupsBars, allPlayers, currentStage, p, playersBars[0][0]);
                 savePlayerValues(p, playersBars, payoff, currentStage, groupsBars, groupValues, timeup, ranking, noiseRanking);
                 finalBars = [playersBars, groupsBars, payoff];
                 node.say('results', p.id, finalBars);
@@ -442,7 +454,7 @@ module.exports = function(node, channel, gameRoom) {
                     }
                 }
 
-                payoff = self.getPayoff(groupsBars, allPlayers, currentStage, p);
+                payoff = self.getPayoff(groupsBars, allPlayers, currentStage, p, playersBars[0][0]);
                 savePlayerValues(p, playersBars, payoff, currentStage, groupsBars, groupValues, timeup, ranking, noiseRanking);
                 finalBars = [playersBars, groupsBars, payoff];
                 node.say('results', p.id, finalBars);
@@ -504,7 +516,7 @@ module.exports = function(node, channel, gameRoom) {
                     }
                 }
 
-                payoff = self.getPayoff(groupsBars, allPlayers, currentStage, p);
+                payoff = self.getPayoff(groupsBars, allPlayers, currentStage, p, playersBars[0][0]);
                 savePlayerValues(p, playersBars, payoff, currentStage, groupsBars, groupValues, timeup, ranking, noiseRanking);
                 finalBars = [playersBars, groupsBars, payoff];
                 node.say('results', p.id, finalBars);
@@ -514,7 +526,7 @@ module.exports = function(node, channel, gameRoom) {
 
     node.game.exo_high = {
         normDistrNoise: function() {
-            return gauss(2, 3);
+            return gauss(0, NOISE_HIGH);
         },
 
         getGroupValues: node.game.blackbox.getGroupValues,
@@ -550,10 +562,12 @@ module.exports = function(node, channel, gameRoom) {
                     group,
                     otherGroups,
                     payoff,
-                    timeup;
+                    timeup,
+                    noiseContribution;
 
                 player = receivedData.select('player', '=', p.id).execute().first();
                 timeup = player.value.isTimeOut;
+                noiseContribution = player.value.noiseContribution;
                 player = [player.value.contribution, player.value.demand];
 
                 allPlayers = receivedData.select('group', '=', p.group).execute().fetch();
@@ -575,8 +589,8 @@ module.exports = function(node, channel, gameRoom) {
                     }
                 }
 
-                payoff = self.getPayoff(groupsBars, allPlayers, currentStage, p);
-                savePlayerValues(p, playersBars, payoff, currentStage, groupsBars, groupValues, timeup, ranking, noiseRanking);
+                payoff = self.getPayoff(groupsBars, allPlayers, currentStage, p, playersBars[0][0]);
+                savePlayerValues(p, playersBars, payoff, currentStage, groupsBars, groupValues, timeup, ranking, noiseRanking, noiseContribution);
                 finalBars = [playersBars, groupsBars, payoff];
                 node.say('results', p.id, finalBars);
             });
@@ -585,7 +599,7 @@ module.exports = function(node, channel, gameRoom) {
 
     node.game.exo_low = {
         normDistrNoise: function() {
-            return gauss(1, 3);
+            return gauss(0, NOISE_LOW);
         },
 
         getGroupValues: node.game.blackbox.getGroupValues,
@@ -606,12 +620,15 @@ module.exports = function(node, channel, gameRoom) {
 
             ranking = receivedData.sort('value.contribution').reverse().fetchValues('player').player;
 
-            groupValues = this.getGroupValues(receivedData);
-
             for (iter in receivedData.db){
                 receivedData.db[iter].value.noiseContribution = receivedData.db[iter].value.contribution + this.normDistrNoise();
             }
             noiseRanking = receivedData.sort('value.noiseContribution').reverse().fetchValues('player').player;
+
+
+// GROUP MATCHING instead of in step BID
+
+            groupValues = this.getGroupValues(receivedData);
 
             node.game.pl.each(function(p) {
                 var groupsBars = [],
@@ -622,10 +639,12 @@ module.exports = function(node, channel, gameRoom) {
                     group,
                     otherGroups,
                     payoff,
-                    timeup;
+                    timeup,
+                    noiseContribution;
 
                 player = receivedData.select('player', '=', p.id).execute().first();
                 timeup = player.value.isTimeOut;
+                noiseContribution = player.value.noiseContribution;
                 player = [player.value.contribution, player.value.demand];
 
                 allPlayers = receivedData.select('group', '=', p.group).execute().fetch();
@@ -646,9 +665,8 @@ module.exports = function(node, channel, gameRoom) {
                         groupsBars.push(groupValues[group]);
                     }
                 }
-
-                payoff = self.getPayoff(groupsBars, allPlayers, currentStage, p);
-                savePlayerValues(p, playersBars, payoff, currentStage, groupsBars, groupValues, timeup, ranking, noiseRanking);
+                payoff = self.getPayoff(groupsBars, allPlayers, currentStage, p, playersBars[0][0]);
+                savePlayerValues(p, playersBars, payoff, currentStage, groupsBars, groupValues, timeup, ranking, noiseRanking, noiseContribution);
                 finalBars = [playersBars, groupsBars, payoff];
                 node.say('results', p.id, finalBars);
             });
@@ -709,7 +727,7 @@ module.exports = function(node, channel, gameRoom) {
                     }
                 }
 
-                payoff = self.getPayoff(groupsBars, allPlayers, currentStage, p);
+                payoff = self.getPayoff(groupsBars, allPlayers, currentStage, p, playersBars[0][0]);
                 savePlayerValues(p, playersBars, payoff, currentStage, groupsBars, groupValues, timeup, ranking, noiseRanking);
                 finalBars = [playersBars, groupsBars, payoff];
                 node.say('results', p.id, finalBars);
@@ -810,8 +828,8 @@ module.exports = function(node, channel, gameRoom) {
             console.log('bid');
             var i = 0;
             node.game.pl.each(function(p) {
-                p.group = node.game.groupNames[i % 4];
-                // p.group = node.game.groupNames[0];
+                // p.group = node.game.groupNames[i % 4];
+                p.group = node.game.groupNames[0];
                 i += 1;
             });
             return true;

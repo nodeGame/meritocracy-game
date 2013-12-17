@@ -98,6 +98,11 @@ module.exports = function(node, channel, gameRoom) {
         });
     }
 
+    function shuffleArray(o) {
+        for (var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+        return o;
+    };
+
     var gauss = (function() {
         var space = null;
         return function(mu, sigma) {
@@ -349,7 +354,7 @@ module.exports = function(node, channel, gameRoom) {
                 group = Math.floor(iter / 4);
                 group = node.game.groupNames[group];
                 person = node.game.pl.select('id', '=', ranking[iter]).execute().fetch();
-                person.group = group;
+                person[0].group = group;
             }
         },
 
@@ -363,6 +368,7 @@ module.exports = function(node, channel, gameRoom) {
 
             var receivedData = node.game.memory.select('stage', '=', previousStage).execute();
             ranking = receivedData.sort('value.contribution').reverse().fetchValues('player').player;
+            this.groupMatching(ranking);
             noiseRanking = ranking;
             groupValues = this.getGroupValues(receivedData);
 
@@ -426,6 +432,7 @@ module.exports = function(node, channel, gameRoom) {
             var receivedData = node.game.memory.select('stage', '=', previousStage).execute();
             ranking = receivedData.sort('value.contribution').reverse().fetchValues('player').player;
             noiseRanking = ranking;
+            this.groupMatching(shuffleArray(ranking));
             groupValues = this.getGroupValues(receivedData);
 
             node.game.pl.each(function(p) {
@@ -488,6 +495,7 @@ module.exports = function(node, channel, gameRoom) {
             var receivedData = node.game.memory.select('stage', '=', previousStage).execute();
 
             ranking = receivedData.sort('value.contribution').reverse().fetchValues('player').player;
+            this.groupMatching(ranking);
             noiseRanking = ranking;
 
             groupValues = this.getGroupValues(receivedData);
@@ -564,6 +572,7 @@ module.exports = function(node, channel, gameRoom) {
                 receivedData.db[iter].value.noiseContribution = receivedData.db[iter].value.contribution + this.normDistrNoise();
             }
             noiseRanking = receivedData.sort('value.noiseContribution').reverse().fetchValues('player').player;
+            this.groupMatching(noiseRanking);
 
             node.game.pl.each(function(p) {
                 var groupsBars = [],
@@ -638,10 +647,7 @@ module.exports = function(node, channel, gameRoom) {
                 receivedData.db[iter].value.noiseContribution = receivedData.db[iter].value.contribution + this.normDistrNoise();
             }
             noiseRanking = receivedData.sort('value.noiseContribution').reverse().fetchValues('player').player;
-
-            // GROUP MATCHING instead of in step BID
             this.groupMatching(noiseRanking);
-
             groupValues = this.getGroupValues(receivedData);
 
             node.game.pl.each(function(p) {
@@ -706,7 +712,7 @@ module.exports = function(node, channel, gameRoom) {
 
             ranking = receivedData.sort('value.contribution').reverse().fetchValues('player').player;
             noiseRanking = ranking;
-
+            this.groupMatching(ranking);
             groupValues = this.getGroupValues(receivedData);
 
             node.game.pl.each(function(p) {
@@ -842,12 +848,6 @@ module.exports = function(node, channel, gameRoom) {
         id: 'bid',
         cb: function() {
             console.log('bid');
-            // var i = 0;
-            // node.game.pl.each(function(p) {
-            //     // p.group = node.game.groupNames[i % 4];
-            //     p.group = node.game.groupNames[0];
-            //     i += 1;
-            // });
             return true;
         },
         minPlayers: [2, notEnoughPlayers]

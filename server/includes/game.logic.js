@@ -114,7 +114,6 @@ module.exports = function(node, channel, gameRoom) {
                 space = V * M;
                 result = mu + sigma * M * U;
             } else {
-                console.log(space);
                 result = space * sigma + mu;
                 space = null;
             }
@@ -534,11 +533,25 @@ module.exports = function(node, channel, gameRoom) {
     };
 
     node.game.exo_high = {
+        normDistrNoise: function() {
+            return gauss(2, 3);
+        },
+
         getGroupValues: node.game.blackbox.getGroupValues,
 
         sortContribution: node.game.blackbox.sortContribution,
 
         getPayoff: node.game.blackbox.getPayoff,
+
+        sortNoiseContribution: function(o1, o2) {
+            if (o1.value.noiseContribution > o2.value.noiseContribution) {
+                return 1;
+            }
+            if (o1.value.noiseContribution < o2.value.noiseContribution) {
+                return 2;
+            }
+            return 0;
+        },
 
         sendResults: function() {
             var groupValues,
@@ -546,16 +559,21 @@ module.exports = function(node, channel, gameRoom) {
                 previousStage = node.game.plot.previous(currentStage),
                 ranking,
                 noiseRanking,
-                self = this;
+                self = this,
+                iter;
 
             var receivedData = node.game.memory.select('stage', '=', previousStage).execute();
 
             receivedData.globalComparator = this.sortContribution;
-
             ranking = receivedData.reverse().fetchValues('player').player;
-            noiseRanking = ranking;
 
             groupValues = this.getGroupValues(receivedData);
+
+            for (iter in receivedData.db){
+                receivedData.db[iter].value.noiseContribution = receivedData.db[iter].value.contribution + this.normDistrNoise();
+            }
+            receivedData.globalComparator = this.sortNoiseContribution;
+            noiseRanking = receivedData.reverse().fetchValues('player').player;
 
             node.game.pl.each(function(p) {
                 var groupsBars = [],
@@ -600,11 +618,25 @@ module.exports = function(node, channel, gameRoom) {
     };
 
     node.game.exo_low = {
+        normDistrNoise: function() {
+            return gauss(1, 3);
+        },
+
         getGroupValues: node.game.blackbox.getGroupValues,
 
         sortContribution: node.game.blackbox.sortContribution,
 
         getPayoff: node.game.blackbox.getPayoff,
+
+        sortNoiseContribution: function(o1, o2) {
+            if (o1.value.noiseContribution > o2.value.noiseContribution) {
+                return 1;
+            }
+            if (o1.value.noiseContribution < o2.value.noiseContribution) {
+                return 2;
+            }
+            return 0;
+        },
 
         sendResults: function() {
             var groupValues,
@@ -612,16 +644,22 @@ module.exports = function(node, channel, gameRoom) {
                 previousStage = node.game.plot.previous(currentStage),
                 ranking,
                 noiseRanking,
-                self = this;
+                self = this,
+                iter;
 
+            debugger;
             var receivedData = node.game.memory.select('stage', '=', previousStage).execute();
 
             receivedData.globalComparator = this.sortContribution;
-
             ranking = receivedData.reverse().fetchValues('player').player;
-            noiseRanking = ranking;
 
             groupValues = this.getGroupValues(receivedData);
+
+            for (iter in receivedData.db){
+                receivedData.db[iter].value.noiseContribution = receivedData.db[iter].value.contribution + this.normDistrNoise();
+            }
+            receivedData.globalComparator = this.sortNoiseContribution;
+            noiseRanking = receivedData.reverse().fetchValues('player').player;
 
             node.game.pl.each(function(p) {
                 var groupsBars = [],

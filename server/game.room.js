@@ -47,7 +47,7 @@ module.exports = function(node, channel, room) {
     //The function to decide in which game room the users are going to be
     var decideRoom = function(arrayRoom) {
         //Implement logic here.
-        return arrayRoom[1];
+        return arrayRoom[3];
     };
 
     // Creating the array for association between room and their logic

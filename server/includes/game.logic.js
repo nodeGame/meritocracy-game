@@ -303,7 +303,7 @@ module.exports = function(node, channel, gameRoom) {
         channel.destroyGameRoom(gameRoom.name);
     });
 
-    // Game Types Objects
+    // Game Types Objects definition
 
     node.game.blackbox = {
         getGroupValues: function(receivedData) {
@@ -335,10 +335,22 @@ module.exports = function(node, channel, gameRoom) {
         },
 
         getPayoff: function(groupsBars, allPlayers, currentStage, p, pContrib) {
-            var payoff = (groupsBars[0][0] * allPlayers.length)/2;
+            var payoff = (groupsBars[0][0] * allPlayers.length) / 2;
             payoff = payoff - pContrib;
             node.game.memory.add('payoff', payoff, p.id, currentStage);
             return payoff;
+        },
+
+        groupMatching: function(ranking) {
+            var iter,
+                group,
+                person;
+            for (iter = 0; iter < ranking.length; iter++) {
+                group = Math.floor(iter / 4);
+                group = node.game.groupNames[group];
+                person = node.game.pl.select('id', '=', ranking[iter]).execute().fetch();
+                person.group = group;
+            }
         },
 
         sendResults: function() {
@@ -350,10 +362,8 @@ module.exports = function(node, channel, gameRoom) {
                 self = this;
 
             var receivedData = node.game.memory.select('stage', '=', previousStage).execute();
-
             ranking = receivedData.sort('value.contribution').reverse().fetchValues('player').player;
             noiseRanking = ranking;
-
             groupValues = this.getGroupValues(receivedData);
 
             node.game.pl.each(function(p) {
@@ -412,10 +422,8 @@ module.exports = function(node, channel, gameRoom) {
                 self = this;
 
             var receivedData = node.game.memory.select('stage', '=', previousStage).execute();
-
             ranking = receivedData.sort('value.contribution').reverse().fetchValues('player').player;
             noiseRanking = ranking;
-
             groupValues = this.getGroupValues(receivedData);
 
             node.game.pl.each(function(p) {
@@ -546,7 +554,7 @@ module.exports = function(node, channel, gameRoom) {
 
             groupValues = this.getGroupValues(receivedData);
 
-            for (iter in receivedData.db){
+            for (iter in receivedData.db) {
                 receivedData.db[iter].value.noiseContribution = receivedData.db[iter].value.contribution + this.normDistrNoise();
             }
             noiseRanking = receivedData.sort('value.noiseContribution').reverse().fetchValues('player').player;
@@ -618,12 +626,13 @@ module.exports = function(node, channel, gameRoom) {
 
             ranking = receivedData.sort('value.contribution').reverse().fetchValues('player').player;
 
-            for (iter in receivedData.db){
+            for (iter in receivedData.db) {
                 receivedData.db[iter].value.noiseContribution = receivedData.db[iter].value.contribution + this.normDistrNoise();
             }
             noiseRanking = receivedData.sort('value.noiseContribution').reverse().fetchValues('player').player;
 
-// GROUP MATCHING instead of in step BID
+            // GROUP MATCHING instead of in step BID
+            this.groupMatching(noiseRanking);
 
             groupValues = this.getGroupValues(receivedData);
 
@@ -821,16 +830,16 @@ module.exports = function(node, channel, gameRoom) {
 
     stager.addStep({
         id: 'bid',
-        cb: function() {
-            console.log('bid');
-            var i = 0;
-            node.game.pl.each(function(p) {
-                // p.group = node.game.groupNames[i % 4];
-                p.group = node.game.groupNames[0];
-                i += 1;
-            });
-            return true;
-        },
+        // cb: function() {
+        //     console.log('bid');
+        //     var i = 0;
+        //     node.game.pl.each(function(p) {
+        //         // p.group = node.game.groupNames[i % 4];
+        //         p.group = node.game.groupNames[0];
+        //         i += 1;
+        //     });
+        //     return true;
+        // },
         minPlayers: [2, notEnoughPlayers]
     });
 

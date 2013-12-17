@@ -67,8 +67,8 @@ module.exports = function(node, channel, gameRoom) {
     });
 
     function savePlayerValues(p, playersBars, payoff, currentStage, groupsBars, groupValues, timeup, ranking, noiseRanking) {
-        var rank = ranking.indexOf(p.id),
-            noiseRank = noiseRanking.indexOf(p.id);
+        var rank = ranking.indexOf(p.id) + 1,
+            noiseRank = noiseRanking.indexOf(p.id) + 1;
         mdb.store({
             player: p.id,
             group: p.group,

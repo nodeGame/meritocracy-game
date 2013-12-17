@@ -73,7 +73,6 @@ module.exports = function(node, channel, gameRoom) {
     function savePlayerValues(p, playersBars, payoff, currentStage, groupsBars, groupValues, timeup, ranking, noiseRanking, noiseContribution) {
         var rank = ranking.indexOf(p.id) + 1,
             noiseRank = noiseRanking.indexOf(p.id) + 1;
-        //     change payoff and add return
         if (typeof noiseContribution === 'undefined') {
             noiseContribution = playersBars[0][0];
         }
@@ -327,8 +326,8 @@ module.exports = function(node, channel, gameRoom) {
             for (name in node.game.groupNames) {
                 name = node.game.groupNames[name];
                 group = receivedData.select('group', '=', name).execute().fetch();
-                groupContrib = group.reduce(averageContribution, 0) / 4;
-                groupDemand = group.reduce(averageDemand, 0) / 4;
+                groupContrib = group.reduce(averageContribution, 0) / group.length;
+                groupDemand = group.reduce(averageDemand, 0) / group.length;
                 groupValues[name] = [groupContrib, groupDemand];
             }
 
@@ -336,7 +335,7 @@ module.exports = function(node, channel, gameRoom) {
         },
 
         getPayoff: function(groupsBars, allPlayers, currentStage, p, pContrib) {
-            var payoff = (2 * groupsBars[0][0]) / allPlayers.length;
+            var payoff = (groupsBars[0][0] * allPlayers.length)/2;
             payoff = payoff - pContrib;
             node.game.memory.add('payoff', payoff, p.id, currentStage);
             return payoff;
@@ -370,7 +369,6 @@ module.exports = function(node, channel, gameRoom) {
 
                 player = receivedData.select('player', '=', p.id).execute().first();
                 timeup = player.value.isTimeOut;
-                noiseContribution = player.value.
                 player = [player.value.contribution, player.value.demand];
 
                 allPlayers = receivedData.select('group', '=', p.group).execute().fetch();
@@ -624,7 +622,6 @@ module.exports = function(node, channel, gameRoom) {
                 receivedData.db[iter].value.noiseContribution = receivedData.db[iter].value.contribution + this.normDistrNoise();
             }
             noiseRanking = receivedData.sort('value.noiseContribution').reverse().fetchValues('player').player;
-
 
 // GROUP MATCHING instead of in step BID
 

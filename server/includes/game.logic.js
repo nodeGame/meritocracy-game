@@ -411,6 +411,8 @@ module.exports = function(node, channel, gameRoom) {
     node.game.random = {
         getGroupValues: node.game.blackbox.getGroupValues,
 
+        groupMatching: node.game.blackbox.groupMatching,
+
         getPayoff: node.game.blackbox.getPayoff,
 
         sendResults: function() {
@@ -470,6 +472,8 @@ module.exports = function(node, channel, gameRoom) {
 
     node.game.endo = {
         getGroupValues: node.game.blackbox.getGroupValues,
+
+        groupMatching: node.game.blackbox.groupMatching,
 
         getPayoff: node.game.blackbox.getPayoff,
 
@@ -534,6 +538,8 @@ module.exports = function(node, channel, gameRoom) {
         normDistrNoise: function() {
             return gauss(0, NOISE_HIGH);
         },
+
+        groupMatching: node.game.blackbox.groupMatching,
 
         getGroupValues: node.game.blackbox.getGroupValues,
 
@@ -608,6 +614,8 @@ module.exports = function(node, channel, gameRoom) {
             return gauss(0, NOISE_LOW);
         },
 
+        groupMatching: node.game.blackbox.groupMatching,
+
         getGroupValues: node.game.blackbox.getGroupValues,
 
         getPayoff: node.game.blackbox.getPayoff,
@@ -681,6 +689,8 @@ module.exports = function(node, channel, gameRoom) {
 
     node.game.exo_perfect = {
         getGroupValues: node.game.blackbox.getGroupValues,
+
+        groupMatching: node.game.blackbox.groupMatching,
 
         getPayoff: node.game.blackbox.getPayoff,
 
@@ -830,16 +840,16 @@ module.exports = function(node, channel, gameRoom) {
 
     stager.addStep({
         id: 'bid',
-        // cb: function() {
-        //     console.log('bid');
-        //     var i = 0;
-        //     node.game.pl.each(function(p) {
-        //         // p.group = node.game.groupNames[i % 4];
-        //         p.group = node.game.groupNames[0];
-        //         i += 1;
-        //     });
-        //     return true;
-        // },
+        cb: function() {
+            console.log('bid');
+            // var i = 0;
+            // node.game.pl.each(function(p) {
+            //     // p.group = node.game.groupNames[i % 4];
+            //     p.group = node.game.groupNames[0];
+            //     i += 1;
+            // });
+            return true;
+        },
         minPlayers: [2, notEnoughPlayers]
     });
 

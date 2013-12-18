@@ -91,7 +91,7 @@ var bars = function() {
             bar = jQuery(bar);
             if (color) {
                 bar.find('.ui-progressbar-value').css('background', color);
-                bar.find('.ui-widget-header').css('border', 'solid ' + shadeColor(color, 30) + ' 1px');
+                bar.find('.ui-widget-header').css('border', 'solid ' + shadeColor(color, 80) + ' 1px');
             }
 
             bar.find('.ui-progressbar-value').css('margin', '0px');
@@ -100,7 +100,7 @@ var bars = function() {
                 margin: '0px',
                 position: 'relative',
                 height: '20px',
-                marginBottom: '10px',
+                marginBottom: '1px',
             });
             bar.find('.progress-label').css({
                 position: 'absolute',

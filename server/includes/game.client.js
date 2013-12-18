@@ -50,7 +50,7 @@ stager.setOnInit(function() {
                 [0],
                 [0],
                 [0],
-                [4]
+                [0]
             ],
             [
                 [0],
@@ -59,7 +59,7 @@ stager.setOnInit(function() {
                 [0]
             ],
         ],
-        0,
+        [0, 2],
         '',
     ];
 
@@ -100,7 +100,7 @@ stager.setOnInit(function() {
     });
 
     this.updateResults = function() {
-        var group, player, iter, jter, div;
+        var group, player, iter, jter, div, subdiv, color;
         debugger;
         var values = node.game.oldContribDemand,
             showDemand = !! values[0][0][0][1];
@@ -113,11 +113,15 @@ stager.setOnInit(function() {
             div = document.createElement('div');
             div.classList.add('groupContainer');
             for (jter = 0; jter < group.length; jter++) {
+                color = values[1][0] === iter && values[1][1] === jter ? ['#00FF00', '#32CD32'] : [undefined, undefined];
                 player = group[jter];
-                node.game.bars.createBar(div, player[0] * 10, undefined, 'Contribution - ' + player[0]);
+                subdiv = document.createElement('div');
+                node.game.bars.createBar(subdiv, player[0] * 10, color[0], player[0]);
                 if (showDemand) {
-                    node.game.bars.createBar(div, player[1] * 10, undefined, 'Demand - ' + player[1]);
+                    subdiv.classList.add('playerContainer');
+                    node.game.bars.createBar(subdiv, player[1] * 10, color[1], player[1]);
                 }
+                div.appendChild(subdiv);
             }
             barsDiv.appendChild(div);
         }

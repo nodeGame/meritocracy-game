@@ -1,7 +1,7 @@
 var bars = function() {
     'use strict';
 
-    var testThreshold = 5;
+    var testThreshold = 2;
 
     return {
 
@@ -77,11 +77,17 @@ var bars = function() {
             // TODO: Add coloration of the bar !
 
             // Display optimizations
-            margin = value > 0 ? (100 - value + testThreshold) : 90;
+            margin = value > 0 ? (100 - value + testThreshold) : 82;
             bar = jQuery(bar);
-            bar.find('.ui-progressbar .ui-progressbar-value').css('margin', '0px');
-            bar.find('.ui-progressbar').css({
+            if (color) {
+                bar.find('.ui-progressbar-value').css('background', color);
+                bar.find('.ui-widget-header').css('border', 'solid ' + color + ' 3px');
+            }
+
+            bar.find('.ui-progressbar-value').css('margin', '0px');
+            bar.css({
                 display: 'inline - block',
+                margin: '0px',
                 position: 'relative',
                 height: '20px',
                 marginBottom: '10px',

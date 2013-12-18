@@ -19,7 +19,7 @@ var bars = function() {
             } else {
                 location.append('<tr><td><h4>Your Group</h4></td><td><div class="progContrib"><div class="progress-label">Contribution - <span class="contribVal"></span></div></div><br /><div class="progDemand"><div class="progress-label">Demand - <span class="demandVal"></span></div></div></td></tr>');
             }
-            for (iter=1; iter < values.length; iter++) {
+            for (iter = 1; iter < values.length; iter++) {
                 location.append('<tr><td><h4>' + letter + letters[iter] + '</h4></td><td><div class="progContrib"><div class="progress-label">Contribution - <span class="contribVal"></span></div></div><br /><div class="progDemand"><div class="progress-label">Demand - <span class="demandVal"></span></div></div></td></tr>');
             }
             var progDemand = location.find('.progDemand'),
@@ -48,6 +48,46 @@ var bars = function() {
             jQuery('.ui-progressbar .ui-progressbar-value').css('margin', '0px');
             progDemand.css('margin-bottom', '20px');
             progContrib.css('margin-top', '20px');
+        },
+
+        /**
+         * Appends a single bar.
+         * @param  {string} location HTML element where the bar is created.
+         * @param  {int} value    percent of how much the bar should be filled
+         * @param  {string} color    color of the bar (Hex or string)
+         * @param  {string} text     text to put inside the bar
+         */
+        createBar: function(location, value, color, text) {
+            var bar = document.createElement('div');
+            if (!location || !value) {
+                return false;
+            }
+            if (value < 1 && value !== 0) {
+                value = value * 100;
+            }
+            text = text || '';
+            bar.innerHTML = '<div class="progress-label">' + text + '</div>';
+            jQuery(bar).progressbar({
+                value: value
+            });
+            location.appendChild(bar);
+
+            // Display optimizations
+            location = jQuery(location);
+            location.find('.ui-progressbar .ui-progressbar-value').css('margin', '0px');
+            location.find('.ui-progressbar').css({
+                display: 'inline - block',
+                position: 'relative',
+                height: '20px',
+                marginBottom: '10px',
+            });
+            location.find('.progress-label').css({
+                position: 'absolute',
+                left: '45%',
+                fontWeight: 'bold',
+                fontSize: '10pt',
+            });
+            return true;
         },
     };
 };

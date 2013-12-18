@@ -113,7 +113,7 @@ stager.setOnInit(function() {
             div = document.createElement('div');
             div.classList.add('groupContainer');
             for (jter = 0; jter < group.length; jter++) {
-                color = values[1][0] === iter && values[1][1] === jter ? ['#00FF00', '#32CD32'] : [undefined, undefined];
+                color = values[1][0] === iter && values[1][1] === jter ? ['#00FF00', '#32CD32'] : [undefined, '#9932CC'];
                 player = group[jter];
                 subdiv = document.createElement('div');
                 node.game.bars.createBar(subdiv, player[0] * 10, color[0], player[0]);

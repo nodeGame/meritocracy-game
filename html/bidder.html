@@ -29,6 +29,9 @@
   .mini-pushed-down {
     margin-top:10px;
   }
+  .big-pushed-down {
+    margin-top:90%;
+  }
   #divErrors {
     color:red;
   }
@@ -61,20 +64,11 @@
       Sorry, you need to enable javascript in order to play this game.
     </noscript>
 
-    <div class="container pushed-down">
+    <div class="container pushed-down" class="row">
 
-      <div id="results">
-        <h3 align="center">Your Payoff: <strong><span id="payoff">1000</span></strong></h3>
-
-        <div id="barsResults" class="row col-md-10 col-md-offset-1">
-        </div>
-
-      </div>
-      <hr width="75%" />
-
-      <div id="header" class="">
+      <div id="header" class="col-md-3 col-md-offset-1 big-pushed-down">
         <div class="row">
-          <h3 class="col-md-6" align="right">Your Contribution</h3>
+          <h4 class="col-md-6" align="right">Your Contribution</h4>
           <div class="col-md-6 mini-pushed-down">
             <input type="number" min="0" max="10" id="contribution" class="col-md-2 mini-pushed-down" />
             <h4 class="col-md-3">
@@ -86,7 +80,7 @@
         </div>
 
         <div class="row">
-          <h3 class="col-md-6" align="right">Your Demand</h3>
+          <h4 class="col-md-6" align="right">Your Demand</h4>
           <div class="col-md-6 mini-pushed-down">
             <input type="number" min="0" max="10" id="demand" class="col-md-2 mini-pushed-down" />
             <h4 class="col-md-3">
@@ -98,6 +92,17 @@
         </div>
 
       </div>
+
+      <div id="results"  class="col-md-8">
+        <h3 align="left" class="col-md-offset-1">Your Payoff: <strong><span id="payoff">1000</span></strong></h3>
+
+        <div id="barsResults" class="col-md-offset-1">
+        </div>
+
+      </div>
+      <hr width="75%" />
+
+
       <br />
       <div id="divErrors" class="col-md-12"></div>
       <br />
@@ -113,9 +118,9 @@
   // values=[[0, 0], [0, 0], [0, 0], [0, 0]];
   // bars.init(groupTable, values, 'P');
   // bars.init(othersTable, values, 'G');
-  // div = document.getElementById('barsResults');
-  // for (var i=100; i > 0; i -=10) {
-  //   bars.createBar(div, 0, undefined, 'asdfasdf')
-  // }
+  div = document.getElementById('barsResults');
+  for (var i=100; i > 0; i -=10) {
+    bars.createBar(div, 0, undefined, 'asdfasdf')
+  }
   </script>
 </body>

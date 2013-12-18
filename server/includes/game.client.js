@@ -34,18 +34,33 @@ stager.setOnInit(function() {
     var waitingForPlayers;
     node.game.oldContribDemand = [
         [
-            ['', ''],
-            ['', ''],
-            ['', ''],
-            ['', '']
+            [
+                [0],
+                [0],
+                [0],
+                [0]
+            ],
+            [
+                [0],
+                [0],
+                [0],
+                [0]
+            ],
+            [
+                [0],
+                [0],
+                [0],
+                [4]
+            ],
+            [
+                [0],
+                [0],
+                [0],
+                [0]
+            ],
         ],
-        [
-            ['', ''],
-            ['', ''],
-            ['', ''],
-            ['', '']
-        ],
-        ''
+        0,
+        '',
     ];
 
     // Change so that roomtype is set as decided in game.room
@@ -84,7 +99,30 @@ stager.setOnInit(function() {
         node.done();
     });
 
-
+    this.updateResults = function() {
+        var group, player, iter, jter, div;
+        debugger;
+        var values = node.game.oldContribDemand,
+            showDemand = !! values[0][0][0][1];
+        var barsDiv = document.getElementById('mainframe').contentWindow.document.getElementById('barsResults'),
+            payoffSpan = document.getElementById('mainframe').contentWindow.document.getElementById('payoff');
+        node.game.bars = document.getElementById('mainframe').contentWindow.bars;
+        barsDiv.innerHTML = '';
+        for (iter = 0; iter < values[0].length; iter++) {
+            group = values[0][iter];
+            div = document.createElement('div');
+            div.classList.add('groupContainer');
+            for (jter = 0; jter < group.length; jter++) {
+                player = group[jter];
+                node.game.bars.createBar(div, player[0] * 10, undefined, 'Contribution - ' + player[0]);
+                if (showDemand) {
+                    node.game.bars.createBar(div, player[1] * 10, undefined, 'Demand - ' + player[1]);
+                }
+            }
+            barsDiv.appendChild(div);
+        }
+        payoffSpan.innerHTML = values[2];
+    };
 
     node.on.data('results', function(values) {
         console.log('Received results.');
@@ -93,13 +131,7 @@ stager.setOnInit(function() {
         W.getElementById('submitOffer').disabled = '';
         W.getElementById('divErrors').style.display = 'none';
         // W.getElementById('results').style.visibility = 'visible';
-        var groupTable = document.getElementById('mainframe').contentWindow.document.getElementById('groupTable'),
-            othersTable = document.getElementById('mainframe').contentWindow.document.getElementById('othersTable'),
-            payoffSpan = document.getElementById('mainframe').contentWindow.document.getElementById('payoff');
-        node.game.bars = document.getElementById('mainframe').contentWindow.bars;
-        node.game.bars.init(groupTable, values[0], 'P');
-        node.game.bars.init(othersTable, values[1], 'G');
-        payoffSpan.innerHTML = values[2];
+        this.updateResults();
         W.getElementById('demand').style.border = 'none';
         W.getElementById('contribution').style.border = 'none';
         W.getElementById('demand').readOnly = true;
@@ -331,12 +363,7 @@ function meritocracy() {
     //
     /////////////////////////////////////////////
     W.loadFrame('/meritocracy/html/bidder.html', function() {
-
-        var groupTable = document.getElementById('mainframe').contentWindow.document.getElementById('groupTable'),
-            othersTable = document.getElementById('mainframe').contentWindow.document.getElementById('othersTable');
-        node.game.bars = document.getElementById('mainframe').contentWindow.bars;
-        node.game.bars.init(groupTable, node.game.oldContribDemand[0], 'P');
-        node.game.bars.init(othersTable, node.game.oldContribDemand[1], 'G');
+        that.updateResults();
         document.getElementById('mainframe').contentWindow.document.getElementById('demand').value = ''; //parseInt(node.game.oldContribDemand[0][0][1]) === NaN ? 0 : parseInt(node.game.oldContribDemand) ;
         document.getElementById('mainframe').contentWindow.document.getElementById('contribution').value = ''; //parseInt(node.game.oldContribDemand[0][0][0]) === NaN ? 0 : parseInt(node.game.oldContribDemand) ;
         document.getElementById('mainframe').contentWindow.document.getElementById('payoff').innerHTML = node.game.oldContribDemand[2];
@@ -583,10 +610,10 @@ stager.addStage({
 var REPEAT = 20;
 
 stager.init()
-    // .next('precache')
-    // .next('instructions')
-    // .next('quiz')
-    .repeat('meritocracy', REPEAT)
+// .next('precache')
+// .next('instructions')
+// .next('quiz')
+.repeat('meritocracy', REPEAT)
 // .next('questionnaire')
 // .next('endgame')
 .gameover();

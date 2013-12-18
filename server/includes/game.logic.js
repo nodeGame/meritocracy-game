@@ -688,7 +688,37 @@ module.exports = function(node, channel, gameRoom) {
                 payoff = self.getPayoff(groupsBars, allPlayers, currentStage, p, playersBars[0][0]);
                 savePlayerValues(p, playersBars, payoff, currentStage, groupsBars, groupValues, timeup, ranking, noiseRanking, noiseContribution);
                 finalBars = [playersBars, groupsBars, payoff];
-                node.say('results', p.id, finalBars);
+                var test = [
+                    [
+                        [
+                            [1],
+                            [2],
+                            [3],
+                            [4]
+                        ],
+                        [
+                            [1],
+                            [6],
+                            [3],
+                            [4]
+                        ],
+                        [
+                            [1],
+                            [2],
+                            [7],
+                            [4]
+                        ],
+                        [
+                            [1],
+                            [2],
+                            [3],
+                            [8]
+                        ],
+                    ],
+                    2,
+                    -3.5,
+                ];
+                node.say('results', p.id, test);
             });
         },
     };

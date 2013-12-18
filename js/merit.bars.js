@@ -1,6 +1,8 @@
 var bars = function() {
     'use strict';
 
+    var testThreshold = 5;
+
     return {
 
         /**
@@ -58,11 +60,11 @@ var bars = function() {
          * @param  {string} text     text to put inside the bar
          */
         createBar: function(location, value, color, text) {
-            var bar = document.createElement('div');
-            if (!location || !value) {
+            var margin, bar = document.createElement('div');
+            if (!location || typeof value === 'undefined') {
                 return false;
             }
-            if (value < 1 && value !== 0) {
+            if (value < 1) {
                 value = value * 100;
             }
             text = text || '';
@@ -72,18 +74,21 @@ var bars = function() {
             });
             location.appendChild(bar);
 
+            // TODO: Add coloration of the bar !
+
             // Display optimizations
-            location = jQuery(location);
-            location.find('.ui-progressbar .ui-progressbar-value').css('margin', '0px');
-            location.find('.ui-progressbar').css({
+            margin = value > 0 ? (100 - value + testThreshold) : 90;
+            bar = jQuery(bar);
+            bar.find('.ui-progressbar .ui-progressbar-value').css('margin', '0px');
+            bar.find('.ui-progressbar').css({
                 display: 'inline - block',
                 position: 'relative',
                 height: '20px',
                 marginBottom: '10px',
             });
-            location.find('.progress-label').css({
+            bar.find('.progress-label').css({
                 position: 'absolute',
-                left: '45%',
+                right: margin + '%',
                 fontWeight: 'bold',
                 fontSize: '10pt',
             });

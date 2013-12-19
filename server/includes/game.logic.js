@@ -350,6 +350,7 @@ module.exports = function(node, channel, gameRoom) {
             }, 0);
             payoff = payoff/2;
             payoff = INIT_NB_COINS - group[position[1]][0] + payoff;
+            node.game.memory.add('payoff', payoff, p.id, currentStage);
             return payoff;
         },
 

@@ -866,19 +866,19 @@ module.exports = function(node, channel, gameRoom) {
     stager.addStage({
         id: 'precache',
         cb: precache,
-        minPlayers: [2, notEnoughPlayers]
+        minPlayers: [16, notEnoughPlayers]
     });
 
     stager.addStage({
         id: 'instructions',
         cb: instructions,
-        minPlayers: [2, notEnoughPlayers]
+        minPlayers: [16, notEnoughPlayers]
     });
 
     stager.addStage({
         id: 'quiz',
         cb: quiz,
-        minPlayers: [2, notEnoughPlayers]
+        minPlayers: [16, notEnoughPlayers]
     });
 
     stager.addStep({
@@ -887,7 +887,7 @@ module.exports = function(node, channel, gameRoom) {
             console.log('bid');
             return true;
         },
-        minPlayers: [2, notEnoughPlayers]
+        minPlayers: [16, notEnoughPlayers]
     });
 
     stager.addStep({
@@ -896,7 +896,7 @@ module.exports = function(node, channel, gameRoom) {
             // Get values for each group
             node.game[node.game.roomType].sendResults();
         },
-        minPlayers: [2, notEnoughPlayers]
+        minPlayers: [16, notEnoughPlayers]
     });
 
     stager.addStage({

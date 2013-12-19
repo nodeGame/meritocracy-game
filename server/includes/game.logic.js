@@ -636,7 +636,9 @@ module.exports = function(node, channel, gameRoom) {
                 ranking,
                 noiseRanking,
                 self = this,
-                iter;
+                iter,
+                groups,
+                temp;
 
             debugger;
             var receivedData = node.game.memory.select('stage', '=', previousStage).execute();
@@ -646,9 +648,16 @@ module.exports = function(node, channel, gameRoom) {
             for (iter in receivedData.db) {
                 receivedData.db[iter].value.noiseContribution = receivedData.db[iter].value.contribution + this.normDistrNoise();
             }
-            noiseRanking = receivedData.sort('value.noiseContribution').reverse().fetchValues('player').player;
+            noiseRanking = receivedData.sort('value.noiseContribution').reverse().fetchValues(['player', 'value']);
+            groups = noiseRanking.value.contribution;
+            noiseRanking = noiseRanking.player;
+            for (iter = 0; iter < groups.length/4; iter++) {
+                temp[iter] = groups.slice(4*iter, 4*iter + 4);
+            }
+            groups = temp;
             this.groupMatching(noiseRanking);
             groupValues = this.getGroupValues(receivedData);
+
 
             node.game.pl.each(function(p) {
                 var groupsBars = [],
@@ -660,7 +669,8 @@ module.exports = function(node, channel, gameRoom) {
                     otherGroups,
                     payoff,
                     timeup,
-                    noiseContribution;
+                    noiseContribution,
+                    position = [];
 
                 player = receivedData.select('player', '=', p.id).execute().first();
                 timeup = player.value.isTimeOut;
@@ -685,40 +695,13 @@ module.exports = function(node, channel, gameRoom) {
                         groupsBars.push(groupValues[group]);
                     }
                 }
+                position[0] = Math.floor(ranking.indexOf(p.id) / 4);
+                position[1] = ranking.indexOf(p.id)%4;
                 payoff = self.getPayoff(groupsBars, allPlayers, currentStage, p, playersBars[0][0]);
                 savePlayerValues(p, playersBars, payoff, currentStage, groupsBars, groupValues, timeup, ranking, noiseRanking, noiseContribution);
-                finalBars = [playersBars, groupsBars, payoff];
-                var test = [
-                    [
-                        [
-                            [1, 3],
-                            [2, 3],
-                            [3, 3],
-                            [4, 3]
-                        ],
-                        [
-                            [1, 5],
-                            [6, 5],
-                            [3, 5],
-                            [4, 5]
-                        ],
-                        [
-                            [1, 1+1],
-                            [2, 2+1],
-                            [7, 7+1],
-                            [4, 4+1]
-                        ],
-                        [
-                            [1, 1],
-                            [2, 2],
-                            [3, 3],
-                            [8, 8]
-                        ],
-                    ],
-                    [2, 1],
-                    -3.5,
-                ];
-                node.say('results', p.id, test);
+                
+                finalBars = [groups, position, payoff];
+                node.say('results', p.id, finalBars);
             });
         },
     };

@@ -32,6 +32,7 @@ game.globals = {};
 stager.setOnInit(function() {
     var that = this;
     var waitingForPlayers;
+    var INIT_NB_COINS = 10;
     node.game.oldContribDemand = [
         [
             [
@@ -100,8 +101,7 @@ stager.setOnInit(function() {
     });
 
     this.updateResults = function() {
-        var group, player, iter, jter, div, subdiv, color;
-        debugger;
+        var group, player, iter, jter, div, subdiv, color, save;
         var values = node.game.oldContribDemand,
             showDemand = !! values[0][0][0][1];
         var barsDiv = document.getElementById('mainframe').contentWindow.document.getElementById('barsResults'),
@@ -125,7 +125,8 @@ stager.setOnInit(function() {
             }
             barsDiv.appendChild(div);
         }
-        payoffSpan.innerHTML = values[2];
+        save = INIT_NB_COINS - values[0][values[1][0]][values[1][1]][0];
+        payoffSpan.innerHTML = save + ' + ' + (+values[2] - save) + ' = ' + values[2];
     };
 
     node.on.data('results', function(values) {
@@ -403,28 +404,31 @@ function meritocracy() {
             console.log('TIMEUP !');
             var isTimeOut = false;
             var contrib = parseInt(W.getElementById('contribution').value),
-                demand = parseInt(W.getElementById('demand').value);
+                demand = parseInt(W.getElementById('demand').value),
+                values = node.game.oldContribDemand,
+                oldContrib = +values[0][values[1][0]][values[1][1]][0],
+                oldDemand = +values[0][values[1][0]][values[1][1]][1];
 
-            if (isNaN(contrib) || contrib == node.game.oldContribDemand[0][0][0]) {
+            if (isNaN(contrib) || contrib === oldContrib) {
                 isTimeOut = true;
                 if (isNaN(contrib) && node.game.getCurrentGameStage().round === 1) {
                     contrib = Math.round(Math.random() * 10);
                 } else if (isNaN(contrib)) {
-                    contrib = node.game.oldContribDemand[0][0][0];
+                    contrib = oldContrib;
                 }
             }
 
-            if (isNaN(demand) || demand == node.game.oldContribDemand[0][0][1]) {
+            if (isNaN(demand) || demand === oldDemand) {
                 isTimeOut = true;
                 if (isNaN(demand) && node.game.getCurrentGameStage().round === 1) {
                     demand = Math.round(Math.random() * 10);
                 } else if (isNaN(demand)) {
-                    demand = node.game.oldContribDemand[0][0][1];
+                    demand = oldDemand;
                 }
             }
 
-            contrib = that.isValidDemand(contrib) ? contrib : +node.game.oldContribDemand[0][0][0];
-            demand = that.isValidDemand(demand) ? demand : +node.game.oldContribDemand[0][0][1];
+            contrib = that.isValidDemand(contrib) ? contrib : +oldContrib;
+            demand = that.isValidDemand(demand) ? demand : +oldDemand;
 
 
             node.emit('BID_DONE', contrib, demand, isTimeOut);

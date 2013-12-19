@@ -46,9 +46,12 @@ var counter = 0;
 var MIN_PLAYERS = 2;
 var PLAYING_STAGE = 2;
 
-// Parameteres to generate noise:
+// Parameters to generate noise:
 var NOISE_HIGH = 4;
 var NOISE_LOW = 2;
+
+// Number of coins for each player at the beginning of each round
+var INIT_NB_COINS = 10;
 
 // Here we export the logic function. Receives three parameters:
 // - node: the NodeGameClient object.
@@ -339,10 +342,14 @@ module.exports = function(node, channel, gameRoom) {
             return groupValues;
         },
 
-        getPayoff: function(groupsBars, allPlayers, currentStage, p, pContrib) {
-            var payoff = (groupsBars[0][0] * allPlayers.length) / 2;
-            payoff = payoff - pContrib;
-            node.game.memory.add('payoff', payoff, p.id, currentStage);
+        getPayoff: function(groups, position) {
+            var payoff,
+                group = groups[position[0]];
+            payoff = group.reduce(function(prev, curr) {
+                return prev + curr[0];
+            }, 0);
+            payoff = payoff/2;
+            payoff = INIT_NB_COINS - group[position[1]][0] + payoff;
             return payoff;
         },
 
@@ -654,8 +661,8 @@ module.exports = function(node, channel, gameRoom) {
             });
             noiseRanking = noiseRanking.player;
             temp = [];
-            for (iter = 0; iter < groups.length/4; iter++) {
-                temp[iter] = groups.slice(4*iter, 4*iter + 4);
+            for (iter = 0; iter < groups.length / 4; iter++) {
+                temp[iter] = groups.slice(4 * iter, 4 * iter + 4);
             }
             groups = temp;
             this.groupMatching(noiseRanking);
@@ -699,10 +706,9 @@ module.exports = function(node, channel, gameRoom) {
                     }
                 }
                 position[0] = Math.floor(ranking.indexOf(p.id) / 4);
-                position[1] = ranking.indexOf(p.id)%4;
-                payoff = self.getPayoff(groupsBars, allPlayers, currentStage, p, playersBars[0][0]);
+                position[1] = ranking.indexOf(p.id) % 4;
+                payoff = self.getPayoff(groups, position);
                 savePlayerValues(p, playersBars, payoff, currentStage, groupsBars, groupValues, timeup, ranking, noiseRanking, noiseContribution);
-                debugger;
                 finalBars = [groups, position, payoff];
                 node.say('results', p.id, finalBars);
             });

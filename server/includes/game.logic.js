@@ -313,7 +313,16 @@ module.exports = function(node, channel, gameRoom) {
 
     // Game Types Objects definition
 
+    /**
+     * Main game type object from which the other will 'inherit'
+     * @type {Object}
+     */
     node.game.blackbox = {
+        /**
+         * Averages the values for a same group
+         * @param  {NDDB} receivedData Data received from clients 
+         * @return {array}              Contains average values for each group.
+         */
         getGroupValues: function(receivedData) {
             var groupValues = {},
                 averageContribution,
@@ -342,6 +351,14 @@ module.exports = function(node, channel, gameRoom) {
             return groupValues;
         },
 
+        /**
+         * Returns and saves payoff in memory
+         * @param  {array} groups       contains values for each group/player
+         * @param  {array} position     position of current player
+         * @param  {object} p            player object
+         * @param  {object} currentStage current stage
+         * @return {int}              payoff
+         */
         getPayoff: function(groups, position, p, currentStage) {
             var payoff,
                 group = groups[position[0]];
@@ -354,6 +371,12 @@ module.exports = function(node, channel, gameRoom) {
             return payoff;
         },
 
+        /**
+         * Returns position of player in ranking
+         * @param  {array} ranking contains players' ids
+         * @param  {object} p       player object
+         * @return {array}         first group, then position in group
+         */
         getPosition: function(ranking, p) {
             var position = [];
             position[0] = Math.floor(ranking.indexOf(p.id) / 4);
@@ -361,6 +384,10 @@ module.exports = function(node, channel, gameRoom) {
             return position;
         },
 
+        /**
+         * Assigns to each player a group
+         * @param  {array} ranking of players'ids
+         */
         groupMatching: function(ranking) {
             var iter,
                 group,
@@ -373,6 +400,14 @@ module.exports = function(node, channel, gameRoom) {
             }
         },
 
+        /**
+         * Returns group averages and values for players in same group.
+         * @param  {object} player       player from receivedData
+         * @param  {NDDB} receivedData Data received from client
+         * @param  {object} p            player object
+         * @param  {array} groupValues  averages of each group
+         * @return {object}              contains groupBars and playerBars
+         */
         getGroupsPlayerBars: function(player, receivedData, p, groupValues) {
             var playersBars = [],
                 groupsBars = [],
@@ -405,6 +440,11 @@ module.exports = function(node, channel, gameRoom) {
             };
         },
 
+        /**
+         * Divides a ranking array into 4 groups. NOT GROUP MATCHING
+         * @param  {array} groups contains contribution and demand of players
+         * @return {array}        contains arrays, which contains contribution
+         */
         getGroups: function(groups) {
             var iter,
                 subGroup = [];
@@ -417,6 +457,11 @@ module.exports = function(node, channel, gameRoom) {
             return subGroup;
         },
 
+        /**
+         * Create Noise on contribution. 
+         * @param  {NDDB} receivedData Received data from client
+         * @return {NDDB}              Received data, with noise field
+         */
         createNoise: function(receivedData) {
             var contrib, iter;
             for (iter in receivedData.db) {
@@ -426,6 +471,9 @@ module.exports = function(node, channel, gameRoom) {
             return receivedData;
         },
 
+        /**
+         * Send and saves received values for each player.
+         */
         emitPlayersResults: function(p, receivedData, self, groupValues, ranking, currentStage, groups, noiseRanking) {
             var groupsBars = [],
                 playersBars = [],

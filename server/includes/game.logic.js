@@ -640,7 +640,6 @@ module.exports = function(node, channel, gameRoom) {
                 groups,
                 temp;
 
-            debugger;
             var receivedData = node.game.memory.select('stage', '=', previousStage).execute();
 
             ranking = receivedData.sort('value.contribution').reverse().fetchValues('player').player;
@@ -649,8 +648,12 @@ module.exports = function(node, channel, gameRoom) {
                 receivedData.db[iter].value.noiseContribution = receivedData.db[iter].value.contribution + this.normDistrNoise();
             }
             noiseRanking = receivedData.sort('value.noiseContribution').reverse().fetchValues(['player', 'value']);
-            groups = noiseRanking.value.contribution;
+            groups = noiseRanking.value;
+            groups = groups.map(function(e) {
+                return [e.contribution];
+            });
             noiseRanking = noiseRanking.player;
+            temp = [];
             for (iter = 0; iter < groups.length/4; iter++) {
                 temp[iter] = groups.slice(4*iter, 4*iter + 4);
             }
@@ -699,7 +702,7 @@ module.exports = function(node, channel, gameRoom) {
                 position[1] = ranking.indexOf(p.id)%4;
                 payoff = self.getPayoff(groupsBars, allPlayers, currentStage, p, playersBars[0][0]);
                 savePlayerValues(p, playersBars, payoff, currentStage, groupsBars, groupValues, timeup, ranking, noiseRanking, noiseContribution);
-                
+                debugger;
                 finalBars = [groups, position, payoff];
                 node.say('results', p.id, finalBars);
             });

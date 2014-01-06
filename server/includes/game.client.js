@@ -21,6 +21,9 @@ var constants = ngc.constants;
 var stager = new Stager();
 var game = {};
 
+//Number Of required players to play the game:
+var nbRequiredPlayers = 2;
+
 module.exports = game;
 
 // GLOBALS
@@ -535,7 +538,7 @@ stager.addStage({
     // `minPlayers` triggers the execution of a callback in the case
     // the number of players (including this client) falls the below
     // the chosen threshold. Related: `maxPlayers`, and `exactPlayers`.
-    minPlayers: [16, notEnoughPlayers],
+    minPlayers: [nbRequiredPlayers, notEnoughPlayers],
     syncOnLoaded: true,
     done: clearFrame
 });
@@ -543,7 +546,7 @@ stager.addStage({
 stager.addStage({
     id: 'instructions',
     cb: instructions,
-    minPlayers: [16, notEnoughPlayers],
+    minPlayers: [nbRequiredPlayers, notEnoughPlayers],
     syncOnLoaded: true,
     timer: 600000,
     done: clearFrame
@@ -552,7 +555,7 @@ stager.addStage({
 stager.addStage({
     id: 'quiz',
     cb: quiz,
-    minPlayers: [16, notEnoughPlayers],
+    minPlayers: [nbRequiredPlayers, notEnoughPlayers],
     syncOnLoaded: true,
     // `timer` starts automatically the timer managed by the widget VisualTimer
     // if the widget is loaded. When the time is up it fires the DONE event.
@@ -589,7 +592,7 @@ stager.addStep({
 stager.addStage({
     id: 'meritocracy',
     steps: ['bid', 'results'],
-    minPlayers: [16, notEnoughPlayers],
+    minPlayers: [nbRequiredPlayers, notEnoughPlayers],
     // `syncOnLoaded` forces the clients to wait for all the others to be
     // fully loaded before releasing the control of the screen to the players.
     // This options introduces a little overhead in communications and delay

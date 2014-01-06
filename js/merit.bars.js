@@ -84,8 +84,6 @@ var bars = function() {
             });
             location.appendChild(bar);
 
-            // TODO: Add coloration of the bar !
-
             // Display optimizations
             margin = value > 0 ? (100 - value + testThreshold) : 82;
             bar = jQuery(bar);

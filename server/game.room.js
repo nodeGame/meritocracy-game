@@ -138,8 +138,8 @@ module.exports = function(node, channel, room) {
     // Event listeners registered here are valid for all the stages of the game.
     stager.setOnInit(function() {
         var counter = 0;
-        var POOL_SIZE = 16;
-        var GROUP_SIZE = 16;
+        var POOL_SIZE = 2;
+        var GROUP_SIZE = 2;
 
         // references...
         this.room = room;

@@ -46,6 +46,9 @@ var counter = 0;
 var MIN_PLAYERS = 2;
 var PLAYING_STAGE = 2;
 
+// Number of required players
+var nbRequiredPlayers = 2;
+
 // Parameters to generate noise:
 var NOISE_HIGH = 4;
 var NOISE_LOW = 2;
@@ -866,19 +869,19 @@ module.exports = function(node, channel, gameRoom) {
     stager.addStage({
         id: 'precache',
         cb: precache,
-        minPlayers: [16, notEnoughPlayers]
+        minPlayers: [nbRequiredPlayers, notEnoughPlayers]
     });
 
     stager.addStage({
         id: 'instructions',
         cb: instructions,
-        minPlayers: [16, notEnoughPlayers]
+        minPlayers: [nbRequiredPlayers, notEnoughPlayers]
     });
 
     stager.addStage({
         id: 'quiz',
         cb: quiz,
-        minPlayers: [16, notEnoughPlayers]
+        minPlayers: [nbRequiredPlayers, notEnoughPlayers]
     });
 
     stager.addStep({
@@ -887,7 +890,7 @@ module.exports = function(node, channel, gameRoom) {
             console.log('bid');
             return true;
         },
-        minPlayers: [16, notEnoughPlayers]
+        minPlayers: [nbRequiredPlayers, notEnoughPlayers]
     });
 
     stager.addStep({
@@ -896,13 +899,13 @@ module.exports = function(node, channel, gameRoom) {
             // Get values for each group
             node.game[node.game.roomType].sendResults();
         },
-        minPlayers: [16, notEnoughPlayers]
+        minPlayers: [nbRequiredPlayers, notEnoughPlayers]
     });
 
     stager.addStage({
         id: 'meritocracy',
         steps: ['bid', 'results'],
-        minPlayers: [2, notEnoughPlayers]
+        minPlayers: [nbRequiredPlayers, notEnoughPlayers]
     });
 
     stager.addStage({

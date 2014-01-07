@@ -133,6 +133,7 @@ stager.setOnInit(function() {
     };
 
     node.on.data('results', function(values) {
+        // Load the results page in the iframe, and do the following instructions:
         console.log('Received results.');
         values = values.data;
         node.game.oldContribDemand = values;
@@ -378,6 +379,13 @@ function meritocracy() {
 
         // Hides Demand if room type is not endo
         document.getElementById('mainframe').contentWindow.document.getElementById('demandBox').style.display = node.game.roomType === 'endo' ? 'block' : 'none';
+
+        // Shows the correct helper text depending on game type
+        if (node.game.roomType === 'blackbox') {
+            document.getElementById('mainframe').contentWindow.document.getElementById('other-game-type').style.display = 'none';
+        } else {
+            document.getElementById('mainframe').contentWindow.document.getElementById('blackbox-game-type').style.display = 'none';
+        }
 
         // Start the timer after an offer was received.
         options = {

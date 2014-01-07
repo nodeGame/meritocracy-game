@@ -134,23 +134,23 @@ stager.setOnInit(function() {
 
     node.on.data('results', function(values) {
         // Load the results page in the iframe, and do the following instructions:
+
         console.log('Received results.');
         values = values.data;
         node.game.oldContribDemand = values;
-        W.getElementById('submitOffer').disabled = '';
-        W.getElementById('divErrors').style.display = 'none';
-        // W.getElementById('results').style.visibility = 'visible';
-        this.updateResults();
-        W.getElementById('demand').style.border = 'none';
-        W.getElementById('contribution').style.border = 'none';
-        W.getElementById('demand').readOnly = true;
-        W.getElementById('contribution').readOnly = true;
 
-        b = W.getElementById('submitOffer');
+        W.loadFrame('/meritocracy/html/results.html', function() {
+            this.updateResults();
+            var contrib = +values[0][values[1][0]][values[1][1]][0],
+                demand = +values[0][values[1][0]][values[1][1]][1];
+            W.getElementById('yourContrib').innerHTML = contrib;
+            W.getElementById('yourDemand').innerHTML = demand;
+            b = W.getElementById('submitOffer');
+            b.onclick = function() {
+                node.done();
+            };
+        });
 
-        b.onclick = function() {
-            node.done();
-        };
     });
 
     this.randomAccept = function(offer, other) {
@@ -372,7 +372,7 @@ function meritocracy() {
     //
     /////////////////////////////////////////////
     W.loadFrame('/meritocracy/html/bidder.html', function() {
-        that.updateResults();
+        // that.updateResults();
         document.getElementById('mainframe').contentWindow.document.getElementById('demand').value = ''; //parseInt(node.game.oldContribDemand[0][0][1]) === NaN ? 0 : parseInt(node.game.oldContribDemand) ;
         document.getElementById('mainframe').contentWindow.document.getElementById('contribution').value = ''; //parseInt(node.game.oldContribDemand[0][0][0]) === NaN ? 0 : parseInt(node.game.oldContribDemand) ;
         document.getElementById('mainframe').contentWindow.document.getElementById('payoff').innerHTML = node.game.oldContribDemand[2];

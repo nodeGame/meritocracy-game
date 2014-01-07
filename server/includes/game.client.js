@@ -382,9 +382,9 @@ function meritocracy() {
 
         // Shows the correct helper text depending on game type
         if (node.game.roomType === 'blackbox') {
-            document.getElementById('mainframe').contentWindow.document.getElementById('other-game-type').style.display = 'none';
+            document.getElementById('mainframe').contentWindow.document.getElementsByClassName('other-game-type').style.display = 'none';
         } else {
-            document.getElementById('mainframe').contentWindow.document.getElementById('blackbox-game-type').style.display = 'none';
+            document.getElementById('mainframe').contentWindow.document.getElementsByClassName('blackbox-game-type').style.display = 'none';
         }
 
         // Start the timer after an offer was received.
@@ -466,7 +466,7 @@ function meritocracy() {
     }, {
         cache: {
             loadMode: 'cache',
-            storeMode: 'onStore'
+            storeMode: 'onClose'
         }
     });
 

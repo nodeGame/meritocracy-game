@@ -69,15 +69,28 @@
 
     <div class="container pushed-down">
 
-      <div id="header" class="col-md-3 col-md-offset-1 big-pushed-down">
-        <h4 class="col-md-12" align="justify">You have received 10 coins.</h4>
+      <div id="previous-round-info" class="col-md-12">
+        <h3>Previous Round</h3>
+        <p>You decided to put <strong><span id="yourPB"></span></strong> coins into your personal box.</p>
+        <p>
+          You decided to put <strong><span id="yourOldContrib"></span></strong> <span class="blackbox-game-type">coins in the blackbox. </span><span class="other-game-type"> coins in the group account.</span> and the return was <strong><span id="yourReturn"></span></strong>.
+        </p>
+        <p> Your final payoff is <strong><span id="yourPayoff"></span></strong>.</p>
+
+      </div> 
+
+      <hr size="75%" />
+
+      <div id="current-round-info" class="col-md-12">
+
+        <h4 class="col-md-12" align="center">You have received 10 coins.</h4>
         <div class="col-md-12 mini-pushed-down">
           <p>You decide to put 
             <input type="number" min="0" max="10" id="contribution" class="inline" size="3" />
-            <span id="blackbox-game-type">
+            <span class="blackbox-game-type">
               coins in the blackbox.
             </span>
-            <span id="other-game-type">
+            <span class="other-game-type">
               coins in the group account.
             </span>
           </p>
@@ -92,18 +105,13 @@
           </div>
         </div>
 
+        <br />
+        <div id="divErrors" class="col-md-12"></div>
+        <br />
+        <button align="center" class="btn btn-lg btn-primary col-md-offset-4 col-md-4" id="submitOffer">Done</button>
+
+
       </div>
-
-      <div id="results"  class="col-md-8">
-        <h3 align="left" class="col-md-offset-1">Your Payoff: <strong><span id="payoff"></span></strong></h3>
-
-      </div>
-      <br />
-
-      <br />
-      <div id="divErrors" class="col-md-12"></div>
-      <br />
-      <button align="center" class="btn btn-lg btn-primary col-md-offset-4 col-md-4" id="submitOffer">Done</button>
     </div>
 
     <script type="text/javascript" src="../js/jquery.js"></script>

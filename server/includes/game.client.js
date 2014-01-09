@@ -134,12 +134,12 @@ stager.setOnInit(function() {
 
     node.on.data('results', function(values) {
         // Load the results page in the iframe, and do the following instructions:
-
         console.log('Received results.');
         values = values.data;
         node.game.oldContribDemand = values;
 
         W.loadFrame('/meritocracy/html/results.html', function() {
+        debugger
             this.updateResults();
             var contrib = +values[0][values[1][0]][values[1][1]][0],
                 demand = +values[0][values[1][0]][values[1][1]][1];
@@ -372,7 +372,7 @@ function meritocracy() {
     //
     /////////////////////////////////////////////
     W.loadFrame('/meritocracy/html/bidder.html', function() {
-        debugger;
+        debugger
         var toHide, iter,
             values = node.game.oldContribDemand,
             oldContrib = +values[0][values[1][0]][values[1][1]][0],
@@ -384,9 +384,9 @@ function meritocracy() {
         document.getElementById('mainframe').contentWindow.document.getElementById('demand').value = '';
         document.getElementById('mainframe').contentWindow.document.getElementById('contribution').value = '';
 
-        // Hides previous round if round number 1
-        if (node.game.getCurrentGameStage().round === 1) {
-            document.getElementById('mainframe').contentWindow.document.getElementById('previous-round-info').style.display = 'none';
+        // Shows previous round if round number is not 1
+        if (node.game.getCurrentGameStage().round !== 1) {
+            document.getElementById('mainframe').contentWindow.document.getElementById('previous-round-info').style.display = 'block';
         }
 
         // Updates display for current round

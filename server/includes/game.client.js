@@ -132,27 +132,6 @@ stager.setOnInit(function() {
         payoffSpan.innerHTML = save + ' + ' + (+values[2] - save) + ' = ' + values[2];
     };
 
-    node.on.data('results', function(values) {
-        // Load the results page in the iframe, and do the following instructions:
-        console.log('Received results.');
-        values = values.data;
-        node.game.oldContribDemand = values;
-
-        W.loadFrame('/meritocracy/html/results.html', function() {
-        debugger
-            this.updateResults();
-            var contrib = +values[0][values[1][0]][values[1][1]][0],
-                demand = +values[0][values[1][0]][values[1][1]][1];
-            W.getElementById('yourContrib').innerHTML = contrib;
-            W.getElementById('yourDemand').innerHTML = demand;
-            b = W.getElementById('submitOffer');
-            b.onclick = function() {
-                node.done();
-            };
-        });
-
-    });
-
     this.randomAccept = function(offer, other) {
         var accepted = Math.round(Math.random());
         console.log('randomaccept');
@@ -321,6 +300,29 @@ function quiz() {
     }
 
     console.log('Quiz');
+}
+
+function showResults(values) {
+
+    W.loadFrame('/meritocracy/html/results.html', function() {
+        node.on.data('results', function(values) {
+                console.log('Received results.');
+                values = !! values ? values.data : node.game.oldContribDemand;
+                node.game.oldContribDemand = values;
+
+
+                debugger
+                this.updateResults();
+                var contrib = +values[0][values[1][0]][values[1][1]][0],
+                    demand = +values[0][values[1][0]][values[1][1]][1];
+                W.getElementById('yourContrib').innerHTML = contrib;
+                W.getElementById('yourDemand').innerHTML = demand;
+                b = W.getElementById('submitOffer');
+                b.onclick = function() {
+                    node.done();
+                };
+        });
+    });
 }
 
 function meritocracy() {
@@ -611,11 +613,7 @@ stager.addStep({
 
 stager.addStep({
     id: 'results',
-    cb: function() {
-        console.log('results');
-
-        return true;
-    },
+    cb: showResults,
     timer: 10000
 });
 

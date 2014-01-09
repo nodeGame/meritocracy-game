@@ -372,19 +372,22 @@ function meritocracy() {
     //
     /////////////////////////////////////////////
     W.loadFrame('/meritocracy/html/bidder.html', function() {
+        var toHide, iter;
         // that.updateResults();
-        document.getElementById('mainframe').contentWindow.document.getElementById('demand').value = ''; //parseInt(node.game.oldContribDemand[0][0][1]) === NaN ? 0 : parseInt(node.game.oldContribDemand) ;
-        document.getElementById('mainframe').contentWindow.document.getElementById('contribution').value = ''; //parseInt(node.game.oldContribDemand[0][0][0]) === NaN ? 0 : parseInt(node.game.oldContribDemand) ;
-        document.getElementById('mainframe').contentWindow.document.getElementById('payoff').innerHTML = node.game.oldContribDemand[2];
+        document.getElementById('mainframe').contentWindow.document.getElementById('demand').value = ''; //parseInt(node.game.oldContribDemand[0][0][1]) === NaN ? 0 : parseInt(node.game.oldContribDemand);
+        document.getElementById('mainframe').contentWindow.document.getElementById('contribution').value = ''; //parseInt(node.game.oldContribDemand[0][0][0]) === NaN ? 0 : parseInt(node.game.oldContribDemand);
 
         // Hides Demand if room type is not endo
         document.getElementById('mainframe').contentWindow.document.getElementById('demandBox').style.display = node.game.roomType === 'endo' ? 'block' : 'none';
 
         // Shows the correct helper text depending on game type
         if (node.game.roomType === 'blackbox') {
-            document.getElementById('mainframe').contentWindow.document.getElementsByClassName('other-game-type').style.display = 'none';
+            toHide = document.getElementById('mainframe').contentWindow.document.getElementsByClassName('other-game-type');
         } else {
-            document.getElementById('mainframe').contentWindow.document.getElementsByClassName('blackbox-game-type').style.display = 'none';
+            toHide = document.getElementById('mainframe').contentWindow.document.getElementsByClassName('blackbox-game-type');
+        }
+        for (iter = 0; iter < toHide.length; iter++) {
+            toHide[iter].style.display = 'none';
         }
 
         // Start the timer after an offer was received.

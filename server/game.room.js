@@ -165,9 +165,9 @@ module.exports = function(node, channel, room) {
             var nPlayers, i, len;
             console.log('-----------Player connected ' + p.id);
 
-            node.remoteAlert('Your code has been marked as in use. Do not ' +
-                'leave this page, otherwise you will not be ' +
-                'able to join the experiment again.', p.id);
+//            node.remoteAlert('Your code has been marked as in use. Do not ' +
+//                'leave this page, otherwise you will not be ' +
+//                'able to join the experiment again.', p.id);
 
             // PlayerList object of waiting players.
             wRoom = room.clients.player;

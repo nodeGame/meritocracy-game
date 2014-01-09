@@ -22,14 +22,7 @@
 var path = require('path');
 
 var Database = require('nodegame-db').Database;
-// Variable _node_ is shared by the requiring module
-// (game.room.js) through `channel.require` method.
-var ngdb = new Database(module.parent.exports.node);
-var mdb = ngdb.getLayer('MongoDB', {
-    dbName: 'meritocracy_db',
-    collectionName: 'user_data'
-});
-mdb.connect(function() {});
+
 // debugger;
 // 
 var ngc = require('nodegame-client');
@@ -61,6 +54,15 @@ var INIT_NB_COINS = 10;
 // - channel: the ServerChannel object in which this logic will be running.
 // - gameRoom: the GameRoom object in which this logic will be running. 
 module.exports = function(node, channel, gameRoom) {
+
+    var ngdb = new Database(node);
+    var mdb = ngdb.getLayer('MongoDB', {
+        dbName: 'meritocracy_db',
+        collectionName: 'user_data'
+    });
+
+    mdb.connect(function() {});
+    
 
     // Reads in descil-mturk configuration.
     var confPath = path.resolve(__dirname, '..', 'descil.conf.js');

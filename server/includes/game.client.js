@@ -10,9 +10,6 @@
  * ---
  */
 
-// NOTICE: for now do not call node.done() immediately in the callback.
-
-
 var ngc = module.parent.exports.ngc;
 var Stager = ngc.Stager;
 var stepRules = ngc.stepRules;
@@ -98,8 +95,8 @@ stager.setOnInit(function() {
         });
         console.log(' Your contribution: ' + contribution + '.');
         console.log(' Your demand: ' + demand + '.');
-        document.getElementById('mainframe').contentWindow.document.getElementById('demand').value = demand;
-        document.getElementById('mainframe').contentWindow.document.getElementById('contribution').value = contribution;
+        W.getElementById('demand').value = demand;
+        W.getElementById('contribution').value = contribution;
         node.done();
     });
 
@@ -107,8 +104,8 @@ stager.setOnInit(function() {
         var group, player, iter, jter, div, subdiv, color, save;
         var values = node.game.oldContribDemand,
             showDemand = !! values[0][0][0][1];
-        var barsDiv = document.getElementById('mainframe').contentWindow.document.getElementById('barsResults'),
-            payoffSpan = document.getElementById('mainframe').contentWindow.document.getElementById('payoff');
+        var barsDiv = W.getElementById('barsResults'),
+            payoffSpan = W.getElementById('payoff');
         node.game.bars = document.getElementById('mainframe').contentWindow.bars;
         barsDiv.innerHTML = '';
         for (iter = 0; iter < values[0].length; iter++) {
@@ -246,10 +243,10 @@ function instructions() {
 
 
         if (/low|high/g.test(node.game.roomType)) {
-            document.getElementById('mainframe').contentWindow.document.getElementById('lowhigh').style.display = 'inline';
+            W.getElementById('lowhigh').style.display = 'inline';
 
         } else {
-            document.getElementById('mainframe').contentWindow.document.getElementById(node.game.roomType).style.display = 'inline';
+            W.getElementById(node.game.roomType).style.display = 'inline';
         }
 
     });
@@ -310,8 +307,6 @@ function showResults(values) {
                 values = !! values ? values.data : node.game.oldContribDemand;
                 node.game.oldContribDemand = values;
 
-
-                debugger
                 this.updateResults();
                 var contrib = +values[0][values[1][0]][values[1][1]][0],
                     demand = +values[0][values[1][0]][values[1][1]][1];
@@ -346,10 +341,6 @@ function meritocracy() {
 
     var b, options, other;
 
-    // Load the meritocracy interface: waiting for the ROLE to be defined
-    //W.loadFrame('/meritocracy/html/meritocracy.html', function() {
-
-
     //////////////////////////////////////////////
     // nodeGame hint:
     //
@@ -374,7 +365,6 @@ function meritocracy() {
     //
     /////////////////////////////////////////////
     W.loadFrame('/meritocracy/html/bidder.html', function() {
-        debugger
         var toHide, iter,
             values = node.game.oldContribDemand,
             oldContrib = +values[0][values[1][0]][values[1][1]][0],
@@ -382,30 +372,40 @@ function meritocracy() {
             save = node.game.INIT_NB_COINS - oldContrib,
             groupReturn = payoff - save;
 
-        // that.updateResults();
-        document.getElementById('mainframe').contentWindow.document.getElementById('demand').value = '';
-        document.getElementById('mainframe').contentWindow.document.getElementById('contribution').value = '';
 
-        // Shows previous round if round number is not 1
+        // Re-enable input.
+        W.getElementById('submitOffer').disabled = '';
+        // Clear previous errors.
+        W.getElementById('divErrors').innerHTML = '';
+
+        // that.updateResults();
+        W.getElementById('demand').value = '';
+        W.getElementById('contribution').value = '';
+
+        // Shows previous round if round number is not 1.
         if (node.game.getCurrentGameStage().round !== 1) {
-            document.getElementById('mainframe').contentWindow.document.getElementById('previous-round-info').style.display = 'block';
+            W.getElementById('previous-round-info').style.display = 'block';
         }
 
-        // Updates display for current round
-        document.getElementById('mainframe').contentWindow.document.getElementById('yourPB').innerHTML = save;
-        document.getElementById('mainframe').contentWindow.document.getElementById('yourOldContrib').innerHTML = oldContrib;
-        document.getElementById('mainframe').contentWindow.document.getElementById('yourReturn').innerHTML = groupReturn;
-        document.getElementById('mainframe').contentWindow.document.getElementById('yourPayoff').innerHTML = payoff;
+        // Updates display for current round.
+        W.getElementById('yourPB').innerHTML = save;
+        W.getElementById('yourOldContrib').innerHTML = oldContrib;
+        W.getElementById('yourReturn').innerHTML = groupReturn;
+        W.getElementById('yourPayoff').innerHTML = payoff;
 
 
-        // Hides Demand if room type is not endo
-        document.getElementById('mainframe').contentWindow.document.getElementById('demandBox').style.display = node.game.roomType === 'endo' ? 'block' : 'none';
+        // Hides Demand if room type is not endo.
+        W.getElementById('demandBox').style.display = 
+            node.game.roomType === 'endo' ? 'block' : 'none';
 
-        // Shows the correct helper text depending on game type
+        // Shows the correct helper text depending on game type.
         if (node.game.roomType === 'blackbox') {
-            toHide = document.getElementById('mainframe').contentWindow.document.getElementsByClassName('other-game-type');
-        } else {
-            toHide = document.getElementById('mainframe').contentWindow.document.getElementsByClassName('blackbox-game-type');
+            toHide = W.getFrameDocument()
+                .getElementsByClassName('other-game-type');
+        }
+        else {
+            toHide = W.getFrameDocument()
+                .getElementsByClassName('blackbox-game-type');
         }
         for (iter = 0; iter < toHide.length; iter++) {
             toHide[iter].style.display = 'none';
@@ -415,27 +415,19 @@ function meritocracy() {
         options = {
             milliseconds: 30000,
             timeup: function() {
-                node.emit('BID_DONE', Math.floor(1 + Math.random() * 10), Math.floor(1 + Math.random() * 10),
-                    other);
+                node.emit('BID_DONE', J.randomInt(0,10), J.randomInt(0,10),
+                          other);
             }
         };
         node.game.timer.restart(options);
 
         b = W.getElementById('submitOffer');
 
-
+        // AUTOPLAY.
         node.env('auto', function() {
-
-            //////////////////////////////////////////////
-            // nodeGame hint:
-            //
-            // Execute a function randomly
-            // in a time interval between 0 and 1 second
-            //
-            //////////////////////////////////////////////
             node.timer.randomExec(function() {
-                node.emit('BID_DONE', Math.floor(1 + Math.random() * 100), Math.floor(1 + Math.random() * 100),
-                    other);
+                 node.emit('BID_DONE', J.randomInt(0,10), J.randomInt(0,10),
+                           other);
             }, 4000);
         });
 
@@ -474,14 +466,16 @@ function meritocracy() {
         });
 
         b.onclick = function() {
-            var contrib = parseInt(W.getElementById('contribution').value),
-                demand = parseInt(W.getElementById('demand').value);
+            var errorP, contrib, demand;
+            contrib = parseInt(W.getElementById('contribution').value),
+            demand = parseInt(W.getElementById('demand').value);
 
-            if (!that.isValidContribution(contrib) || !that.isValidDemand(demand)) {
-                var p = document.createElement('p');
-                p.innerText = 'Please enter a number between 0 and 10.';
-                p.textContent = 'Please enter a number between 0 and 10.';
-                W.getElementById('divErrors').appendChild(p);
+            if (!that.isValidContribution(contrib) 
+                || !that.isValidDemand(demand)) {
+
+                errorP = document.createElement('p');
+                errorP.innerHTML = 'Please enter a number between 0 and 10.';
+                W.getElementById('divErrors').appendChild(errorP);
                 return;
             }
             node.emit('BID_DONE', contrib, demand, false);
@@ -604,7 +598,6 @@ stager.addStep({
     id: 'bid',
     cb: meritocracy,
     done: clearFrame,
-    // timer: 10000
     timer: {
         milliseconds: 10000,
         timeup: 'TIMEUP'

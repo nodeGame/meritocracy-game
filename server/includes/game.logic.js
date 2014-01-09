@@ -78,7 +78,10 @@ module.exports = function(node, channel, gameRoom) {
         }
     });
 
-    function savePlayerValues(p, playersBars, payoff, currentStage, groupsBars, groupValues, timeup, ranking, noiseRanking, noiseContribution) {
+    function savePlayerValues(
+        p, playersBars, payoff, currentStage, groupsBars,
+        groupValues, timeup, ranking, noiseRanking, noiseContribution) {
+
         var rank = ranking.indexOf(p.id) + 1,
             noiseRank = noiseRanking.indexOf(p.id) + 1;
         if (typeof noiseContribution === 'undefined') {

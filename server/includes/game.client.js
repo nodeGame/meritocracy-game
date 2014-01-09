@@ -103,9 +103,9 @@ stager.setOnInit(function() {
     this.updateResults = function() {
         var group, player, iter, jter, div, subdiv, color, save;
         var values = node.game.oldContribDemand,
-            showDemand = !! values[0][0][0][1];
+        showDemand = !! values[0][0][0][1];
         var barsDiv = W.getElementById('barsResults'),
-            payoffSpan = W.getElementById('payoff');
+        payoffSpan = W.getElementById('payoff');
         node.game.bars = document.getElementById('mainframe').contentWindow.bars;
         barsDiv.innerHTML = '';
         for (iter = 0; iter < values[0].length; iter++) {
@@ -136,7 +136,8 @@ stager.setOnInit(function() {
         if (accepted) {
             node.emit('RESPONSE_DONE', 'ACCEPT', offer, other);
             W.write(' You accepted the offer.');
-        } else {
+        }
+        else {
             node.emit('RESPONSE_DONE', 'REJECT', offer, other);
             W.write(' You rejected the offer.');
         }
@@ -244,58 +245,24 @@ function instructions() {
 
         if (/low|high/g.test(node.game.roomType)) {
             W.getElementById('lowhigh').style.display = 'inline';
-
-        } else {
+        } 
+        else {
             W.getElementById(node.game.roomType).style.display = 'inline';
         }
 
     });
 
-
-    // W.loadFrame('/meritocracy/html/instructions.html', function() {
-
-    //     var b = W.getElementById('read');
-    //     b.onclick = function() {
-    //         node.done();
-    //     };
-
-    //     ////////////////////////////////////////////////
-    //     // nodeGame hint:
-    //     //
-    //     // node.env executes a function conditionally to
-    //     // the environments defined in the configuration
-    //     // options.
-    //     //
-    //     // If the 'auto' environment was set to TRUE,
-    //     // then the function will be executed
-    //     //
-    //     ////////////////////////////////////////////////
-    //     node.env('auto', function() {
-
-    //         //////////////////////////////////////////////
-    //         // nodeGame hint:
-    //         //
-    //         // Emit an event randomly in a time interval
-    //         // from 0 to 2000 milliseconds
-    //         //
-    //         //////////////////////////////////////////////
-    //         node.timer.randomEmit('DONE', 2000);
-    //     });
-
-    // });
     console.log('Instructions');
 }
 
 function quiz() {
-    var that = this;
+    var quizpage;
+    page = /low|high/g.test(node.game.roomType) ?
+        '/meritocracy/html/quiz.exo_high_low.html' :
+        '/meritocracy/html/quiz.' + node.game.roomType + '.html';
 
-    if (/low|high/g.test(node.game.roomType)) {
-        W.loadFrame('/meritocracy/html/quiz.exo_high_low.html', function() {});
-
-    } else {
-        W.loadFrame('/meritocracy/html/quiz.' + node.game.roomType + '.html', function() {});
-    }
-
+    W.loadFrame(quizpage);
+    
     console.log('Quiz');
 }
 
@@ -303,19 +270,20 @@ function showResults(values) {
 
     W.loadFrame('/meritocracy/html/results.html', function() {
         node.on.data('results', function(values) {
-                console.log('Received results.');
-                values = !! values ? values.data : node.game.oldContribDemand;
-                node.game.oldContribDemand = values;
+            var contrib;
+            console.log('Received results.');
+            values = !!values ? values.data : node.game.oldContribDemand;
+            node.game.oldContribDemand = values;
 
-                this.updateResults();
-                var contrib = +values[0][values[1][0]][values[1][1]][0],
-                    demand = +values[0][values[1][0]][values[1][1]][1];
-                W.getElementById('yourContrib').innerHTML = contrib;
-                W.getElementById('yourDemand').innerHTML = demand;
-                b = W.getElementById('submitOffer');
-                b.onclick = function() {
-                    node.done();
-                };
+            this.updateResults();
+            contrib = +values[0][values[1][0]][values[1][1]][0],
+            demand = +values[0][values[1][0]][values[1][1]][1];
+            W.getElementById('yourContrib').innerHTML = contrib;
+            W.getElementById('yourDemand').innerHTML = demand;
+            b = W.getElementById('submitOffer');
+            b.onclick = function() {
+                node.done();
+            };
         });
     });
 }
@@ -324,22 +292,7 @@ function meritocracy() {
 
     node.game.timer.stop();
 
-    //////////////////////////////////////////////
-    // nodeGame hint:
-    //
-    // var that = this;
-    //
-    // /this/ is usually a reference to node.game
-    //
-    // However, unlike in many progamming languages,
-    // in javascript the object /this/ assumes
-    // different values depending on the scope
-    // of the function where it is called.
-    //
-    /////////////////////////////////////////////
     var that = this;
-
-    var b, options, other;
 
     //////////////////////////////////////////////
     // nodeGame hint:
@@ -365,20 +318,22 @@ function meritocracy() {
     //
     /////////////////////////////////////////////
     W.loadFrame('/meritocracy/html/bidder.html', function() {
-        var toHide, iter,
-            values = node.game.oldContribDemand,
-            oldContrib = +values[0][values[1][0]][values[1][1]][0],
-            payoff = values[2],
-            save = node.game.INIT_NB_COINS - oldContrib,
-            groupReturn = payoff - save;
-
+        var toHide, iter;
+        var b, options, other;
+        var values, oldContrib, payoff, save, groupReturn;
+        
+        values = node.game.oldContribDemand,
+        oldContrib = +values[0][values[1][0]][values[1][1]][0],
+        payoff = values[2],
+        save = node.game.INIT_NB_COINS - oldContrib,
+        groupReturn = payoff - save;
 
         // Re-enable input.
         W.getElementById('submitOffer').disabled = '';
         // Clear previous errors.
         W.getElementById('divErrors').innerHTML = '';
 
-        // that.updateResults();
+        // Clear contribution and demand inputs.
         W.getElementById('demand').value = '';
         W.getElementById('contribution').value = '';
 
@@ -426,25 +381,29 @@ function meritocracy() {
         // AUTOPLAY.
         node.env('auto', function() {
             node.timer.randomExec(function() {
-                 node.emit('BID_DONE', J.randomInt(0,10), J.randomInt(0,10),
-                           other);
+                node.emit('BID_DONE', J.randomInt(0,10), J.randomInt(0,10),
+                          other);
             }, 4000);
         });
 
+        // TIMEUP.
         node.on('TIMEUP', function() {
+            var isTimeOut, contrib;
+            
             console.log('TIMEUP !');
-            var isTimeOut = false;
-            var contrib = parseInt(W.getElementById('contribution').value),
-                demand = parseInt(W.getElementById('demand').value),
-                values = node.game.oldContribDemand,
-                oldContrib = +values[0][values[1][0]][values[1][1]][0],
-                oldDemand = +values[0][values[1][0]][values[1][1]][1];
+            isTimeOut = false;
+            contrib = parseInt(W.getElementById('contribution').value),
+            demand = parseInt(W.getElementById('demand').value),
+            values = node.game.oldContribDemand,
+            oldContrib = +values[0][values[1][0]][values[1][1]][0],
+            oldDemand = +values[0][values[1][0]][values[1][1]][1];
 
             if (isNaN(contrib) || contrib === oldContrib) {
                 isTimeOut = true;
                 if (isNaN(contrib) && node.game.getCurrentGameStage().round === 1) {
                     contrib = Math.round(Math.random() * 10);
-                } else if (isNaN(contrib)) {
+                }
+                else if (isNaN(contrib)) {
                     contrib = oldContrib;
                 }
             }
@@ -453,7 +412,8 @@ function meritocracy() {
                 isTimeOut = true;
                 if (isNaN(demand) && node.game.getCurrentGameStage().round === 1) {
                     demand = Math.round(Math.random() * 10);
-                } else if (isNaN(demand)) {
+                }
+                else if (isNaN(demand)) {
                     demand = oldDemand;
                 }
             }
@@ -518,7 +478,7 @@ function clearFrame() {
 function notEnoughPlayers() {
     node.game.pause();
     W.lockFrame('The other player disconnected. We are now waiting to see if ' +
-        ' he or she reconnects. If not the game will be terminated.');
+                ' he or she reconnects. If not the game will be terminated.');
 }
 
 // Add all the stages into the stager.
@@ -649,10 +609,10 @@ stager.init()
 // .next('precache')
 // .next('instructions')
 // .next('quiz')
-.repeat('meritocracy', REPEAT)
+    .repeat('meritocracy', REPEAT)
 // .next('questionnaire')
 // .next('endgame')
-.gameover();
+    .gameover();
 
 // We serialize the game sequence before sending it.
 game.plot = stager.getState();

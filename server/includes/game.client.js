@@ -35,7 +35,7 @@ game.globals = {};
 stager.setOnInit(function() {
     var that = this;
     var waitingForPlayers;
-    var INIT_NB_COINS = 10;
+    node.game.INIT_NB_COINS = 10;
     node.game.oldContribDemand = [
         [
             [
@@ -64,7 +64,7 @@ stager.setOnInit(function() {
             ],
         ],
         [0, 2],
-        '',
+        0,
     ];
 
     // Change so that roomtype is set as decided in game.room
@@ -128,7 +128,7 @@ stager.setOnInit(function() {
             }
             barsDiv.appendChild(div);
         }
-        save = INIT_NB_COINS - values[0][values[1][0]][values[1][1]][0];
+        save = node.game.INIT_NB_COINS - values[0][values[1][0]][values[1][1]][0];
         payoffSpan.innerHTML = save + ' + ' + (+values[2] - save) + ' = ' + values[2];
     };
 
@@ -372,10 +372,29 @@ function meritocracy() {
     //
     /////////////////////////////////////////////
     W.loadFrame('/meritocracy/html/bidder.html', function() {
-        var toHide, iter;
+        debugger;
+        var toHide, iter,
+            values = node.game.oldContribDemand,
+            oldContrib = +values[0][values[1][0]][values[1][1]][0],
+            payoff = values[2],
+            save = node.game.INIT_NB_COINS - oldContrib,
+            groupReturn = payoff - save;
+
         // that.updateResults();
-        document.getElementById('mainframe').contentWindow.document.getElementById('demand').value = ''; //parseInt(node.game.oldContribDemand[0][0][1]) === NaN ? 0 : parseInt(node.game.oldContribDemand);
-        document.getElementById('mainframe').contentWindow.document.getElementById('contribution').value = ''; //parseInt(node.game.oldContribDemand[0][0][0]) === NaN ? 0 : parseInt(node.game.oldContribDemand);
+        document.getElementById('mainframe').contentWindow.document.getElementById('demand').value = '';
+        document.getElementById('mainframe').contentWindow.document.getElementById('contribution').value = '';
+
+        // Hides previous round if round number 1
+        if (node.game.getCurrentGameStage().round === 1) {
+            document.getElementById('mainframe').contentWindow.document.getElementById('previous-round-info').style.display = 'none';
+        }
+
+        // Updates display for current round
+        document.getElementById('mainframe').contentWindow.document.getElementById('yourPB').innerHTML = save;
+        document.getElementById('mainframe').contentWindow.document.getElementById('yourOldContrib').innerHTML = oldContrib;
+        document.getElementById('mainframe').contentWindow.document.getElementById('yourReturn').innerHTML = groupReturn;
+        document.getElementById('mainframe').contentWindow.document.getElementById('yourPayoff').innerHTML = payoff;
+
 
         // Hides Demand if room type is not endo
         document.getElementById('mainframe').contentWindow.document.getElementById('demandBox').style.display = node.game.roomType === 'endo' ? 'block' : 'none';

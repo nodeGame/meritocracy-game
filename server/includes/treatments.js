@@ -412,8 +412,7 @@ treatments.exo_high = {
         receivedData = this.createNoise(receivedData, NOISE_HIGH);
 
         noiseRanking = receivedData
-            .sort('value.noiseContribution')
-            .reverse()
+            .sort(sortContributions)
             .fetchValues(['player', 'value']);
         
         groups = this.getGroups(noiseRanking.value);
@@ -467,8 +466,7 @@ treatments.exo_low = {
         receivedData = this.createNoise(receivedData, NOISE_LOW);
 
         noiseRanking = receivedData
-            .sort('value.noiseContribution')
-            .reverse()
+            .sort(sortContributions)
             .fetchValues(['player', 'value']);
 
         groups = this.getGroups(noiseRanking.value);

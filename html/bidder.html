@@ -11,59 +11,49 @@
 <link rel="stylesheet" href="css/bootstrap.min.css" />
 <style type="text/css" media="screen">
   
-  /*.ui-progressbar {
-    display:inline-block;
-    position: relative;
-    height: 20px;
-    width: 320px;
-    }
-    .progress-label {
-    position:absolute;
-    left: 45%;
-    font-weight: bold;
-    font-size:10pt;
-    }*/
   .pushed-down {
       margin: 20px auto;
       max-width: 600px; 
   }
+
   .mini-pushed-down {
       margin-top:10px;
   }
+
   .big-pushed-down {
       margin-top:100px;
   }
+
   .inline {
       display:inline;
   }
+
   #divErrors {
       color:red;
   }
-  #results {
-  /*visibility:hidden;*/
-  }
+
   #submitOffer {
       margin-bottom:30px;
   }
+
   #previous-round-info {
       display:none;
   }
-  .groupContainer {
-      padding-left:10px;
-      margin-bottom: 20px;
-      margin-top: 20px;
-      border-left: thick solid #2cabec;
-      -webkit-border-radius: 15px;
-      -moz-border-radius: 15px;
-      border-radius: 15px;
+  
+  table#bid_table {
+      width: 100%;
   }
-  .playerContainer {
-      padding-left:10px;
-      border-left: thick solid #800000;
-      -webkit-border-radius: 15px;
-      -moz-border-radius: 15px;
-      border-radius: 15px;
+
+  table#bid_table td.left {
+      width: 60%;
+      padding-right: 10px;
+      vertical-align: middle;
   }
+
+  input.inline {
+      text-align: center;
+  }
+  
 </style>
 <!-- end -->
 <body>
@@ -73,26 +63,39 @@
   <div class="container pushed-down">
     
     <div id="current-round-info" class="col-md-12">
-     
-      <div class="col-md-12 mini-pushed-down">
-        <h3>Current Round</h3>
-        You have received 10 coins. 
-        <br/>        
-        <p>You decide to put in the  
-          <span class="blackbox-game-type">blackbox</span>
-          <span class="other-game-type">group account</span>
-          <input type="number" min="0" max="10" id="contribution" class="inline" size="3" />
-          coins.
-        </p>
-      </div>
       
-      <div id="demandBox">
-        <div class="col-md-12 mini-pushed-down">
-          <p>You agree to form a group with players that contributed no less than
-            <input type="number" min="0" max="10" id="demand" class="inline" size="3" />
-            <span>coins.</span>
-          </p>
-        </div>
+      <div class="col-md-12 mini-pushed-down">
+        <h3>Current Round</h3>       
+        <br/>
+        <table id="bid_table">
+          <tr>
+            <td class="left">
+              <p>You have received:</p>
+            </td>
+            <td>
+              &nbsp;&nbsp;&nbsp;&nbsp;<strong>10</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; coins.
+            </td>
+          </tr>
+          <tr>
+            <td class="left">
+              <p>You decide to put in the  
+                <span class="blackbox-game-type">blackbox:</span>
+                <span class="other-game-type">group account:</span>
+              </p>
+            </td>
+            <td>
+              <input type="number" min="0" max="10" id="contribution" class="inline" size="3" /> coins.
+            </td>
+          </tr>
+          <tr id="demandBox">
+            <td class="left">
+              <p>You agree to form a group with players that contributed no less than: </p>
+            </td>
+            <td>
+              <input type="number" min="0" max="10" id="demand" class="inline" size="3" /> coins.
+            </td>
+          </tr>
+        </table>
       </div>
       
       <br />
@@ -108,8 +111,8 @@
         <p>
           You decided to put <strong><span id="yourOldContrib"></span></strong> coins into the <span class="blackbox-game-type">blackbox</span><span class="other-game-type">group account</span> and the return was <strong><span id="yourReturn"></span></strong>.
         </p>
-        <p>
-          You agreed to form a group with players that contributed no less that <strong><span id="yourOldDemand"></span></strong>.
+        <p id="summaryPreviousDemand">
+          You agreed to form a group with players that contributed no less than <strong><span id="yourOldDemand"></span></strong>.
         <p> Your final payoff was <strong><span id="yourPayoff"></span></strong>.</p>
         
       </div> 

@@ -248,7 +248,7 @@ stager.setOnInit(function() {
     this.customizeBidPage = function(treatment) {
         // Hides Demand if room type is not endo.
         W.getElementById('demandBox').style.display = 
-            treatment === 'endo' ? 'block' : 'none';
+            treatment === 'endo' ? '' : 'none';
         
         // Shows the correct helper text depending on game type.
         if (treatment  === 'blackbox') {
@@ -288,7 +288,7 @@ stager.setOnInit(function() {
                 W.getElementById('yourOldDemand').innerHTML = oldDemand;
             }
             else {
-                W.getElementById('yourOldDemand').style.display = 'none';
+                W.getElementById('summaryPreviousDemand').style.display = 'none';
             }
         }
     };

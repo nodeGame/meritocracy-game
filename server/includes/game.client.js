@@ -109,6 +109,10 @@ stager.setOnInit(function() {
         };
     };
 
+    this.getPreviousPayoff = function() {
+        return node.game.oldContribDemand[2];
+    };
+
     // Takes in input the results of _checkInputs_ and correct eventual
     // mistakes. If in the first round a random value is chosen, otherwise
     // the previous decision is repeated. It also updates the screen.
@@ -241,6 +245,53 @@ stager.setOnInit(function() {
         return !isNaN(n) && isFinite(n) && n >= 0 && n <= 10;
     };
 
+    this.customizeBidPage = function(treatment) {
+        // Hides Demand if room type is not endo.
+        W.getElementById('demandBox').style.display = 
+            treatment === 'endo' ? 'block' : 'none';
+        
+        // Shows the correct helper text depending on game type.
+        if (treatment  === 'blackbox') {
+            toHide = W.getFrameDocument()
+                .getElementsByClassName('other-game-type');
+        }
+        else {
+            toHide = W.getFrameDocument()
+                .getElementsByClassName('blackbox-game-type');
+        }
+
+        for (iter = 0; iter < toHide.length; iter++) {
+            toHide[iter].style.display = 'none';
+        }
+    };
+
+    this.displaySummaryPrevRound = function(treatment) {
+        var oldChoice, oldContrib, oldDemand, payoff, save, groupReturn;
+        
+        oldChoice = node.game.getPreviousChoice();
+        oldContrib = oldChoice.contrib;
+        payoff = node.game.getPreviousPayoff();
+        save = node.game.INIT_NB_COINS - oldContrib;
+        groupReturn = payoff - save;
+
+        // Shows previous round if round number is not 1.
+        if (node.game.getCurrentGameStage().round !== 1) {
+            W.getElementById('previous-round-info').style.display = 'block';
+             // Updates display for current round.
+            W.getElementById('yourPB').innerHTML = save;
+            W.getElementById('yourOldContrib').innerHTML = oldContrib;
+            W.getElementById('yourReturn').innerHTML = groupReturn;
+            W.getElementById('yourPayoff').innerHTML = payoff;
+            
+            if (treatment === 'endo') {
+                W.getElementById('yourOldDemand').innerHTML = oldDemand;
+            }
+            else {
+                W.getElementById('yourOldDemand').style.display = 'none';
+            }
+        }
+    };
+
 });
 
 stager.setOnGameOver(function() {
@@ -358,15 +409,12 @@ function bid() {
     W.loadFrame('/meritocracy/html/bidder.html', function() {
         var toHide, iter;
         var b, options, other;
-        var contrib, demand;
-        var values, oldContrib, payoff, save, groupReturn;
+        var treatment;
         
-        values = node.game.oldContribDemand;
-        oldContrib = +values[0][values[1][0]][values[1][1]][0];
-        payoff = values[2];
-        save = node.game.INIT_NB_COINS - oldContrib;
-        groupReturn = payoff - save;
+        treatment = node.env('roomType');
 
+        node.game.displaySummaryPrevRound(treatment);
+        
         // Re-enable input.
         W.getElementById('submitOffer').disabled = '';
         // Clear previous errors.
@@ -376,34 +424,8 @@ function bid() {
         W.getElementById('demand').value = '';
         W.getElementById('contribution').value = '';
 
-        // Shows previous round if round number is not 1.
-        if (node.game.getCurrentGameStage().round !== 1) {
-            W.getElementById('previous-round-info').style.display = 'block';
-        }
-
-        // Updates display for current round.
-        W.getElementById('yourPB').innerHTML = save;
-        W.getElementById('yourOldContrib').innerHTML = oldContrib;
-        W.getElementById('yourReturn').innerHTML = groupReturn;
-        W.getElementById('yourPayoff').innerHTML = payoff;
-
-
-        // Hides Demand if room type is not endo.
-        W.getElementById('demandBox').style.display = 
-            node.game.roomType === 'endo' ? 'block' : 'none';
-
-        // Shows the correct helper text depending on game type.
-        if (node.game.roomType === 'blackbox') {
-            toHide = W.getFrameDocument()
-                .getElementsByClassName('other-game-type');
-        }
-        else {
-            toHide = W.getFrameDocument()
-                .getElementsByClassName('blackbox-game-type');
-        }
-        for (iter = 0; iter < toHide.length; iter++) {
-            toHide[iter].style.display = 'none';
-        }
+        // Customize the page for the different treatments.
+        node.game.customizeBidPage(treatment);
 
         b = W.getElementById('submitOffer');
 
@@ -434,7 +456,7 @@ function bid() {
 
     });
 
-    console.log('Meritocracy');
+    console.log('Meritocracy: bid page.');
 }
 
 function postgame() {

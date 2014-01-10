@@ -284,6 +284,7 @@ stager.setOnInit(function() {
             W.getElementById('yourPayoff').innerHTML = payoff;
             
             if (treatment === 'endo') {
+                oldDemand = oldChoice.demand;
                 W.getElementById('yourOldDemand').innerHTML = oldDemand;
             }
             else {

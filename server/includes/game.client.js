@@ -64,7 +64,7 @@ stager.setOnInit(function() {
         0,
     ];
 
-    // Change so that roomtype is set as decided in game.room
+    // Change so that roomtype is set as decided in game.room.
     node.game.roomType = node.env('roomType');
 
     console.log('INIT PLAYER!');
@@ -82,8 +82,6 @@ stager.setOnInit(function() {
     // - player.css
     W.setupFrame('PLAYER');
 
-    this.other = null;
-
     node.on('BID_DONE', function(contribution, demand, isTimeOut) {
         // TODO: check this timer obj.
         node.game.timer.stop();
@@ -100,6 +98,7 @@ stager.setOnInit(function() {
         node.done();
     });
 
+    // This function is called to create the bars.
     this.updateResults = function() {
         var group, player, iter, jter, div, subdiv, color, save;
         var values = node.game.oldContribDemand,
@@ -167,19 +166,7 @@ stager.setOnGameOver(function() {
 
 ///// STAGES and STEPS
 
-//////////////////////////////////////////////
-// nodeGame hint:
-//
-// Pages can be preloaded with this method:
-//
-// W.preCache()
-//
-// It loads the content from the URIs given in an array parameter, and the next
-// time W.loadFrame() is used with those pages, they can be loaded from memory.
-//
-// W.preCache calls the function given as the second parameter when it's done.
-//
-/////////////////////////////////////////////
+
 function precache() {
     W.lockFrame('Loading...');
     W.preCache([
@@ -198,20 +185,6 @@ function precache() {
 function instructions() {
     var that = this;
 
-    //////////////////////////////////////////////
-    // nodeGame hint:
-    //
-    // The W object takes care of all
-    // visual operation of the game. E.g.,
-    //
-    // W.loadFrame()
-    //
-    // loads an HTML file into the game screen,
-    // and the execute the callback function
-    // passed as second parameter.
-    //
-    /////////////////////////////////////////////
-
     W.loadFrame('/meritocracy/html/instructions.html', function() {
 
         var b = W.getElementById('read');
@@ -219,36 +192,16 @@ function instructions() {
             node.done();
         };
 
-        ////////////////////////////////////////////////
-        // nodeGame hint:
-        //
-        // node.env executes a function conditionally to
-        // the environments defined in the configuration
-        // options.
-        //
-        // If the 'auto' environment was set to TRUE,
-        // then the function will be executed
-        //
-        ////////////////////////////////////////////////
-        node.env('auto', function() {
-
-            //////////////////////////////////////////////
-            // nodeGame hint:
-            //
-            // Emit an event randomly in a time interval
-            // from 0 to 2000 milliseconds
-            //
-            //////////////////////////////////////////////
-            node.timer.randomEmit('DONE', 2000);
-        });
-
-
         if (/low|high/g.test(node.game.roomType)) {
             W.getElementById('lowhigh').style.display = 'inline';
         } 
         else {
             W.getElementById(node.game.roomType).style.display = 'inline';
         }
+        
+        node.env('auto', function() {
+            node.timer.randomEmit('DONE', 2000);
+        });
 
     });
 
@@ -257,11 +210,15 @@ function instructions() {
 
 function quiz() {
     var quizpage;
-    page = /low|high/g.test(node.game.roomType) ?
+    quizpage = /low|high/g.test(node.game.roomType) ?
         '/meritocracy/html/quiz.exo_high_low.html' :
         '/meritocracy/html/quiz.' + node.game.roomType + '.html';
 
-    W.loadFrame(quizpage);
+    W.loadFrame(quizpage, function() {
+        node.env('auto', function() {
+            node.timer.randomEmit('DONE', 2000);
+        });
+    });
     
     console.log('Quiz');
 }
@@ -274,10 +231,12 @@ function showResults(values) {
             console.log('Received results.');
             values = !!values ? values.data : node.game.oldContribDemand;
             node.game.oldContribDemand = values;
-
+            
             this.updateResults();
+
             contrib = +values[0][values[1][0]][values[1][1]][0],
             demand = +values[0][values[1][0]][values[1][1]][1];
+
             W.getElementById('yourContrib').innerHTML = contrib;
             W.getElementById('yourDemand').innerHTML = demand;
             b = W.getElementById('submitOffer');
@@ -559,7 +518,7 @@ stager.addStep({
     cb: meritocracy,
     done: clearFrame,
     timer: {
-        milliseconds: 10000,
+        milliseconds: 200000,
         timeup: 'TIMEUP'
     }
 });
@@ -567,7 +526,7 @@ stager.addStep({
 stager.addStep({
     id: 'results',
     cb: showResults,
-    timer: 10000
+    timer: 1000000
 });
 
 stager.addStage({
@@ -607,10 +566,10 @@ var REPEAT = 20;
 
 stager.init()
 // .next('precache')
-// .next('instructions')
-// .next('quiz')
-    .repeat('meritocracy', REPEAT)
-// .next('questionnaire')
+//    .next('instructions')
+//    .next('quiz')
+//    .repeat('meritocracy', REPEAT)
+    .next('questionnaire')
 // .next('endgame')
     .gameover();
 

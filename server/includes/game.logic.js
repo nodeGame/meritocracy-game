@@ -930,10 +930,10 @@ module.exports = function(node, channel, gameRoom) {
     stager
         .init()
     // .next('precache')
-    // .next('instructions')
-    // .next('quiz')
-    .repeat('meritocracy', REPEAT)
-    // .next('questionnaire')
+    //   .next('instructions')
+    //   .next('quiz')
+    //   .repeat('meritocracy', REPEAT)
+       .next('questionnaire')
     // .next('endgame')
     .gameover();
 

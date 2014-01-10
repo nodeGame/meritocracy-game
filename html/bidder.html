@@ -10,125 +10,126 @@
 <link rel="stylesheet" href="css/jqueryui.min.css" />
 <link rel="stylesheet" href="css/bootstrap.min.css" />
 <style type="text/css" media="screen">
-
-/*.ui-progressbar {
-  display:inline-block;
-  position: relative;
-  height: 20px;
-  width: 320px;
-}
-.progress-label {
-  position:absolute;
-  left: 45%;
-  font-weight: bold;
-  font-size:10pt;
-  }*/
+  
+  /*.ui-progressbar {
+    display:inline-block;
+    position: relative;
+    height: 20px;
+    width: 320px;
+    }
+    .progress-label {
+    position:absolute;
+    left: 45%;
+    font-weight: bold;
+    font-size:10pt;
+    }*/
   .pushed-down {
-    margin-top:20px;
+      margin: 20px auto;
+      max-width: 600px; 
   }
   .mini-pushed-down {
-    margin-top:10px;
+      margin-top:10px;
   }
   .big-pushed-down {
-    margin-top:100px;
+      margin-top:100px;
   }
   .inline {
-    display:inline;
+      display:inline;
   }
   #divErrors {
-    color:red;
+      color:red;
   }
   #results {
-    /*visibility:hidden;*/
+  /*visibility:hidden;*/
   }
   #submitOffer {
-    margin-bottom:30px;
+      margin-bottom:30px;
   }
   #previous-round-info {
-    display:none;
+      display:none;
   }
   .groupContainer {
-    padding-left:10px;
-    margin-bottom: 20px;
-    margin-top: 20px;
-    border-left: thick solid #2cabec;
-    -webkit-border-radius: 15px;
-    -moz-border-radius: 15px;
-    border-radius: 15px;
+      padding-left:10px;
+      margin-bottom: 20px;
+      margin-top: 20px;
+      border-left: thick solid #2cabec;
+      -webkit-border-radius: 15px;
+      -moz-border-radius: 15px;
+      border-radius: 15px;
   }
   .playerContainer {
-    padding-left:10px;
-    border-left: thick solid #800000;
-    -webkit-border-radius: 15px;
-    -moz-border-radius: 15px;
-    border-radius: 15px;
+      padding-left:10px;
+      border-left: thick solid #800000;
+      -webkit-border-radius: 15px;
+      -moz-border-radius: 15px;
+      border-radius: 15px;
   }
-  </style>
-  <!-- end -->
-  <body>
-    <noscript>
-      Sorry, you need to enable javascript in order to play this game.
-    </noscript>
-
-    <div class="container pushed-down">
-
-      <div id="previous-round-info" class="col-md-12">
-        <h3>Previous Round</h3>
-        <p>You decided to put <strong><span id="yourPB"></span></strong> coins into your personal box.</p>
-        <p>
-          You decided to put <strong><span id="yourOldContrib"></span></strong> <span class="blackbox-game-type">coins in the blackbox</span><span class="other-game-type"> coins in the group account</span> and the return was <strong><span id="yourReturn"></span></strong>.
+</style>
+<!-- end -->
+<body>
+  <noscript>
+    Sorry, you need to enable javascript in order to play this game.
+  </noscript>
+  <div class="container pushed-down">
+    
+    <div id="current-round-info" class="col-md-12">
+     
+      <div class="col-md-12 mini-pushed-down">
+        <h3>Current Round</h3>
+        You have received 10 coins. 
+        <br/>        
+        <p>You decide to put in the  
+          <span class="blackbox-game-type">blackbox</span>
+          <span class="other-game-type">group account</span>
+          <input type="number" min="0" max="10" id="contribution" class="inline" size="3" />
+          coins.
         </p>
-        <p> Your final payoff is <strong><span id="yourPayoff"></span></strong>.</p>
-
-      </div> 
-
-      <hr size="75%" />
-
-      <div id="current-round-info" class="col-md-12">
-
-        <h4 class="col-md-12" align="center">You have received 10 coins.</h4>
-        
-        <div class="col-md-12 mini-pushed-down" align="center">
-          <br/>
-          <p>You decide to put 
-            <input type="number" min="0" max="10" id="contribution" class="inline" size="3" />
-            <span class="blackbox-game-type">
-              coins in the blackbox.
-            </span>
-            <span class="other-game-type">
-              coins in the group account.
-            </span>
+      </div>
+      
+      <div id="demandBox">
+        <div class="col-md-12 mini-pushed-down">
+          <p>You agree to form a group with players that contributed no less than
+            <input type="number" min="0" max="10" id="demand" class="inline" size="3" />
+            <span>coins.</span>
           </p>
         </div>
-
-        <div id="demandBox">
-          <div class="col-md-12 mini-pushed-down" align="center">
-            <p>You agree to form a group with players that contributed no less than
-              <input type="number" min="0" max="10" id="demand" class="inline" size="3" />
-              <span>coins.</span>
-            </p>
-          </div>
-        </div>
-
-        <br />
-        <div id="divErrors" class="col-md-12" align="center"></div>
-        <br />
-        <button align="center" class="btn btn-lg btn-primary col-md-offset-4 col-md-4" id="submitOffer">Done</button>
-
-
       </div>
-      <p style="clear: both; text-align: center"><br/><br/>
-          If you do not make a choice before the time expires, your previous decision will be used. On the first round, a random decision will be made for you.
-      </p>
+      
+      <br />
+      <div id="divErrors" class="col-md-12"></div>
+      
+      <br />
+      <button align="center" class="btn btn-lg btn-primary col-md-offset-4 col-md-4" style="clear: both" id="submitOffer">Done</button>
+      
+      
+      <div id="previous-round-info" class="col-md-12" style="clear: both; border-top: 1px solid #CCC">
+        <h3>Reminder: in the previous round</h3>
+        <p>You decided to put <strong><span id="yourPB"></span></strong> coins into your personal box.</p>
+        <p>
+          You decided to put <strong><span id="yourOldContrib"></span></strong> coins into the <span class="blackbox-game-type">blackbox</span><span class="other-game-type">group account</span> and the return was <strong><span id="yourReturn"></span></strong>.
+        </p>
+        <p> Your final payoff was <strong><span id="yourPayoff"></span></strong>.</p>
+        
+      </div> 
+      
+      <div id="timeupReminder">
+        <p style="clear: both; text-align: center; border-top: 1px solid #CCC"><br/>
+          <strong>Attention: </strong> if you do not make a choice before the time expires, your previous decision will be used. On the first round, a random decision will be made for you.
+        </p>
+      </div>
+      
+      
     </div>
-
-    <script type="text/javascript" src="../js/jquery.js"></script>
-    <script type="text/javascript" src="../js/jqueryui.min.js"></script>
-    <script type="text/javascript" src="../js/merit.bars.js"></script>
-    <script type="text/javascript">
-  // div = document.getElementById('barsResults');
-  // for (var i = 100; i > 0; i -= 10) {
-  //   bars.createBar(div, 0, undefined, 'asdfasdf')
-  // }
+   
+  </div>
+  
+  <script type="text/javascript" src="../js/jquery.js"></script>
+  <script type="text/javascript" src="../js/jqueryui.min.js"></script>
+  <script type="text/javascript" src="../js/merit.bars.js"></script>
+  <script type="text/javascript">
+    // div = document.getElementById('barsResults');
+    // for (var i = 100; i > 0; i -= 10) {
+    //   bars.createBar(div, 0, undefined, 'asdfasdf')
+    // }
   </script>
 </body>

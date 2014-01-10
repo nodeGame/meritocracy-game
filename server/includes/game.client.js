@@ -432,11 +432,6 @@ function bid() {
             node.emit('BID_DONE', validInputs, false);
         };
 
-    }, {
-        cache: {
-            loadMode: 'cache',
-            storeMode: 'onClose'
-        }
     });
 
     console.log('Meritocracy');

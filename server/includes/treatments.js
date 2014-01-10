@@ -340,7 +340,8 @@ treatments.exo_perfect = {
         self = this,
         groups;
 
-        receivedData = node.game.memory.selexec('stage', '=', previousStage);
+        debugger
+        receivedData = node.game.memory.stage[previousStage];
 
         ranking = receivedData
             .sort('value.contribution')
@@ -395,7 +396,7 @@ treatments.exo_high = {
         self = this,
         groups;
 
-        receivedData = node.game.memory.selexec('stage', '=', previousStage);
+        receivedData = node.game.memory.stage[previousStage];
 
         ranking = receivedData
             .sort('value.contribution')
@@ -451,7 +452,7 @@ treatments.exo_low = {
         self = this,
         groups;
 
-        receivedData = node.game.memory.selexec('stage', '=', previousStage);
+        receivedData = node.game.memory.stage[previousStage];
 
         ranking = receivedData
             .sort('value.contribution')
@@ -506,7 +507,7 @@ treatments.random = {
         self = this,
         groups;
 
-        receivedData = node.game.memory.selexec('stage', '=', previousStage);
+        receivedData = node.game.memory.stage[previousStage];
 
         ranking = receivedData
             .sort('value.contribution')
@@ -557,7 +558,7 @@ treatments.endo = {
         self = this,
         groups;
 
-        receivedData = node.game.memory.selexec('stage', '=', previousStage);
+        receivedData = node.game.memory.stage[previousStage];
 
         ranking = receivedData
             .sort('value.contribution')

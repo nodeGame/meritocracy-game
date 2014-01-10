@@ -129,10 +129,12 @@ function averageDemand(pv, cv) {
     return pv + cv.value.demand;
 }
 
+// If two contributions are exactly the same, then they are randomly ordered.
 function sortContributions(c1, c2) {
     if (c1.value.contribution > c1.value.contribution) return -1;
     if (c1.value.contribution < c1.value.contribution) return 1;
-    return 0;
+    if (Math.random() <= 0.5) return -1;
+    return 1;
 }
 
 /**

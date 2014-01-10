@@ -82,21 +82,124 @@ stager.setOnInit(function() {
     // - player.css
     W.setupFrame('PLAYER');
 
-    node.on('BID_DONE', function(contribution, demand, isTimeOut) {
-        // TODO: check this timer obj.
+    node.on('BID_DONE', function(bid, isTimeOut) {
         node.game.timer.stop();
         W.getElementById('submitOffer').disabled = 'disabled';
         node.set('bid', {
-            demand: demand,
-            contribution: contribution,
+            demand: bid.demand,
+            contribution: bid.contrib,
             isTimeOut: isTimeOut
         });
-        console.log(' Your contribution: ' + contribution + '.');
-        console.log(' Your demand: ' + demand + '.');
-        W.getElementById('demand').value = demand;
-        W.getElementById('contribution').value = contribution;
+        console.log(' Your contribution: ' + bid.contrib + '.');
+        console.log(' Your demand: ' + bid.demand + '.');       
         node.done();
     });
+
+    this.shouldCheckDemand = function() {
+        return node.env('roomType') === "endo";
+    };
+
+    this.getPreviousChoice = function() {
+        var values;
+        // Old contribution and demand for all players.
+        values = node.game.oldContribDemand;
+        return {
+            contrib: +values[0][values[1][0]][values[1][1]][0],
+            demand: +values[0][values[1][0]][values[1][1]][1]
+        };
+    };
+
+    // Takes in input the results of _checkInputs_ and correct eventual
+    // mistakes. If in the first round a random value is chosen, otherwise
+    // the previous decision is repeated. It also updates the screen.
+    this.correctInputs = function(checkResults) {
+        var contrib, demand, previousChoice;
+        var errorC, errorD;
+
+        if (checkResults.success) {
+            contrib = parseInt(W.getElementById('contribution').value, 10);
+            demand = parseInt(W.getElementById('demand').value, 10);
+        }
+        else {
+            previousChoice = node.game.getPreviousChoice();
+            
+            if (checkResults.errContrib) {
+                
+                if (node.game.getCurrentGameStage().round === 1) {
+                    contrib = JSUS.randomInt(-1,10);
+                }
+                else {
+                    contrib = previousChoice.contrib;
+                }
+                errorC = document.createElement('p');
+                errorC.innerHTML = 'Your contribution was set to ' + contrib;
+                W.getElementById('divErrors').appendChild(errorC);
+                W.getElementById('contribution').value = contrib;
+            }
+            
+            // In ENDO we check the demand too.
+            if (checkResults.errDemand) {
+                
+                if (node.game.getCurrentGameStage().round === 1) {
+                    demand = JSUS.randomInt(-1,10);
+                }
+                else {
+                    demand = previousChoice.demand;
+                }
+                errorD = document.createElement('p');
+                errorD.innerHTML = 'Your demand was set to ' + demand;
+                W.getElementById('divErrors').appendChild(errorD);
+                W.getElementById('demand').value = demand;
+            }
+        }
+
+        return {
+            contrib: contrib,
+            demand: demand
+        };        
+    };
+
+    // Retrieves and checks the current input for contribution, and for
+    // demand (if requested). Returns an object with the results of the 
+    // validation. It also displays a message in case errors are found.
+    this.checkInputs = function() {
+        var contrib, demand, values;
+        var divErrors, errorC, errorD;
+        
+        divErrors = W.getElementById('divErrors');
+        
+        // Clear previous errors.
+        divErrors.innerHTML = '';
+
+        // Always check the contribution.
+        contrib = W.getElementById('contribution').value;;
+
+        if (!node.game.isValidContribution(contrib)) {
+            errorC = document.createElement('p');
+            errorC.innerHTML = 'Invalid contribution. ' +
+                'Please enter a number between 0 and 10.';
+            divErrors.appendChild(errorC);
+        }
+
+        // In ENDO we check the demand too.
+        if (node.game.shouldCheckDemand()) {
+                
+            demand = W.getElementById('demand').value;
+
+            if (!node.game.isValidDemand(demand)) {
+                errorD = document.createElement('p');
+                errorD.innerHTML = 'Invalid demand. ' +
+                    'Please enter a number between 0 and 10.';
+                divErrors.appendChild(errorD);
+            }
+        }
+
+        return {
+            success: !(errorC || errorD),
+            errContrib: !!errorC,
+            errDemand: !!errorD
+        };
+    };
 
     // This function is called to create the bars.
     this.updateResults = function() {
@@ -128,32 +231,12 @@ stager.setOnInit(function() {
         payoffSpan.innerHTML = save + ' + ' + (+values[2] - save) + ' = ' + values[2];
     };
 
-    this.randomAccept = function(offer, other) {
-        var accepted = Math.round(Math.random());
-        console.log('randomaccept');
-        console.log(offer + ' ' + other);
-        if (accepted) {
-            node.emit('RESPONSE_DONE', 'ACCEPT', offer, other);
-            W.write(' You accepted the offer.');
-        }
-        else {
-            node.emit('RESPONSE_DONE', 'REJECT', offer, other);
-            W.write(' You rejected the offer.');
-        }
-    };
-
     this.isValidContribution = function(n) {
-        if (!n) {
-            return false;
-        }
         n = parseInt(n, 10);
         return !isNaN(n) && isFinite(n) && n >= 0 && n <= 10;
     };
 
     this.isValidDemand = function(n) {
-        if (!n) {
-            return false;
-        }
         n = parseInt(n, 10);
         return !isNaN(n) && isFinite(n) && n >= 0 && n <= 10;
     };
@@ -183,7 +266,6 @@ function precache() {
 }
 
 function instructions() {
-    var that = this;
 
     W.loadFrame('/meritocracy/html/instructions.html', function() {
 
@@ -231,7 +313,6 @@ function showResults(values) {
             console.log('Received results.');
             values = !!values ? values.data : node.game.oldContribDemand;
             node.game.oldContribDemand = values;
-            
             this.updateResults();
 
             contrib = +values[0][values[1][0]][values[1][1]][0],
@@ -247,9 +328,7 @@ function showResults(values) {
     });
 }
 
-function meritocracy() {
-
-    node.game.timer.stop();
+function bid() {
 
     var that = this;
 
@@ -279,12 +358,13 @@ function meritocracy() {
     W.loadFrame('/meritocracy/html/bidder.html', function() {
         var toHide, iter;
         var b, options, other;
+        var contrib, demand;
         var values, oldContrib, payoff, save, groupReturn;
         
-        values = node.game.oldContribDemand,
-        oldContrib = +values[0][values[1][0]][values[1][1]][0],
-        payoff = values[2],
-        save = node.game.INIT_NB_COINS - oldContrib,
+        values = node.game.oldContribDemand;
+        oldContrib = +values[0][values[1][0]][values[1][1]][0];
+        payoff = values[2];
+        save = node.game.INIT_NB_COINS - oldContrib;
         groupReturn = payoff - save;
 
         // Re-enable input.
@@ -325,79 +405,31 @@ function meritocracy() {
             toHide[iter].style.display = 'none';
         }
 
-        // Start the timer after an offer was received.
-        options = {
-            milliseconds: 30000,
-            timeup: function() {
-                node.emit('BID_DONE', J.randomInt(0,10), J.randomInt(0,10),
-                          other);
-            }
-        };
-        node.game.timer.restart(options);
-
         b = W.getElementById('submitOffer');
 
         // AUTOPLAY.
         node.env('auto', function() {
             node.timer.randomExec(function() {
-                node.emit('BID_DONE', J.randomInt(0,10), J.randomInt(0,10),
-                          other);
+                node.emit('BID_DONE', JSUS.randomInt(-1,10), 
+                          JSUS.randomInt(-1,10), other);
             }, 4000);
         });
 
         // TIMEUP.
         node.on('TIMEUP', function() {
-            var isTimeOut, contrib;
-            
+            var validation;
             console.log('TIMEUP !');
-            isTimeOut = false;
-            contrib = parseInt(W.getElementById('contribution').value),
-            demand = parseInt(W.getElementById('demand').value),
-            values = node.game.oldContribDemand,
-            oldContrib = +values[0][values[1][0]][values[1][1]][0],
-            oldDemand = +values[0][values[1][0]][values[1][1]][1];
-
-            if (isNaN(contrib) || contrib === oldContrib) {
-                isTimeOut = true;
-                if (isNaN(contrib) && node.game.getCurrentGameStage().round === 1) {
-                    contrib = Math.round(Math.random() * 10);
-                }
-                else if (isNaN(contrib)) {
-                    contrib = oldContrib;
-                }
-            }
-
-            if (isNaN(demand) || demand === oldDemand) {
-                isTimeOut = true;
-                if (isNaN(demand) && node.game.getCurrentGameStage().round === 1) {
-                    demand = Math.round(Math.random() * 10);
-                }
-                else if (isNaN(demand)) {
-                    demand = oldDemand;
-                }
-            }
-
-            contrib = that.isValidDemand(contrib) ? contrib : +oldContrib;
-            demand = that.isValidDemand(demand) ? demand : +oldDemand;
-
-
-            node.emit('BID_DONE', contrib, demand, isTimeOut);
+            validation = node.game.checkInputs();
+            validInputs = node.game.correctInputs(validation); 
+            node.emit('BID_DONE', validInputs, true);
         });
 
         b.onclick = function() {
-            var errorP, contrib, demand;
-            contrib = parseInt(W.getElementById('contribution').value),
-            demand = parseInt(W.getElementById('demand').value);
-
-            if (!that.isValidContribution(contrib) 
-                || !that.isValidDemand(demand)) {
-
-                errorP = document.createElement('p');
-                errorP.innerHTML = 'Please enter a number between 0 and 10.';
-                W.getElementById('divErrors').appendChild(errorP);
-                return;
-            }
-            node.emit('BID_DONE', contrib, demand, false);
+            var validation;
+            validation = node.game.checkInputs();
+            if (!validation.success) return;
+            validInputs = node.game.correctInputs(validation);        
+            node.emit('BID_DONE', validInputs, false);
         };
 
     }, {
@@ -515,7 +547,7 @@ stager.addStage({
 
 stager.addStep({
     id: 'bid',
-    cb: meritocracy,
+    cb: bid,
     done: clearFrame,
     timer: {
         milliseconds: 200000,
@@ -568,8 +600,8 @@ stager.init()
 // .next('precache')
 //    .next('instructions')
 //    .next('quiz')
-//    .repeat('meritocracy', REPEAT)
-    .next('questionnaire')
+      .repeat('meritocracy', REPEAT)
+//    .next('questionnaire')
 // .next('endgame')
     .gameover();
 

@@ -201,8 +201,9 @@ function groupMatching(ranking) {
     for (iter = 0; iter < ranking.length; iter++) {
         group = Math.floor(iter / 4);
         group = groupNames[group];
-        person = node.game.pl.selexec('id', '=', ranking[iter]).fetch();
-        person[0].group = group;
+        person = node.game.pl.id.update(ranking[iter], {
+            group: group
+        });
     }
 }
 
@@ -220,6 +221,7 @@ function getGroupsPlayerBars(player, receivedData, p, groupValues) {
     allPlayers,
     group,
     otherGroups;
+    
     player = [player.value.contribution, player.value.demand];
 
     allPlayers = receivedData.selexec('group', '=', p.group).fetch();
@@ -316,41 +318,7 @@ function emitPlayersResults(p, receivedData, self, groupValues, ranking,
     node.say('results', p.id, finalBars);
 }
 
-function sendResults() {
-    var groupValues,
-    currentStage = node.game.getCurrentGameStage(),
-    previousStage = node.game.plot.previous(currentStage),
-    receivedData,
-    ranking,
-    noiseRanking,
-    groups;
-
-    receivedData = node.game.memory.selexec('stage', '=', previousStage);
-    ranking = receivedData
-        .sort('value.contribution')
-        .reverse()
-        .fetchValues(['player', 'value']);
-    
-    groups = ranking.value;
-    ranking = ranking.player;
-    noiseRanking = ranking;
-    groups = getGroups(groups);
-    groupMatching(ranking);
-    groupValues = getGroupValues(receivedData);
-
-    node.game.pl.each(function(p) {
-        self.emitPlayersResults(
-            p,
-            receivedData,
-            self,
-            groupValues,
-            ranking,
-            currentStage,
-            groups,
-            noiseRanking);
-    });
-    return true;
-}
+// STARTING THE TREATMENTS.
 
 // EXO PERFECT.
 treatments.exo_perfect = {
@@ -368,21 +336,25 @@ treatments.exo_perfect = {
         currentStage = node.game.getCurrentGameStage(),
         previousStage = node.game.plot.previous(currentStage),
         ranking,
-        noiseRanking,
+        receivedData,
         self = this,
         groups;
 
-        var receivedData = node.game.memory.selexec('stage', '=', previousStage);
+        receivedData = node.game.memory.selexec('stage', '=', previousStage);
+
         ranking = receivedData
             .sort('value.contribution')
             .reverse()
             .fetchValues(['player', 'value']);
         
+
         groups = ranking.value;
         ranking = ranking.player;
         noiseRanking = ranking;
         groups = this.getGroups(groups);
         this.groupMatching(ranking);
+
+        // Compute average contrib and demand in each group.
         groupValues = this.getGroupValues(receivedData);
 
         node.game.pl.each(function(p) {
@@ -417,12 +389,13 @@ treatments.exo_high = {
         var groupValues,
         currentStage = node.game.getCurrentGameStage(),
         previousStage = node.game.plot.previous(currentStage),
+        receivedData,
         ranking,
         noiseRanking,
         self = this,
         groups;
 
-        var receivedData = node.game.memory.selexec('stage', '=', previousStage);
+        receivedData = node.game.memory.selexec('stage', '=', previousStage);
 
         ranking = receivedData
             .sort('value.contribution')
@@ -472,12 +445,13 @@ treatments.exo_low = {
         var groupValues,
         currentStage = node.game.getCurrentGameStage(),
         previousStage = node.game.plot.previous(currentStage),
+        receivedData,
         ranking,
         noiseRanking,
         self = this,
         groups;
 
-        var receivedData = node.game.memory.selexec('stage', '=', previousStage);
+        receivedData = node.game.memory.selexec('stage', '=', previousStage);
 
         ranking = receivedData
             .sort('value.contribution')
@@ -528,10 +502,12 @@ treatments.random = {
         previousStage = node.game.plot.previous(currentStage),
         ranking,
         noiseRanking,
+        receivedData,
         self = this,
         groups;
 
-        var receivedData = node.game.memory.selexec('stage', '=', previousStage);
+        receivedData = node.game.memory.selexec('stage', '=', previousStage);
+
         ranking = receivedData
             .sort('value.contribution')
             .reverse()
@@ -575,12 +551,14 @@ treatments.endo = {
         var groupValues,
         currentStage = node.game.getCurrentGameStage(),
         previousStage = node.game.plot.previous(currentStage),
+        receivedData,
         ranking,
         noiseRanking,
         self = this,
         groups;
 
-        var receivedData = node.game.memory.selexec('stage', '=', previousStage);
+        receivedData = node.game.memory.selexec('stage', '=', previousStage);
+
         ranking = receivedData
             .sort('value.contribution')
             .reverse()

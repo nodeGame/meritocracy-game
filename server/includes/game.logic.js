@@ -284,6 +284,7 @@ module.exports = function(node, channel, gameRoom) {
             // Computes the values for all players and all groups,
             // sends them to the clients, and save results into database.
             treatments[treatment].sendResults();
+            return true;
         },
         minPlayers: [nbRequiredPlayers, notEnoughPlayers]
     });

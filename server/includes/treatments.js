@@ -21,6 +21,8 @@ var groupNames = ['einstein', 'knuth', 'turing', 'feynmann'];
 var NOISE_HIGH = 2;
 var NOISE_LOW = 4;
 
+var GROUP_SIZE = 4;
+
 // Number of coins for each player at the beginning of each round
 var INIT_NB_COINS = 10;
 
@@ -261,14 +263,31 @@ function getGroupsPlayerBars(player, receivedData, p, groupValues) {
  * @param  {array} groups contains contribution and demand of players
  * @return {array}        contains arrays, which contains contribution
  */
+
+// old
+//function getGroups(groups) {
+//    var iter,
+//    subGroup = [];
+//    groups = groups.map(function(e) {
+//        return [e.contribution];
+//    });
+//    for (iter = 0; iter < groups.length / 4; iter++) {
+//        subGroup[iter] = groups.slice(4 * iter, 4 * iter + 4);
+//    }
+//    return subGroup;
+//}
+
 function getGroups(groups) {
-    var iter,
+    var i, len, subGroup, gId;
+    len = groups.length;
     subGroup = [];
-    groups = groups.map(function(e) {
-        return [e.contribution];
-    });
-    for (iter = 0; iter < groups.length / 4; iter++) {
-        subGroup[iter] = groups.slice(4 * iter, 4 * iter + 4);
+    gId = -1;
+    for (i = 0; i < len; i++) {
+        if (i % GROUP_SIZE == 0) {
+            ++gId;
+            subGroup[gId] = [];
+        }
+        subGroup[gId].push([groups[i].contribution]);
     }
     return subGroup;
 }
@@ -291,7 +310,7 @@ function createNoise(receivedData, variance) {
 /**
  * Send and saves received values for each player.
  */
-function emitPlayersResults(p, receivedData, self, groupValues, ranking,
+function emitPlayersResults(p, receivedData, groupValues, ranking,
                              currentStage, groups, noiseRanking) {
     var groupsBars = [],
     playersBars = [],
@@ -302,15 +321,20 @@ function emitPlayersResults(p, receivedData, self, groupValues, ranking,
     noiseContribution,
     position;
 
-    player = receivedData.select('player', '=', p.id).execute().first();
+    player = receivedData.selexec('player', '=', p.id).first();
     timeup = player.value.isTimeOut;
     noiseContribution = player.value.noiseContribution;
-    playersBars = self.getGroupsPlayerBars(player, receivedData, p,
+
+    debugger
+    playersBars = getGroupsPlayerBars(player, receivedData, p,
                                            groupValues);
     groupsBars = playersBars.groups;
     playersBars = playersBars.players;
-    position = self.getPosition(ranking, p);
-    payoff = self.getPayoff(groups, position, p, currentStage);
+    
+    position = getPosition(ranking, p);
+
+    payoff = getPayoff(groups, position, p, currentStage);
+
     node.game.savePlayerValues(
         p,
         playersBars,
@@ -322,6 +346,7 @@ function emitPlayersResults(p, receivedData, self, groupValues, ranking,
         ranking,
         noiseRanking,
         noiseContribution);
+
     finalBars = [groups, position, payoff];
     node.say('results', p.id, finalBars);
 }
@@ -331,52 +356,37 @@ function emitPlayersResults(p, receivedData, self, groupValues, ranking,
 // EXO PERFECT.
 treatments.exo_perfect = {
 
-    groupMatching: groupMatching,
-    getGroupValues: getGroupValues,
-    getPayoff: getPayoff,
-    getPosition: getPosition,
-    getGroupsPlayerBars: getGroupsPlayerBars,
-    getGroups: getGroups,
-    emitPlayersResults: emitPlayersResults,
-
     sendResults: function() {
         var groupValues,
         currentStage = node.game.getCurrentGameStage(),
         previousStage = node.game.plot.previous(currentStage),
         ranking,
         receivedData,
-        self = this,
         groups;
 
-        debugger
         receivedData = node.game.memory.stage[previousStage];
 
         ranking = receivedData
             .sort(sortContributions)
             .fetchValues(['player', 'value']);
-        
 
-        groups = ranking.value;
+        groups = getGroups(ranking.value);
         ranking = ranking.player;
-        noiseRanking = ranking;
-        groups = this.getGroups(groups);
-        this.groupMatching(ranking);
+        groupMatching(ranking);
 
         // Compute average contrib and demand in each group.
-        groupValues = this.getGroupValues(receivedData);
+        groupValues = getGroupValues(receivedData);
 
         node.game.pl.each(function(p) {
-            self.emitPlayersResults(
+            emitPlayersResults(
                 p,
                 receivedData,
-                self,
                 groupValues,
                 ranking,
                 currentStage,
                 groups,
-                noiseRanking);
+                ranking);
         });
-        return true;
     },
 };
 
@@ -384,15 +394,6 @@ treatments.exo_perfect = {
 // EXO HIGH.
 treatments.exo_high = {
 
-    createNoise: createNoise,
-    groupMatching: groupMatching,
-    getGroupValues: getGroupValues,
-    getPayoff: getPayoff,
-    getPosition: getPosition,
-    getGroupsPlayerBars: getGroupsPlayerBars,
-    getGroups: getGroups,
-    emitPlayersResults: emitPlayersResults,
-
     sendResults: function() {
         var groupValues,
         currentStage = node.game.getCurrentGameStage(),
@@ -400,7 +401,6 @@ treatments.exo_high = {
         receivedData,
         ranking,
         noiseRanking,
-        self = this,
         groups;
 
         receivedData = node.game.memory.stage[previousStage];
@@ -409,44 +409,33 @@ treatments.exo_high = {
             .sort(sortContributions)
             .fetchValues('player').player;
 
-        receivedData = this.createNoise(receivedData, NOISE_HIGH);
+        receivedData = createNoise(receivedData, NOISE_HIGH);
 
         noiseRanking = receivedData
             .sort(sortContributions)
             .fetchValues(['player', 'value']);
         
-        groups = this.getGroups(noiseRanking.value);
+        groups = getGroups(noiseRanking.value);
         noiseRanking = noiseRanking.player;
-        this.groupMatching(noiseRanking);
-        groupValues = this.getGroupValues(receivedData);
+        groupMatching(noiseRanking);
+        groupValues = getGroupValues(receivedData);
 
         node.game.pl.each(function(p) {
-            self.emitPlayersResults(
+            emitPlayersResults(
                 p,
-                receivedData,
-                self,
+                receivedData,            
                 groupValues,
                 ranking,
                 currentStage,
                 groups,
                 noiseRanking);
         });
-        return true;
     },
 };
 
 // EXO LOW.
 treatments.exo_low = {
 
-    createNoise: createNoise,
-    groupMatching: groupMatching,
-    getGroupValues: getGroupValues,
-    getPayoff: getPayoff,
-    getPosition: getPosition,
-    getGroupsPlayerBars: getGroupsPlayerBars,
-    getGroups: getGroups,
-    emitPlayersResults: emitPlayersResults,
-
     sendResults: function() {
         var groupValues,
         currentStage = node.game.getCurrentGameStage(),
@@ -454,7 +443,6 @@ treatments.exo_low = {
         receivedData,
         ranking,
         noiseRanking,
-        self = this,
         groups;
 
         receivedData = node.game.memory.stage[previousStage];
@@ -463,42 +451,32 @@ treatments.exo_low = {
             .sort(sortContributions)
             .fetchValues('player').player;
 
-        receivedData = this.createNoise(receivedData, NOISE_LOW);
+        receivedData = createNoise(receivedData, NOISE_LOW);
 
         noiseRanking = receivedData
             .sort(sortContributions)
             .fetchValues(['player', 'value']);
 
-        groups = this.getGroups(noiseRanking.value);
+        groups = getGroups(noiseRanking.value);
         noiseRanking = noiseRanking.player;
-        this.groupMatching(noiseRanking);
-        groupValues = this.getGroupValues(receivedData);
+        groupMatching(noiseRanking);
+        groupValues = getGroupValues(receivedData);
 
         node.game.pl.each(function(p) {
-            self.emitPlayersResults(
+            emitPlayersResults(
                 p,
                 receivedData,
-                self,
                 groupValues,
                 ranking,
                 currentStage,
                 groups,
                 noiseRanking);
         });
-        return true;
     },
 };
 
 // EXO RANDO.
 treatments.random = {
-
-    groupMatching: groupMatching,
-    getGroupValues: getGroupValues,
-    getPayoff: getPayoff,
-    getPosition: getPosition,
-    getGroupsPlayerBars: getGroupsPlayerBars,
-    getGroups: treatments.getGroups,
-    emitPlayersResults: emitPlayersResults,
 
     sendResults: function() {
         var groupValues,
@@ -507,7 +485,6 @@ treatments.random = {
         ranking,
         noiseRanking,
         receivedData,
-        self = this,
         groups;
 
         receivedData = node.game.memory.stage[previousStage];
@@ -520,35 +497,25 @@ treatments.random = {
         groups = ranking.value;
         ranking = ranking.player;
         noiseRanking = ranking;
-        groups = this.getGroups(groups);
-        this.groupMatching(ranking);
-        groupValues = this.getGroupValues(receivedData);
+        groups = getGroups(groups);
+        groupMatching(ranking);
+        groupValues = getGroupValues(receivedData);
 
         node.game.pl.each(function(p) {
-            self.emitPlayersResults(
+            emitPlayersResults(
                 p,
-                receivedData,
-                self,
+                receivedData,            
                 groupValues,
                 ranking,
                 currentStage,
                 groups,
                 noiseRanking);
         });
-        return true;
     },
 };
 
 // EXO ENDO.
 treatments.endo = {
-
-    groupMatching: groupMatching,
-    getGroupValues: getGroupValues,
-    getPayoff: getPayoff,
-    getPosition: getPosition,
-    getGroupsPlayerBars: getGroupsPlayerBars,
-    getGroups: getGroups,
-    emitPlayersResults: emitPlayersResults,
 
     sendResults: function() {
         var groupValues,
@@ -557,7 +524,6 @@ treatments.endo = {
         receivedData,
         ranking,
         noiseRanking,
-        self = this,
         groups;
 
         receivedData = node.game.memory.stage[previousStage];
@@ -569,22 +535,20 @@ treatments.endo = {
         groups = ranking.value;
         ranking = ranking.player;
         noiseRanking = ranking;
-        groups = this.getGroups(groups);
-        this.groupMatching(ranking);
-        groupValues = this.getGroupValues(receivedData);
+        groups = getGroups(groups);
+        groupMatching(ranking);
+        groupValues = getGroupValues(receivedData);
 
         node.game.pl.each(function(p) {
-            self.emitPlayersResults(
+            emitPlayersResults(
                 p,
                 receivedData,
-                self,
                 groupValues,
                 ranking,
                 currentStage,
                 groups,
                 noiseRanking);
         });
-        return true;
     },
 };
 

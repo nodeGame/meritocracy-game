@@ -281,7 +281,8 @@ module.exports = function(node, channel, gameRoom) {
     stager.addStep({
         id: 'results',
         cb: function() {
-            // Get values for each group
+            // Computes the values for all players and all groups,
+            // sends them to the clients, and save results into database.
             treatments[treatment].sendResults();
         },
         minPlayers: [nbRequiredPlayers, notEnoughPlayers]

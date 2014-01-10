@@ -129,6 +129,12 @@ function averageDemand(pv, cv) {
     return pv + cv.value.demand;
 }
 
+function sortContributions(c1, c2) {
+    if (c1.value.contribution > c1.value.contribution) return -1;
+    if (c1.value.contribution < c1.value.contribution) return 1;
+    return 0;
+}
+
 /**
  * Computes average contribution and demand for each group
  *
@@ -344,8 +350,7 @@ treatments.exo_perfect = {
         receivedData = node.game.memory.stage[previousStage];
 
         ranking = receivedData
-            .sort('value.contribution')
-            .reverse()
+            .sort(sortContributions)
             .fetchValues(['player', 'value']);
         
 
@@ -399,8 +404,7 @@ treatments.exo_high = {
         receivedData = node.game.memory.stage[previousStage];
 
         ranking = receivedData
-            .sort('value.contribution')
-            .reverse()
+            .sort(sortContributions)
             .fetchValues('player').player;
 
         receivedData = this.createNoise(receivedData, NOISE_HIGH);
@@ -455,8 +459,7 @@ treatments.exo_low = {
         receivedData = node.game.memory.stage[previousStage];
 
         ranking = receivedData
-            .sort('value.contribution')
-            .reverse()
+            .sort(sortContributions)
             .fetchValues('player').player;
 
         receivedData = this.createNoise(receivedData, NOISE_LOW);
@@ -510,8 +513,7 @@ treatments.random = {
         receivedData = node.game.memory.stage[previousStage];
 
         ranking = receivedData
-            .sort('value.contribution')
-            .reverse()
+            .sort(sortContributions)
             .fetchValues(['player', 'value']);
         
         ranking = shuffleArray(ranking);
@@ -561,8 +563,7 @@ treatments.endo = {
         receivedData = node.game.memory.stage[previousStage];
 
         ranking = receivedData
-            .sort('value.contribution')
-            .reverse()
+            .sort(sortContributions)
             .fetchValues(['player', 'value']);
         
         groups = ranking.value;

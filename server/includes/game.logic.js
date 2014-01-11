@@ -115,7 +115,7 @@ module.exports = function(node, channel, gameRoom) {
                 'NA' : p.noiseContribution; 
 
             finalGroupStats = groupStats[groupNames[positionInNoisyRank[0]]];
-
+            debugger
             mdb.store({
                 session: gameRoom.name,
                 condition: treatment,
@@ -132,7 +132,7 @@ module.exports = function(node, channel, gameRoom) {
                 groupStdDemand: finalGroupStats.stdDemand,
                 rankBeforeNoise: ranking.indexOf(p.id) + 1,
                 rankAfterNoise: noisyRanking.indexOf(p.id) + 1,
-                timeup: null === p.timeup ? "NA" : p.timeup
+                timeup: p.value.isTimeOut
             });
         };
 

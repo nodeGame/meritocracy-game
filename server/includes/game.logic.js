@@ -123,7 +123,7 @@ module.exports = function(node, channel, gameRoom) {
                 player: p.player,
                 group: p.group,
                 contribution: p.value.contribution,
-                demand: p.value.demand,
+                demand: null === p.value.demand ? "NA" : p.value.demand,
                 noisyContribution: noisyContribution,
                 payoff: payoff,
                 groupAvgContr: finalGroupStats.avgContr,
@@ -132,7 +132,7 @@ module.exports = function(node, channel, gameRoom) {
                 groupStdDemand: finalGroupStats.stdDemand,
                 rankBeforeNoise: ranking.indexOf(p.id) + 1,
                 rankAfterNoise: noisyRanking.indexOf(p.id) + 1,
-                timeup: p.timeup                
+                timeup: null === p.timeup ? "NA" : p.timeup
             });
         };
 

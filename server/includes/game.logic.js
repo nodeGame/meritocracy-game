@@ -23,8 +23,6 @@ var path = require('path');
 
 var Database = require('nodegame-db').Database;
 
-// debugger;
-
 var ngc = require('nodegame-client');
 var Stager = ngc.Stager;
 var stepRules = ngc.stepRules;
@@ -39,8 +37,11 @@ var counter = 0;
 var MIN_PLAYERS = 2;
 var PLAYING_STAGE = 2;
 
-// Number of required players
+// Number of required players.
 var nbRequiredPlayers = 2;
+
+// Group names.
+var groupNames = ['1', '2', '3', '4'];
 
 // Here we export the logic function. Receives three parameters:
 // - node: the NodeGameClient object.
@@ -51,7 +52,9 @@ module.exports = function(node, channel, gameRoom) {
     var treatment = gameRoom.group;
     
     var treatments = channel.require(__dirname + '/treatments.js', {
-        node: node
+        node: node,
+        treatment: treatment,
+        groupNames: groupNames
     });
 
     var ngdb = new Database(node);
@@ -101,40 +104,48 @@ module.exports = function(node, channel, gameRoom) {
         var disconnected;
         disconnected = {};
         
+        node.game.savePlayerValues = function(p, payoff, positionInNoisyRank,
+                                              ranking, noisyRanking,
+                                              groupStats,
+                                              currentStage) {
 
-        node.game.savePlayerValues = function(p, playersBars, payoff,
-                                              currentStage, groupsBars,
-                                              groupValues, timeup, ranking, 
-                                              noiseRanking, noiseContribution) {
+            var noisyContribution, finalGroupStats;
 
-            var rank, noiserank;
+            noisyContribution = 'undefined' === typeof p.noisyContribution ?
+                'NA' : p.noiseContribution; 
 
-            rank= ranking.indexOf(p.id) + 1;
-            noiseRank = noiseRanking.indexOf(p.id) + 1;
-
-            if (typeof noiseContribution === 'undefined') {
-                noiseContribution = playersBars[0][0];
-            }
+            debugger
+            finalGroupStats = groupStats[groupNames[positionInNoisyRank[0]]];
 
             mdb.store({
-                player: p.id,
-                group: p.group,
-                contribution: playersBars[0][0],
-                demand: playersBars[0][1],
-                payoff: payoff,
-                groupReturn: payoff + playersBars[0][0],
-                stage: currentStage,
-                sameGroupValues: playersBars,
-                groupAverage: groupsBars[0],
-                groupValues: groupValues,
-                timeup: timeup,
-                rank: rank,
-                noiseRank: noiseRank,
-                noiseContribution: noiseContribution,
-                playersRanking: ranking,
-                playersRankingNoise: noiseRanking,
-                nodename: node.nodename,
+                session: gameRoom.name,
                 condition: treatment,
+                stage: currentStage,
+                player: p.player,
+                group: p.group,
+                contribution: p.value.contribution,
+                demand: p.value.demand,
+                noisyContribution: noisyContribution,
+                payoff: payoff,
+                groupAvgContr: finalGroupStats.avgContr,
+                groupStdContr: finalGroupStats.stdContr,
+                groupAvgDemand: finalGroupStats.avgDemand,
+                groupStdDemand: finalGroupStats.stdDemand,
+                rankBeforeNoise: ranking.indexOf(p.id) + 1,
+                rankAfterNoise: noisyRanking.indexOf(p.id) + 1,
+                timeup: p.timeup                
+            });
+        };
+
+        node.game.saveRoundResults = function(ranking, groupStats, 
+                                              noisyRanking, noisyGroupStats) {
+            mdb.store({
+                session: gameRoom.name,
+                condition: treatment,
+                ranking: ranking,
+                noisyRanking: noisyRanking,                
+                groupAverages: groupStats,                
+                noisyGroupAverages: noisyGroupStats
             });
         };
 

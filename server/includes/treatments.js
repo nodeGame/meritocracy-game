@@ -255,51 +255,6 @@ function computeGroupStats(groups) {
     }
     return out;
 }
-/**
- * Computes average contribution and demand for each group
- *
- * @param  {NDDB} receivedData Data received from clients 
- * @return {array} Contains average values for each group.
- */
-function getGroupValues(receivedData) {
-    var groupValues = {},
-    group,
-    name,
-    groupContrib,
-    groupDemand;
-
-    for (name in groupNames) {
-        if (groupNames.hasOwnProperty(name)) {
-            name = groupNames[name];
-            group = receivedData.selexec('group', '=', name).fetch();
-            groupContrib = group.reduce(averageContribution, 0) / group.length;
-            groupDemand = group.reduce(averageDemand, 0) / group.length;
-            groupValues[name] = [groupContrib, groupDemand];
-        }
-    }
-    
-    return groupValues;
-}
-
-/**
- * Divides a ranking array into 4 groups. NOT GROUP MATCHING
- * @param  {array} groups contains contribution and demand of players
- * @return {array}        contains arrays, which contains contribution
- */
-function getGroups(groups) {
-    var i, len, subGroup, gId;
-    len = groups.length;
-    subGroup = [];
-    gId = -1;
-    for (i = 0; i < len; i++) {
-        if (i % GROUP_SIZE == 0) {
-            ++gId;
-            subGroup[gId] = [];
-        }
-        subGroup[gId].push([groups[i].contribution]);
-    }
-    return subGroup;
-}
 
 /**
  * Create Noise on contribution. 
@@ -327,6 +282,45 @@ function emitPlayersResults(pId, bars, position, payoff) {
     node.say('results', pId, finalBars);
 }
 
+// Saves the outcome of a round to database, and communicates it to the clients.
+function finalizeRound(currentStage, bars,
+                       groupStats, groups, ranking, noisyGroupStats,
+                       noisyGroups, noisyRanking) {
+    
+    var i, len, j, lenJ, contribObj,
+    pId, positionInNoisyRank, playerPayoff;
+
+    // Save the results at the group level.
+    node.game.saveRoundResults(ranking, groupStats,
+                               noisyRanking, noisyGroupStats);
+    
+    // Save the results for each player, and notify him.
+    i = -1, len = noisyGroups.length;
+    for ( ; ++i < len ; ) {
+        j = -1, lenJ = noisyGroups[i].length;
+        for ( ; ++j < lenJ ; ) {
+            contribObj = noisyGroups[i][j];
+            
+            // Position in Rank (array of group id, position within group).
+            positionInNoisyRank = [i, j];
+            pId = contribObj.player;
+            
+            playerPayoff = getPayoff(bars, positionInNoisyRank);
+            
+            node.game.savePlayerValues(contribObj, playerPayoff, 
+                                       positionInNoisyRank,
+                                       ranking,
+                                       noisyRanking,
+                                       groupStats,
+                                       currentStage);
+
+            emitPlayersResults(pId, bars, positionInNoisyRank,
+                               playerPayoff);
+        }
+    }
+}
+
+
 // STARTING THE TREATMENTS.
 
 // EXO PERFECT.
@@ -339,10 +333,8 @@ treatments.exo_perfect = {
         matching,
         ranking, groups, groupStats,
         noisyRanking, noisyGroups, noisyGroupStats,
-        bars,
-        i, len, j, lenJ, contribObj,
-        pId, positionInNoisyRank, playerPayoff;
-
+        bars;
+       
         currentStage = node.game.getCurrentGameStage();
         previousStage = node.game.plot.previous(currentStage);
 
@@ -352,7 +344,6 @@ treatments.exo_perfect = {
             .sort(sortContributions)
             .fetch();
 
-        debugger
         // Original Ranking (without noise).
         matching = doGroupMatching(sortedContribs);
         
@@ -371,35 +362,11 @@ treatments.exo_perfect = {
         // Bars for display in clients.
         bars = matching.bars;
         
-        // Save the results at the group level.
-        node.game.saveRoundResults(ranking, groupStats,
-                                   noisyRanking, noisyGroupStats);
-        
-        // Save the results for each player, and notify him.
-        i = -1, len = noisyGroups.length;
-        for ( ; ++i < len ; ) {
-            j = -1, lenJ = noisyGroups[i].length;
-            for ( ; ++j < lenJ ; ) {
-                contribObj = noisyGroups[i][j];
-                
-                // Position in Rank (array of group id, position within group).
-                positionInNoisyRank = [i, j];
-                pId = contribObj.player;
-          
-                playerPayoff = getPayoff(bars, positionInNoisyRank);
-               
-                node.game.savePlayerValues(contribObj, playerPayoff, 
-                                           positionInNoisyRank,
-                                           ranking,
-                                           noisyRanking,
-                                           groupStats,
-                                           currentStage);
-
-                emitPlayersResults(pId, bars, positionInNoisyRank,
-                                   playerPayoff);
-            }
-        }           
-    },
+        // Save to db, and sends results to players.
+        finalizeRound(currentStage, bars,
+                      groupStats, groups, ranking,
+                      noisyGroupStats, noisyGroups, noisyRanking);
+    }
 };
 
 
@@ -641,4 +608,50 @@ function getGroupsPlayerBars(player, receivedData, p, groupValues) {
         players: playersBars,
         groups: groupsBars,
     };
+}
+
+/**
+ * Computes average contribution and demand for each group
+ *
+ * @param  {NDDB} receivedData Data received from clients 
+ * @return {array} Contains average values for each group.
+ */
+function getGroupValues(receivedData) {
+    var groupValues = {},
+    group,
+    name,
+    groupContrib,
+    groupDemand;
+
+    for (name in groupNames) {
+        if (groupNames.hasOwnProperty(name)) {
+            name = groupNames[name];
+            group = receivedData.selexec('group', '=', name).fetch();
+            groupContrib = group.reduce(averageContribution, 0) / group.length;
+            groupDemand = group.reduce(averageDemand, 0) / group.length;
+            groupValues[name] = [groupContrib, groupDemand];
+        }
+    }
+    
+    return groupValues;
+}
+
+/**
+ * Divides a ranking array into 4 groups. NOT GROUP MATCHING
+ * @param  {array} groups contains contribution and demand of players
+ * @return {array}        contains arrays, which contains contribution
+ */
+function getGroups(groups) {
+    var i, len, subGroup, gId;
+    len = groups.length;
+    subGroup = [];
+    gId = -1;
+    for (i = 0; i < len; i++) {
+        if (i % GROUP_SIZE == 0) {
+            ++gId;
+            subGroup[gId] = [];
+        }
+        subGroup[gId].push([groups[i].contribution]);
+    }
+    return subGroup;
 }

@@ -114,7 +114,6 @@ module.exports = function(node, channel, gameRoom) {
             noisyContribution = 'undefined' === typeof p.noisyContribution ?
                 'NA' : p.noiseContribution; 
 
-            debugger
             finalGroupStats = groupStats[groupNames[positionInNoisyRank[0]]];
 
             mdb.store({

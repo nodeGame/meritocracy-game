@@ -34,14 +34,15 @@ var stager = new Stager();
 // Variable registered outside of the export function are shared among all
 // instances of game logics.
 var counter = 0;
-var MIN_PLAYERS = 2;
-var PLAYING_STAGE = 2;
+
+var settings = require(__dirname + '/game.shared.js');
 
 // Number of required players.
-var nbRequiredPlayers = 2;
-
+var nbRequiredPlayers = settings.MIN_PLAYERS;
 // Group names.
-var groupNames = ['1', '2', '3', '4'];
+var groupNames = settings.GROUP_NAMES;
+// How many repetitions.
+var REPEAT = settings.REPEAT;
 
 // Here we export the logic function. Receives three parameters:
 // - node: the NodeGameClient object.
@@ -316,7 +317,6 @@ module.exports = function(node, channel, gameRoom) {
     });
 
     // Building the game plot.
-    var REPEAT = 20;
 
     // Here we define the sequence of stages of the game (game plot).
     stager
@@ -349,12 +349,12 @@ module.exports = function(node, channel, gameRoom) {
         plot: stager.getState(),
         // If debug is false (default false), exception will be caught and
         // and printed to screen, and the game will continue.
-        debug: true,
+        debug: settings.DEBUG,
         // Controls the amount of information printed to screen.
         verbosity: 0,
         // nodeGame enviroment variables.
         env: {
-            auto: false
+            auto: settings.AUTO
         }
     };
 

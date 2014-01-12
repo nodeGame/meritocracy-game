@@ -18,8 +18,10 @@ var constants = ngc.constants;
 var stager = new Stager();
 var game = {};
 
+var settings = module.parent.exports.settings;
+
 //Number Of required players to play the game:
-var nbRequiredPlayers = 2;
+var nbRequiredPlayers = settings.MIN_PLAYERS;
 
 module.exports = game;
 
@@ -32,37 +34,8 @@ game.globals = {};
 stager.setOnInit(function() {
     var that = this;
     var waitingForPlayers;
-    node.game.INIT_NB_COINS = 10;
-    node.game.oldContribDemand = [
-        [
-            [
-                [0],
-                [0],
-                [0],
-                [0]
-            ],
-            [
-                [0],
-                [0],
-                [0],
-                [0]
-            ],
-            [
-                [0],
-                [0],
-                [0],
-                [0]
-            ],
-            [
-                [0],
-                [0],
-                [0],
-                [0]
-            ],
-        ],
-        [0, 2],
-        0,
-    ];
+    node.game.INITIAL_COINS = node.env('INITIAL_COINS');
+    node.game.oldContribDemand = null;
 
     // Change so that roomtype is set as decided in game.room.
     node.game.roomType = node.env('roomType');
@@ -208,12 +181,18 @@ stager.setOnInit(function() {
     // This function is called to create the bars.
     this.updateResults = function() {
         var group, player, iter, jter, div, subdiv, color, save;
-        var values = node.game.oldContribDemand,
-        showDemand = !! values[0][0][0][1];
-        var barsDiv = W.getElementById('barsResults'),
+        var values, barsDiv, showDemand;
+
+        values = node.game.oldContribDemand,
+        showDemand = !!values[0][0][0][1];
+
+        barsDiv = W.getElementById('barsResults'),
         payoffSpan = W.getElementById('payoff');
-        node.game.bars = document.getElementById('mainframe').contentWindow.bars;
+
         barsDiv.innerHTML = '';
+
+        bars = W.getFrameWindow().bars;
+
         for (iter = 0; iter < values[0].length; iter++) {
             group = values[0][iter];
             div = document.createElement('div');
@@ -222,16 +201,18 @@ stager.setOnInit(function() {
                 color = values[1][0] === iter && values[1][1] === jter ? [undefined, '#9932CC'] : ['#DEB887', '#A52A2A'];
                 player = group[jter];
                 subdiv = document.createElement('div');
-                node.game.bars.createBar(subdiv, player[0] * 10, color[0], player[0]);
+                bars.createBar(subdiv, player[0] * 10, color[0], player[0]);
+
                 if (showDemand) {
                     subdiv.classList.add('playerContainer');
-                    node.game.bars.createBar(subdiv, player[1] * 10, color[1], player[1]);
+                    bars.createBar(subdiv, player[1] * 10, color[1], player[1]);
                 }
                 div.appendChild(subdiv);
             }
             barsDiv.appendChild(div);
         }
-        save = node.game.INIT_NB_COINS - values[0][values[1][0]][values[1][1]][0];
+
+        save = node.game.INITIAL_COINS - values[0][values[1][0]][values[1][1]][0];
         payoffSpan.innerHTML = save + ' + ' + (+values[2] - save) + ' = ' + values[2];
     };
 
@@ -268,14 +249,15 @@ stager.setOnInit(function() {
     this.displaySummaryPrevRound = function(treatment) {
         var oldChoice, oldContrib, oldDemand, payoff, save, groupReturn;
         
-        oldChoice = node.game.getPreviousChoice();
-        oldContrib = oldChoice.contrib;
-        payoff = node.game.getPreviousPayoff();
-        save = node.game.INIT_NB_COINS - oldContrib;
-        groupReturn = payoff - save;
-
         // Shows previous round if round number is not 1.
         if (node.game.getCurrentGameStage().round !== 1) {
+
+            oldChoice = node.game.getPreviousChoice();
+            oldContrib = oldChoice.contrib;
+            payoff = node.game.getPreviousPayoff();
+            save = node.game.INITIAL_COINS - oldContrib;
+            groupReturn = payoff - save;
+
             W.getElementById('previous-round-info').style.display = 'block';
              // Updates display for current round.
             W.getElementById('yourPB').innerHTML = save;
@@ -361,10 +343,12 @@ function showResults(values) {
 
     W.loadFrame('/meritocracy/html/results.html', function() {
         node.on.data('results', function(values) {
-            var contrib;
+            var contrib, demand, b;
+
             console.log('Received results.');
             values = !!values ? values.data : node.game.oldContribDemand;
             node.game.oldContribDemand = values;
+
             this.updateResults();
 
             contrib = +values[0][values[1][0]][values[1][1]][0],
@@ -372,6 +356,7 @@ function showResults(values) {
 
             W.getElementById('yourContrib').innerHTML = contrib;
             W.getElementById('yourDemand').innerHTML = demand;
+
             b = W.getElementById('submitOffer');
             b.onclick = function() {
                 node.done();
@@ -639,6 +624,7 @@ game.settings = {
     publishLevel: 2
 };
 game.env = {
-    auto: false
+    auto: settings.AUTO,
+    INITIAL_COINS: settings.INITIAL_COINS
 };
 game.verbosity = 100;

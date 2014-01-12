@@ -27,7 +27,6 @@ module.exports = function(node, channel, room) {
         }
     });
 
-
     // Loads the database layer. If you do not use an external database
     // you do not need these lines.
     var Database = require('nodegame-db').Database;
@@ -43,12 +42,6 @@ module.exports = function(node, channel, room) {
 
     // Loading the logic rules that will be used in each sub-gaming room.
     var logicPath = __dirname + '/includes/game.logic';
-
-    //The function to decide in which game room the users are going to be
-    var decideRoom = function(arrayRoom) {
-        //Implement logic here.
-        return arrayRoom[1];
-    };
 
     // Creating the array for association between room and their logic
     var arrayRoomLogic = [{
@@ -71,14 +64,25 @@ module.exports = function(node, channel, room) {
         logicPath: logicPath,
     }, ];
 
+    // Assigns a treatment condition to a group.
+    var decideRoom = function(arrayRoom) {
+        //Implement logic here.
+        return arrayRoom[1];
+    };
+    
+    // Load shared settings.
+    var settings = require(__dirname + '/includes/game.shared.js');
+
     // You can share objects with the included file. Include them in the
     // object passed as second parameter.
     var client = channel.require(__dirname + '/includes/game.client', {
-        ngc: ngc
+        ngc: ngc,
+        settings: settings
     });
 
     var clientWait = channel.require(__dirname + '/includes/wait.client', {
-        ngc: ngc
+        ngc: ngc,
+        settings: settings
     });
 
     // Creating a unique game stage that will handle all incoming connections. 
@@ -138,8 +142,8 @@ module.exports = function(node, channel, room) {
     // Event listeners registered here are valid for all the stages of the game.
     stager.setOnInit(function() {
         var counter = 0;
-        var POOL_SIZE = 2;
-        var GROUP_SIZE = 2;
+        var POOL_SIZE = settings.POOL_SIZE;
+        var GROUP_SIZE = settings.GROUP_SIZE;
 
         // references...
         this.room = room;
@@ -221,7 +225,9 @@ module.exports = function(node, channel, room) {
                     node.remoteSetup('game_settings', p.id, client.settings);
                     node.remoteSetup('plot', p.id, client.plot);
                     node.remoteSetup('env', p.id, client.env);
-                    node.remoteSetup('env', p.id, {roomType: assignedRoom.group});
+                    node.remoteSetup('env', p.id, {
+                        roomType: assignedRoom.group
+                    });
                 });
 
                 // Start the logic.
@@ -272,7 +278,7 @@ module.exports = function(node, channel, room) {
         plot: stager.getState(),
         // If debug is true, the ErrorManager will throw errors 
         // also for the sub-rooms.
-        debug: true,
+        debug: settings.DEBUG,
         verbosity: 0,
         publishLevel: 2
     };

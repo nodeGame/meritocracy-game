@@ -226,7 +226,7 @@ stager.setOnInit(function() {
         return !isNaN(n) && isFinite(n) && n >= 0 && n <= 10;
     };
 
-    this.customizeBidPage = function(treatment) {
+    this.fitPage2Treatment = function(treatment) {
         // Hides Demand if room type is not endo.
         W.getElementById('demandBox').style.display = 
             treatment === 'endo' ? '' : 'none';
@@ -343,19 +343,21 @@ function showResults(values) {
 
     W.loadFrame('/meritocracy/html/results.html', function() {
         node.on.data('results', function(values) {
-            var contrib, demand, b;
+            var treatment, b, demand;       
+            treatment = node.env('roomType');
 
             console.log('Received results.');
             values = !!values ? values.data : node.game.oldContribDemand;
             node.game.oldContribDemand = values;
+            
+            node.game.fitPage2Treatment(treatment);
+
+            if (treatment === 'endo') {
+                demand = +values[0][values[1][0]][values[1][1]][1];
+                W.getElementById('yourOldDemand').innerHTML = demand;
+            }
 
             this.updateResults();
-
-            contrib = +values[0][values[1][0]][values[1][1]][0],
-            demand = +values[0][values[1][0]][values[1][1]][1];
-
-            W.getElementById('yourContrib').innerHTML = contrib;
-            W.getElementById('yourDemand').innerHTML = demand;
 
             b = W.getElementById('submitOffer');
             b.onclick = function() {
@@ -411,7 +413,7 @@ function bid() {
         W.getElementById('contribution').value = '';
 
         // Customize the page for the different treatments.
-        node.game.customizeBidPage(treatment);
+        node.game.fitPage2Treatment(treatment);
 
         b = W.getElementById('submitOffer');
 

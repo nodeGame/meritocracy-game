@@ -11,104 +11,99 @@
 <link rel="stylesheet" href="css/bootstrap.min.css" />
 <style type="text/css" media="screen">
 
-/*.ui-progressbar {
-  display:inline-block;
-  position: relative;
-  height: 20px;
-  width: 320px;
-}
-.progress-label {
-  position:absolute;
-  left: 45%;
-  font-weight: bold;
-  font-size:10pt;
-  }*/
+  /*.ui-progressbar {
+    display:inline-block;
+    position: relative;
+    height: 20px;
+    width: 320px;
+    }
+    .progress-label {
+    position:absolute;
+    left: 45%;
+    font-weight: bold;
+    font-size:10pt;
+    }*/
   .pushed-down {
-    margin-top:20px;
+      margin-top:20px;
   }
+
   .mini-pushed-down {
-    margin-top:10px;
+      margin-top:10px;
   }
+
   .big-pushed-down {
-    margin-top:100px;
+      margin-top:100px;
   }
+
   .inline {
-    display:inline;
+      display:inline;
   }
+
   #divErrors {
-    color:red;
+      color:red;
   }
+
+  #barsResults {
+      border-top: 1px solid #CCC;
+  }
+
   #results {
-    /*visibility:hidden;*/
+      max-width: 600px;
+      margin: 0 auto;
   }
+
   #submitOffer {
-    margin-bottom:30px;
+      margin-bottom:30px;
   }
+
   .groupContainer {
-    padding-left:10px;
-    margin-bottom: 20px;
-    margin-top: 20px;
-    border-left: thick solid #2cabec;
-    -webkit-border-radius: 15px;
-    -moz-border-radius: 15px;
-    border-radius: 15px;
+      padding-left:10px;
+      margin-bottom: 20px;
+      margin-top: 20px;
+      border-left: thick solid #2cabec;
+      -webkit-border-radius: 15px;
+      -moz-border-radius: 15px;
+      border-radius: 15px;
   }
+
   .playerContainer {
-    padding-left:10px;
-    border-left: thick solid #800000;
-    -webkit-border-radius: 15px;
-    -moz-border-radius: 15px;
-    border-radius: 15px;
+      padding-left:10px;
+      border-left: thick solid #800000;
+      -webkit-border-radius: 15px;
+      -moz-border-radius: 15px;
+      border-radius: 15px;
   }
-  </style>
-  <!-- end -->
-  <body>
-    <noscript>
-      Sorry, you need to enable javascript in order to play this game.
-    </noscript>
+</style>
+<!-- end -->
+<body>
+  <noscript>
+    Sorry, you need to enable javascript in order to play this game.
+  </noscript>
 
-    <div class="container pushed-down">
+  <div class="container pushed-down">
 
-      <div id="header" class="col-md-3 col-md-offset-1 big-pushed-down">
-        
-        <div class="col-md-12 mini-pushed-down">
-          <h4> 
-            Your Contribution: <span id="yourContrib"></span>
-          </h4>
-        </div>
+    <div id="results">
+      <h3 align="left">Your Payoff: <strong><span id="payoff"></span></strong></h3>
+      
+      <span id="payoffExplain">Payoff = coins in the personal 
+        <span class="blackbox-game-type">box</span><span class="other-game-type"> account</span>
+        + return from the <span class="blackbox-game-type">blackbox</span><span class="other-game-type">group account</span>.
+        <span id="demandBox">Your demand was: <strong><span id="yourOldDemand"></span></strong>.</span>
+      </span>
 
-        <div id="demandBox">
-          <div class="col-md-12 mini-pushed-down">
-            <h4> 
-              Your Demand: <span id="yourDemand"></span>
-            </h4>
-          </div>
-        </div>
+        <div id="barsResults"></div>
 
-      </div>
-
-      <div id="results"  class="col-md-8">
-        <h3 align="left" class="col-md-offset-1">Your Payoff: <strong><span id="payoff"></span></strong></h3>
-
-        <div id="barsResults" class="col-md-offset-1">
-        </div>
-
-      </div>
-      <br />
-
-      <br />
-      <div id="divErrors" class="col-md-12"></div>
-      <br />
-      <button align="center" class="btn btn-lg btn-primary col-md-offset-4 col-md-4" id="submitOffer">Done</button>
     </div>
+    <br />
 
-    <script type="text/javascript" src="../js/jquery.js"></script>
-    <script type="text/javascript" src="../js/jqueryui.min.js"></script>
-    <script type="text/javascript" src="../js/merit.bars.js"></script>
-    <script type="text/javascript">
-  // div = document.getElementById('barsResults');
-  // for (var i = 100; i > 0; i -= 10) {
-  //   bars.createBar(div, 0, undefined, 'asdfasdf')
-  // }
-  </script>
+    <br />
+    <div id="divErrors"></div>
+    <br />
+    <button align="center" class="btn btn-lg btn-primary col-md-offset-4 col-md-4" id="submitOffer">Done</button>
+  </div>
+
+  <script type="text/javascript" src="../js/jquery.js"></script>
+  <script type="text/javascript" src="../js/jqueryui.min.js"></script>
+  <script type="text/javascript" src="../js/merit.bars.js"></script>
 </body>
+ 

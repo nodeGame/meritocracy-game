@@ -12,7 +12,7 @@
 // Share through channel.require
 var node = module.parent.exports.node;
 var treatment = module.parent.exports.treatment;
-var groupNames = module.parent.exports.groupNames;
+var settings = module.parent.exports.settings;
 
 var ENDO = treatment === 'endo';
 
@@ -21,15 +21,17 @@ module.exports = treatments;
 
 
 // Noise variance. High and low stands for "meritocracy", not for noise.
-var NOISE_HIGH = 2;
-var NOISE_LOW = 4;
+var NOISE_HIGH = settings.NOISE_HIGH;
+var NOISE_LOW = settings.NOISE_LOW;
 
-var GROUP_SIZE = 4;
+var GROUP_SIZE = settings.GROUP_SIZE;
 
-var GROUP_ACCOUNT_DIVIDER = 2;
+var GROUP_ACCOUNT_DIVIDER = settings.GROUP_ACCOUNT_DIVIDER;
+
+var groupNames = settings.GROUP_NAMES;
 
 // Number of coins for each player at the beginning of each round
-var INITIAL_COINS = 10;
+var INITIAL_COINS = settings.INITIAL_COINS;
 
 function shuffleArray(o) {
     for (var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);

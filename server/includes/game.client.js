@@ -64,7 +64,7 @@ stager.setOnInit(function() {
             isTimeOut: isTimeOut
         });
         console.log(' Your contribution: ' + bid.contrib + '.');
-        console.log(' Your demand: ' + bid.demand + '.');       
+        console.log(' Your demand: ' + bid.demand + '.');
         node.done();
     });
 
@@ -96,16 +96,14 @@ stager.setOnInit(function() {
         if (checkResults.success) {
             contrib = parseInt(W.getElementById('contribution').value, 10);
             demand = parseInt(W.getElementById('demand').value, 10);
-        }
-        else {
+        } else {
             previousChoice = node.game.getPreviousChoice();
-            
+
             if (checkResults.errContrib) {
-                
+
                 if (node.game.getCurrentGameStage().round === 1) {
-                    contrib = JSUS.randomInt(-1,10);
-                }
-                else {
+                    contrib = JSUS.randomInt(-1, 10);
+                } else {
                     contrib = previousChoice.contrib;
                 }
                 errorC = document.createElement('p');
@@ -113,14 +111,13 @@ stager.setOnInit(function() {
                 W.getElementById('divErrors').appendChild(errorC);
                 W.getElementById('contribution').value = contrib;
             }
-            
+
             // In ENDO we check the demand too.
             if (checkResults.errDemand) {
-                
+
                 if (node.game.getCurrentGameStage().round === 1) {
-                    demand = JSUS.randomInt(-1,10);
-                }
-                else {
+                    demand = JSUS.randomInt(-1, 10);
+                } else {
                     demand = previousChoice.demand;
                 }
                 errorD = document.createElement('p');
@@ -133,7 +130,7 @@ stager.setOnInit(function() {
         return {
             contrib: contrib,
             demand: demand
-        };        
+        };
     };
 
     // Retrieves and checks the current input for contribution, and for
@@ -142,9 +139,9 @@ stager.setOnInit(function() {
     this.checkInputs = function() {
         var contrib, demand, values;
         var divErrors, errorC, errorD;
-        
+
         divErrors = W.getElementById('divErrors');
-        
+
         // Clear previous errors.
         divErrors.innerHTML = '';
 
@@ -160,7 +157,7 @@ stager.setOnInit(function() {
 
         // In ENDO we check the demand too.
         if (node.game.shouldCheckDemand()) {
-                
+
             demand = W.getElementById('demand').value;
 
             if (!node.game.isValidDemand(demand)) {
@@ -173,8 +170,8 @@ stager.setOnInit(function() {
 
         return {
             success: !(errorC || errorD),
-            errContrib: !!errorC,
-            errDemand: !!errorD
+            errContrib: !! errorC,
+            errDemand: !! errorD
         };
     };
 
@@ -184,7 +181,7 @@ stager.setOnInit(function() {
         var values, barsDiv, showDemand;
 
         values = node.game.oldContribDemand,
-        showDemand = !!values[0][0][0][1];
+        showDemand = !! values[0][0][0][1];
 
         barsDiv = W.getElementById('barsResults'),
         payoffSpan = W.getElementById('payoff');
@@ -228,15 +225,14 @@ stager.setOnInit(function() {
 
     this.fitPage2Treatment = function(treatment) {
         // Hides Demand if room type is not endo.
-        W.getElementById('demandBox').style.display = 
+        W.getElementById('demandBox').style.display =
             treatment === 'endo' ? '' : 'none';
-        
+
         // Shows the correct helper text depending on game type.
-        if (treatment  === 'blackbox') {
+        if (treatment === 'blackbox') {
             toHide = W.getFrameDocument()
                 .getElementsByClassName('other-game-type');
-        }
-        else {
+        } else {
             toHide = W.getFrameDocument()
                 .getElementsByClassName('blackbox-game-type');
         }
@@ -248,7 +244,7 @@ stager.setOnInit(function() {
 
     this.displaySummaryPrevRound = function(treatment) {
         var oldChoice, oldContrib, oldDemand, payoff, save, groupReturn;
-        
+
         // Shows previous round if round number is not 1.
         if (node.game.getCurrentGameStage().round !== 1) {
 
@@ -259,17 +255,16 @@ stager.setOnInit(function() {
             groupReturn = payoff - save;
 
             W.getElementById('previous-round-info').style.display = 'block';
-             // Updates display for current round.
+            // Updates display for current round.
             W.getElementById('yourPB').innerHTML = save;
             W.getElementById('yourOldContrib').innerHTML = oldContrib;
             W.getElementById('yourReturn').innerHTML = groupReturn;
             W.getElementById('yourPayoff').innerHTML = payoff;
-            
+
             if (treatment === 'endo') {
                 oldDemand = oldChoice.demand;
                 W.getElementById('yourOldDemand').innerHTML = oldDemand;
-            }
-            else {
+            } else {
                 W.getElementById('summaryPreviousDemand').style.display = 'none';
             }
         }
@@ -310,11 +305,10 @@ function instructions() {
 
         if (/low|high/g.test(node.game.roomType)) {
             W.getElementById('lowhigh').style.display = 'inline';
-        } 
-        else {
+        } else {
             W.getElementById(node.game.roomType).style.display = 'inline';
         }
-        
+
         node.env('auto', function() {
             node.timer.randomEmit('DONE', 2000);
         });
@@ -335,7 +329,7 @@ function quiz() {
             node.timer.randomEmit('DONE', 2000);
         });
     });
-    
+
     console.log('Quiz');
 }
 
@@ -343,13 +337,13 @@ function showResults(values) {
 
     W.loadFrame('/meritocracy/html/results.html', function() {
         node.on.data('results', function(values) {
-            var treatment, b, demand;       
+            var treatment, b, demand;
             treatment = node.env('roomType');
 
             console.log('Received results.');
-            values = !!values ? values.data : node.game.oldContribDemand;
+            values = !! values ? values.data : node.game.oldContribDemand;
             node.game.oldContribDemand = values;
-            
+
             node.game.fitPage2Treatment(treatment);
 
             if (treatment === 'endo') {
@@ -398,11 +392,11 @@ function bid() {
         var toHide, iter;
         var b, options, other;
         var treatment;
-        
+
         treatment = node.env('roomType');
 
         node.game.displaySummaryPrevRound(treatment);
-        
+
         // Re-enable input.
         W.getElementById('submitOffer').disabled = '';
         // Clear previous errors.
@@ -420,8 +414,8 @@ function bid() {
         // AUTOPLAY.
         node.env('auto', function() {
             node.timer.randomExec(function() {
-                node.emit('BID_DONE', JSUS.randomInt(-1,10), 
-                          JSUS.randomInt(-1,10), other);
+                node.emit('BID_DONE', JSUS.randomInt(-1, 10),
+                    JSUS.randomInt(-1, 10), other);
             }, 4000);
         });
 
@@ -430,7 +424,7 @@ function bid() {
             var validation;
             console.log('TIMEUP !');
             validation = node.game.checkInputs();
-            validInputs = node.game.correctInputs(validation); 
+            validInputs = node.game.correctInputs(validation);
             node.emit('BID_DONE', validInputs, true);
         });
 
@@ -438,7 +432,7 @@ function bid() {
             var validation;
             validation = node.game.checkInputs();
             if (!validation.success) return;
-            validInputs = node.game.correctInputs(validation);        
+            validInputs = node.game.correctInputs(validation);
             node.emit('BID_DONE', validInputs, false);
         };
 
@@ -474,7 +468,7 @@ function clearFrame() {
 function notEnoughPlayers() {
     node.game.pause();
     W.lockFrame('The other player disconnected. We are now waiting to see if ' +
-                ' he or she reconnects. If not the game will be terminated.');
+        ' he or she reconnects. If not the game will be terminated.');
 }
 
 // Add all the stages into the stager.
@@ -603,12 +597,12 @@ var REPEAT = 20;
 
 stager.init()
 // .next('precache')
-//    .next('instructions')
+.next('instructions')
 //    .next('quiz')
-      .repeat('meritocracy', REPEAT)
+.repeat('meritocracy', REPEAT)
 //    .next('questionnaire')
 // .next('endgame')
-    .gameover();
+.gameover();
 
 // We serialize the game sequence before sending it.
 game.plot = stager.getState();

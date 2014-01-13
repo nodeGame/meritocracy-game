@@ -443,6 +443,7 @@ function bid() {
 
 function postgame() {
     W.loadFrame('/meritocracy/html/postgame.html', function() {
+
         node.env('auto', function() {
             node.timer.randomEmit('DONE');
         });
@@ -597,10 +598,10 @@ var REPEAT = 20;
 
 stager.init()
 // .next('precache')
-.next('instructions')
+//.next('instructions')
 //    .next('quiz')
-.repeat('meritocracy', REPEAT)
-//    .next('questionnaire')
+//.repeat('meritocracy', REPEAT)
+.next('questionnaire')
 // .next('endgame')
 .gameover();
 

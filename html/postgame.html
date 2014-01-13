@@ -1,11 +1,41 @@
 <!doctype html>
 <title>POSTGAME</title>
 <link rel="stylesheet" type="text/css" href="css/style.css">
-<body>
-  <div id="root">
-    <h1> Please report about your game experience </h1>
-    <p> Did the game proceed as expected? Did you notice any technical flaw, or irregular behavior from any other player?</p>
-    <textarea rows="10" cols="20" id="comment"></textarea>
-    <button id="comment_done" onclick='javascript:parent.node.done();'>Click here when you are done</button>
-  </div>
+<style type="text/css">
+	#root{
+		margin: auto;
+		text-align: justify;
+		max-width: 600px;
+	}
+	.tabbed {
+		margin-left:50px;
+	}
+</style>
+<body align="center">
+	<div id="root">
+		<h1> A last few questions... </h1>
+		<div>
+			<h4>Have you participated in other social experiments before ?</h4>
+			<input type="radio" name="played-other-experiment" value="0"> No<br>
+			<input type="radio" name="played-other-experiment" value="1"> Yes<br>
+		</div>
+		<div>
+			<h4>Did you follow a strategy while playing ?</h4>
+			<input type="radio" name="followed-strategy" value="0"> No<br>
+			<input type="radio" name="followed-strategy" value="1"> Yes<br>
+			<div class="tabbed">
+				<h4>If yes, which one ?</h4>
+				<input type="radio" name="followed-strategy-choice" value="random"> Random<br>
+				<input type="radio" name="followed-strategy-choice" value="egoist"> Egoistical Benefit<br>
+				<input type="radio" name="followed-strategy-choice" value="team"> Team Benefit<br>
+				<input type="radio" name="followed-strategy-choice" value="other"> Other<br>
+			</div>
+		</div>
+		<div>
+			<p> Did the game proceed as expected? Did you notice any technical flaw, or irregular behavior from any other player?</p>
+			<textarea rows="10" cols="20" id="comment"></textarea>
+
+		</div>
+		<button id="comment_done" onclick='javascript:parent.node.done();'>Click here when you are done</button>
+	</div>
 </body>

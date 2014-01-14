@@ -18,29 +18,25 @@
 	<div id="root">
 		<h1> A last few questions... </h1>
 		<div>
-			<h4>1. What do you think is the name of this game ?</h4>
-			<input type="text" name="game-name" size="50" /><br>
+			<h4>* 1. What do you think is the name of this game ?</h4>
+			<input type="text" name="game-name" id="game-name" size="50" /><br>
 		</div>
 		<div>
-			<h4>2. Have you participated in other social experiments before ?</h4>
-			<input type="radio" name="played-other-experiment" value="0"> No<br>
-			<input type="radio" name="played-other-experiment" value="1"> Yes<br>
+			<h4>* 2. Have you participated in other social experiments before ?</h4>
+			<input type="radio" name="played-other-experiment" value="0" /> No<br>
+			<input type="radio" name="played-other-experiment" value="1" /> Yes<br>
 		</div>
 		<div>
-			<h4>3. Did you follow a strategy while playing ?</h4>
-			<input type="radio" name="followed-strategy" value="0"> No<br>
-			<input type="radio" name="followed-strategy" value="1"> Yes<br>
-		</div>
-		<div>
-			<h4>4. If yes, which one ?</h4>
+			<h4>* 3. Describe the strategy you played: </h4>
 			<!-- When changing the values of radios, don't forget to change the verification in game.client.js in postgame() -->
-			<input type="radio" name="followed-strategy-choice" value="random"> Random<br>
-			<input type="radio" name="followed-strategy-choice" value="egoist"> Egoistical Benefit<br>
-			<input type="radio" name="followed-strategy-choice" value="team"> Team Benefit<br>
-			<input type="radio" name="followed-strategy-choice" value="other"> Other<br>
+			<input type="radio" name="followed-strategy-choice" value="random" /> Randomly chose numbers<br>
+			<input type="radio" name="followed-strategy-choice" value="egoist" /> Maximized personnal benefit<br>
+			<input type="radio" name="followed-strategy-choice" value="team" /> Maximized team benefit<br>
+			<input type="radio" name="followed-strategy-choice" value="other" /> Other (please describe)<br>
+			<textarea rows="10" cols="60" id="strategy-comment"></textarea>
 		</div>
 		<div>
-			<p>5. Did the game proceed as expected? Did you notice any technical flaw, or irregular behavior from any other player?</p>
+			<h4>4. Did the game proceed as expected? Did you notice any technical flaw, or irregular behavior from any other player?</h4>
 			<textarea rows="10" cols="60" id="comment"></textarea>
 
 		</div>

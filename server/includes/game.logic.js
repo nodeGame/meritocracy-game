@@ -76,6 +76,21 @@ module.exports = function(node, channel, gameRoom) {
         }
     });
 
+    node.on.data('questionnaire', function(e) {
+        var saveObject = {
+            from: e.from,
+            created: e.created,
+            id: e.id,
+            session: e.session,
+            additionalComments: e.data.comments,
+            participationSocExp: e.data.socExp,
+            suggestedGameName: e.data.gameName,
+            strategyChoice: e.data.stratChoice,
+            strategyComments: e.data.strategyComments,
+        };
+        mdb.store(saveObject);
+    });
+
     function doMatch() {
         var g, bidder, respondent, data_b, data_r;
 
@@ -321,7 +336,7 @@ module.exports = function(node, channel, gameRoom) {
     // Here we define the sequence of stages of the game (game plot).
     stager
         .init()
-    // .next('precache')
+    //    .next('precache')
     //.next('instructions')
     //    .next('quiz')
     //.repeat('meritocracy', REPEAT)

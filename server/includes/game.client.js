@@ -448,14 +448,17 @@ function postgame() {
             node.timer.randomEmit('DONE');
         });
 
-        b = W.getElementById('comment_done');
-        b.onclick(function() {
+        var b = W.getElementById('comment_done');
+        b.onclick = function() {
+            debugger;
             var iter,
-                gameName = W.getElementById('game-name').value;
-            socExp = W.getElementsByName('played-other-experiment'),
-            stratBool = W.getElementsByName('followed-strategy'),
-            stratChoice = W.getElementsByName('followed-strategy-choice'),
-            comments = W.getElementById('comment').value;
+                T = W.getFrameDocument(),
+                gameName = T.getElementById('game-name').value,
+                stratComment = T.getElementById('strategy-comment').value,
+                socExp = T.getElementsByName('played-other-experiment'),
+                stratChoice = T.getElementsByName('followed-strategy-choice'),
+                comments = T.getElementById('comment').value;
+
             // Getting values of form.
             for (iter = 0; iter < socExp.length; iter++) {
                 if (socExp[iter].checked) {
@@ -463,54 +466,58 @@ function postgame() {
                     break;
                 }
             }
-            for (iter = 0; iter < stratBool.length; iter++) {
-                if (stratBool[iter].checked) {
-                    stratBool = stratBool[iter].value;
+
+            for (iter = 0; iter < stratChoice.length; iter++) {
+                if (stratChoice[iter].checked) {
+                    stratChoice = stratChoice[iter].value;
                     break;
-                }
-            }
-            if (stratBool == '1') {
-                for (iter = 0; iter < stratChoice.length; iter++) {
-                    if (stratChoice[iter].checked) {
-                        stratChoice = stratChoice[iter].value;
-                        break;
-                    }
                 }
             }
 
             // Checking if values are correct.
-            if (['0', '1'].indexOf(socExp.toString()) === -1 ||
-                ['0', '1'].indexOf(stratBool.toString()) === -1) {
-                W.getElementById('divErrors').innerHTML +=
-                    '<p>Please select an answer for each question.</p>';
+            if (['0', '1'].indexOf(socExp.toString()) === -1) {
+                W.getElementById('divErrors').innerHTML =
+                    '<p>Please select an answer for each question with *.</p>';
                 return false;
             }
-            if (stratBool == '1' &&
-                ['random', 'egoist', 'team', 'other'].indexof(stratChoice) === -1) {
-                W.getElementById('divErrors').innerHTML +=
+
+            if (['random',
+                'egoist',
+                'team',
+                'other'
+            ].indexOf(stratChoice) === -1) {
+                W.getElementById('divErrors').innerHTML =
                     '<p>Please select an answer for question 3.</p>';
                 return false;
             }
 
-            // Sending values to server.
-            node.say('BID_DONE', {
+            if (gameName === '') {
+                W.getElementById('divErrors').innerHTML =
+                    '<p>Please give a game name at question 1.</p>';
+                return false;
+            }
+
+            console.log({
+                gameName: gameName,
                 socExp: socExp,
-                stratBool: stratBool,
                 stratChoice: stratChoice,
-                comments: comments
-            }, false);
+                comments: comments,
+                stratComment: stratComment
+            });
 
+            // Sending values to server.
+            node.set('questionnaire', {
+                gameName: gameName,
+                socExp: socExp,
+                stratChoice: stratChoice,
+                comments: comments,
+                stratComment: stratComment
+            });
 
-            // node.set('bid', {
-            //     demand: bid.demand,
-            //     contribution: bid.contrib,
-            //     isTimeOut: isTimeOut
-            // });
-            // console.log(' Your contribution: ' + bid.contrib + '.');
-            // console.log(' Your demand: ' + bid.demand + '.');
-            // node.done();
+            alert('Thank you very much. Game Ended.');
+            node.done();
 
-        });
+        };
     });
     console.log('Postgame');
 }
@@ -661,7 +668,7 @@ stager.addStage({
 var REPEAT = 20;
 
 stager.init()
-// .next('precache')
+//    .next('precache')
 //.next('instructions')
 //    .next('quiz')
 //.repeat('meritocracy', REPEAT)

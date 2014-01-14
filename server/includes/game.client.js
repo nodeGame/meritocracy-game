@@ -146,7 +146,7 @@ stager.setOnInit(function() {
         divErrors.innerHTML = '';
 
         // Always check the contribution.
-        contrib = W.getElementById('contribution').value;;
+        contrib = W.getElementById('contribution').value;
 
         if (!node.game.isValidContribution(contrib)) {
             errorC = document.createElement('p');
@@ -177,13 +177,13 @@ stager.setOnInit(function() {
 
     // This function is called to create the bars.
     this.updateResults = function() {
-        var group, player, iter, jter, div, subdiv, color, save;
-        var values, barsDiv, showDemand;
+        var group, player, iter, jter, div, subdiv, color, save,
+            values, barsDiv, showDemand, payoffSpan;
 
-        values = node.game.oldContribDemand,
+        values = node.game.oldContribDemand;
         showDemand = !! values[0][0][0][1];
 
-        barsDiv = W.getElementById('barsResults'),
+        barsDiv = W.getElementById('barsResults');
         payoffSpan = W.getElementById('payoff');
 
         barsDiv.innerHTML = '';
@@ -224,6 +224,7 @@ stager.setOnInit(function() {
     };
 
     this.fitPage2Treatment = function(treatment) {
+        var iter, toHide;
         // Hides Demand if room type is not endo.
         W.getElementById('demandBox').style.display =
             treatment === 'endo' ? '' : 'none';

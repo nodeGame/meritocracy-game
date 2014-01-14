@@ -10,32 +10,41 @@
 	.tabbed {
 		margin-left:50px;
 	}
+	#divErrors {
+		color:red;
+	}
 </style>
 <body align="center">
 	<div id="root">
 		<h1> A last few questions... </h1>
 		<div>
-			<h4>Have you participated in other social experiments before ?</h4>
+			<h4>1. What do you think is the name of this game ?</h4>
+			<input type="text" name="game-name" size="50" /><br>
+		</div>
+		<div>
+			<h4>2. Have you participated in other social experiments before ?</h4>
 			<input type="radio" name="played-other-experiment" value="0"> No<br>
 			<input type="radio" name="played-other-experiment" value="1"> Yes<br>
 		</div>
 		<div>
-			<h4>Did you follow a strategy while playing ?</h4>
+			<h4>3. Did you follow a strategy while playing ?</h4>
 			<input type="radio" name="followed-strategy" value="0"> No<br>
 			<input type="radio" name="followed-strategy" value="1"> Yes<br>
-			<div class="tabbed">
-				<h4>If yes, which one ?</h4>
-				<input type="radio" name="followed-strategy-choice" value="random"> Random<br>
-				<input type="radio" name="followed-strategy-choice" value="egoist"> Egoistical Benefit<br>
-				<input type="radio" name="followed-strategy-choice" value="team"> Team Benefit<br>
-				<input type="radio" name="followed-strategy-choice" value="other"> Other<br>
-			</div>
 		</div>
 		<div>
-			<p> Did the game proceed as expected? Did you notice any technical flaw, or irregular behavior from any other player?</p>
-			<textarea rows="10" cols="20" id="comment"></textarea>
+			<h4>4. If yes, which one ?</h4>
+			<!-- When changing the values of radios, don't forget to change the verification in game.client.js in postgame() -->
+			<input type="radio" name="followed-strategy-choice" value="random"> Random<br>
+			<input type="radio" name="followed-strategy-choice" value="egoist"> Egoistical Benefit<br>
+			<input type="radio" name="followed-strategy-choice" value="team"> Team Benefit<br>
+			<input type="radio" name="followed-strategy-choice" value="other"> Other<br>
+		</div>
+		<div>
+			<p>5. Did the game proceed as expected? Did you notice any technical flaw, or irregular behavior from any other player?</p>
+			<textarea rows="10" cols="60" id="comment"></textarea>
 
 		</div>
-		<button id="comment_done" onclick='javascript:parent.node.done();'>Click here when you are done</button>
+		<div id="divErrors"></div>
+		<button id="comment_done">Click here when you are done</button>
 	</div>
 </body>

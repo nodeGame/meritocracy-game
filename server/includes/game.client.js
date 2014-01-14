@@ -447,6 +447,70 @@ function postgame() {
         node.env('auto', function() {
             node.timer.randomEmit('DONE');
         });
+
+        b = W.getElementById('comment_done');
+        b.onclick(function() {
+            var iter,
+                gameName = W.getElementById('game-name').value;
+            socExp = W.getElementsByName('played-other-experiment'),
+            stratBool = W.getElementsByName('followed-strategy'),
+            stratChoice = W.getElementsByName('followed-strategy-choice'),
+            comments = W.getElementById('comment').value;
+            // Getting values of form.
+            for (iter = 0; iter < socExp.length; iter++) {
+                if (socExp[iter].checked) {
+                    socExp = socExp[iter].value;
+                    break;
+                }
+            }
+            for (iter = 0; iter < stratBool.length; iter++) {
+                if (stratBool[iter].checked) {
+                    stratBool = stratBool[iter].value;
+                    break;
+                }
+            }
+            if (stratBool == '1') {
+                for (iter = 0; iter < stratChoice.length; iter++) {
+                    if (stratChoice[iter].checked) {
+                        stratChoice = stratChoice[iter].value;
+                        break;
+                    }
+                }
+            }
+
+            // Checking if values are correct.
+            if (['0', '1'].indexOf(socExp.toString()) === -1 ||
+                ['0', '1'].indexOf(stratBool.toString()) === -1) {
+                W.getElementById('divErrors').innerHTML +=
+                    '<p>Please select an answer for each question.</p>';
+                return false;
+            }
+            if (stratBool == '1' &&
+                ['random', 'egoist', 'team', 'other'].indexof(stratChoice) === -1) {
+                W.getElementById('divErrors').innerHTML +=
+                    '<p>Please select an answer for question 3.</p>';
+                return false;
+            }
+
+            // Sending values to server.
+            node.say('BID_DONE', {
+                socExp: socExp,
+                stratBool: stratBool,
+                stratChoice: stratChoice,
+                comments: comments
+            }, false);
+
+
+            // node.set('bid', {
+            //     demand: bid.demand,
+            //     contribution: bid.contrib,
+            //     isTimeOut: isTimeOut
+            // });
+            // console.log(' Your contribution: ' + bid.contrib + '.');
+            // console.log(' Your demand: ' + bid.demand + '.');
+            // node.done();
+
+        });
     });
     console.log('Postgame');
 }

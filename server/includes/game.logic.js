@@ -51,7 +51,7 @@ var REPEAT = settings.REPEAT;
 module.exports = function(node, channel, gameRoom) {
 
     var treatment = gameRoom.group;
-    
+
     var treatments = channel.require(__dirname + '/treatments.js', {
         node: node,
         treatment: treatment,
@@ -65,7 +65,7 @@ module.exports = function(node, channel, gameRoom) {
     });
 
     mdb.connect(function() {});
-    
+
     // Reads in descil-mturk configuration.
     var confPath = path.resolve(__dirname, '..', 'descil.conf.js');
     var dk = require('descil-mturk')(confPath);
@@ -74,6 +74,21 @@ module.exports = function(node, channel, gameRoom) {
         if (!dk.codes.size()) {
             throw new Errors('game.logic: codes not found.');
         }
+    });
+
+    node.on.data('questionnaire', function(e) {
+        var saveObject = {
+            from: e.from,
+            created: e.created,
+            id: e.id,
+            session: e.session,
+            additionalComments: e.data.comments,
+            participationSocExp: e.data.socExp,
+            suggestedGameName: e.data.gameName,
+            strategyChoice: e.data.stratChoice,
+            strategyComments: e.data.strategyComments,
+        };
+        mdb.store(saveObject);
     });
 
     function doMatch() {
@@ -100,20 +115,20 @@ module.exports = function(node, channel, gameRoom) {
 
     // Event handler registered in the init function are always valid.
     stager.setOnInit(function() {
-        console.log('********************** meritocracy room ' + counter++ + ' **********************');
+        console.log('********************** meritocracy room ' + counter+++' **********************');
 
         var disconnected;
         disconnected = {};
-        
+
         node.game.savePlayerValues = function(p, payoff, positionInNoisyRank,
-                                              ranking, noisyRanking,
-                                              groupStats,
-                                              currentStage) {
+            ranking, noisyRanking,
+            groupStats,
+            currentStage) {
 
             var noisyContribution, finalGroupStats;
 
             noisyContribution = 'undefined' === typeof p.noisyContribution ?
-                'NA' : p.noiseContribution; 
+                'NA' : p.noiseContribution;
 
             finalGroupStats = groupStats[groupNames[positionInNoisyRank[0]]];
             debugger
@@ -137,14 +152,14 @@ module.exports = function(node, channel, gameRoom) {
             });
         };
 
-        node.game.saveRoundResults = function(ranking, groupStats, 
-                                              noisyRanking, noisyGroupStats) {
+        node.game.saveRoundResults = function(ranking, groupStats,
+            noisyRanking, noisyGroupStats) {
             mdb.store({
                 session: gameRoom.name,
                 condition: treatment,
                 ranking: ranking,
-                noisyRanking: noisyRanking,                
-                groupAverages: groupStats,                
+                noisyRanking: noisyRanking,
+                groupAverages: groupStats,
                 noisyGroupAverages: noisyGroupStats
             });
         };
@@ -321,11 +336,11 @@ module.exports = function(node, channel, gameRoom) {
     // Here we define the sequence of stages of the game (game plot).
     stager
         .init()
-    // .next('precache')
-    //   .next('instructions')
-    //   .next('quiz')
-       .repeat('meritocracy', REPEAT)
-    //   .next('questionnaire')
+    //    .next('precache')
+    //.next('instructions')
+    //    .next('quiz')
+    //.repeat('meritocracy', REPEAT)
+    .next('questionnaire')
     // .next('endgame')
     .gameover();
 

@@ -460,7 +460,7 @@ function postgame() {
                 stratChoice = T.getElementsByName('followed-strategy-choice'),
                 comments = T.getElementById('comment').value;
 
-            var errors = [];
+            var errors = [], stratCommentErr = false, errDiv;
 
             // Getting values of form.
             for (iter = 0; iter < socExp.length; iter++) {
@@ -472,7 +472,7 @@ function postgame() {
 
             for (iter = 0; iter < stratChoice.length; iter++) {
                 if (stratChoice[iter].checked) {
-                    stratChoice = stratChoice[iter].value;
+                    stratChoice = stratChoice[iter].value;                    
                     break;
                 }
             }
@@ -495,13 +495,24 @@ function postgame() {
                 errors.push('3.');
             }
 
+            if (stratChoice === 'other') {
+                if (stratComment.length < 5) {
+                    errors.push('3.');
+                    stratCommentErr = true;
+                }
+            }
+
             if (errors.length) {
-                errors = errors.length === 1 ?
-                    'Please answer for question ' + errors[0] :
-                    'Please answer for question ' + errors.join(' ');
+                errDiv = W.getElementById('divErrors'); 
+                errors = '<p>Please answer question' + 
+                    (errors.length === 1 ?
+                     ' ' + errors[0] : 's ' + errors.join(' ')) + '</p>';
                 
-                W.getElementById('divErrors').innerHTML = '<p>' + errors +
-                    '</p>';
+                if (stratCommentErr) {
+                    errors += '<p>Answer 3. is too short.</p>';
+                }
+
+                errDiv.innerHTML = errors;
                 return false;
             }
 

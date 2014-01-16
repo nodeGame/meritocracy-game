@@ -96,14 +96,16 @@ stager.setOnInit(function() {
         if (checkResults.success) {
             contrib = parseInt(W.getElementById('contribution').value, 10);
             demand = parseInt(W.getElementById('demand').value, 10);
-        } else {
+        } 
+        else {
             previousChoice = node.game.getPreviousChoice();
 
             if (checkResults.errContrib) {
 
                 if (node.game.getCurrentGameStage().round === 1) {
                     contrib = JSUS.randomInt(-1, 10);
-                } else {
+                } 
+                else {
                     contrib = previousChoice.contrib;
                 }
                 errorC = document.createElement('p');
@@ -117,7 +119,8 @@ stager.setOnInit(function() {
 
                 if (node.game.getCurrentGameStage().round === 1) {
                     demand = JSUS.randomInt(-1, 10);
-                } else {
+                } 
+                else {
                     demand = previousChoice.demand;
                 }
                 errorD = document.createElement('p');
@@ -232,7 +235,8 @@ stager.setOnInit(function() {
         if (treatment === 'blackbox') {
             toHide = W.getFrameDocument()
                 .getElementsByClassName('other-game-type');
-        } else {
+        } 
+        else {
             toHide = W.getFrameDocument()
                 .getElementsByClassName('blackbox-game-type');
         }
@@ -684,13 +688,11 @@ stager.addStage({
 // Now that all the stages have been added,
 // we can build the game plot
 
-var REPEAT = 20;
-
 stager.init()
 //    .next('precache')
-//.next('instructions')
-//    .next('quiz')
-//.repeat('meritocracy', REPEAT)
+.next('instructions')
+    .next('quiz')
+.repeat('meritocracy', settings.REPEAT)
 .next('questionnaire')
 // .next('endgame')
 .gameover();

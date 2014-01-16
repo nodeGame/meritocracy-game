@@ -264,7 +264,8 @@ stager.setOnInit(function() {
             if (treatment === 'endo') {
                 oldDemand = oldChoice.demand;
                 W.getElementById('yourOldDemand').innerHTML = oldDemand;
-            } else {
+            } 
+            else {
                 W.getElementById('summaryPreviousDemand').style.display = 'none';
             }
         }
@@ -305,7 +306,8 @@ function instructions() {
 
         if (/low|high/g.test(node.game.roomType)) {
             W.getElementById('lowhigh').style.display = 'inline';
-        } else {
+        } 
+        else {
             W.getElementById(node.game.roomType).style.display = 'inline';
         }
 
@@ -450,7 +452,6 @@ function postgame() {
 
         var b = W.getElementById('comment_done');
         b.onclick = function() {
-            debugger;
             var iter,
                 T = W.getFrameDocument(),
                 gameName = T.getElementById('game-name').value,
@@ -458,6 +459,8 @@ function postgame() {
                 socExp = T.getElementsByName('played-other-experiment'),
                 stratChoice = T.getElementsByName('followed-strategy-choice'),
                 comments = T.getElementById('comment').value;
+
+            var errors = [];
 
             // Getting values of form.
             for (iter = 0; iter < socExp.length; iter++) {
@@ -475,10 +478,13 @@ function postgame() {
             }
 
             // Checking if values are correct.
+
+            if (gameName === '') {
+                errors.push('1.');
+            }
+
             if (['0', '1'].indexOf(socExp.toString()) === -1) {
-                W.getElementById('divErrors').innerHTML =
-                    '<p>Please select an answer for each question with *.</p>';
-                return false;
+                errors.push('2.');
             }
 
             if (['random',
@@ -486,14 +492,16 @@ function postgame() {
                 'team',
                 'other'
             ].indexOf(stratChoice) === -1) {
-                W.getElementById('divErrors').innerHTML =
-                    '<p>Please select an answer for question 3.</p>';
-                return false;
+                errors.push('3.');
             }
 
-            if (gameName === '') {
-                W.getElementById('divErrors').innerHTML =
-                    '<p>Please give a game name at question 1.</p>';
+            if (errors.length) {
+                errors = errors.length === 1 ?
+                    'Please answer for question ' + errors[0] :
+                    'Please answer for question ' + errors.join(' ');
+                
+                W.getElementById('divErrors').innerHTML = '<p>' + errors +
+                    '</p>';
                 return false;
             }
 

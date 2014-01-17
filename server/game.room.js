@@ -7,7 +7,7 @@
  * in each client, move them in a separate gaming room, and start the game.
  * ---
  */
-module.exports = function(node, channel, room) {
+module.exports = function (node, channel, room) {
 
     var path = require('path');
 
@@ -21,7 +21,7 @@ module.exports = function(node, channel, room) {
     //            throw new Error('game.room: no codes found.');
     //        }
     //    });
-    dk.readCodes(function() {
+    dk.readCodes(function () {
         if (!dk.codes.size()) {
             throw new Errors('requirements.room: no codes found.');
         }
@@ -65,11 +65,11 @@ module.exports = function(node, channel, room) {
     }, ];
 
     // Assigns a treatment condition to a group.
-    var decideRoom = function(arrayRoom) {
+    var decideRoom = function (arrayRoom) {
         //Implement logic here.
         return arrayRoom[5];
     };
-    
+
     // Load shared settings.
     var settings = require(__dirname + '/includes/game.shared.js');
 
@@ -88,7 +88,7 @@ module.exports = function(node, channel, room) {
     // Creating a unique game stage that will handle all incoming connections. 
     stager.addStage({
         id: 'waiting',
-        cb: function() {
+        cb: function () {
             // Returning true in a stage callback means execution ok.
             return true;
         }
@@ -140,7 +140,7 @@ module.exports = function(node, channel, room) {
 
     // Creating an init function.
     // Event listeners registered here are valid for all the stages of the game.
-    stager.setOnInit(function() {
+    stager.setOnInit(function () {
         var counter = 0;
         var POOL_SIZE = settings.POOL_SIZE;
         var GROUP_SIZE = settings.GROUP_SIZE;
@@ -153,25 +153,25 @@ module.exports = function(node, channel, room) {
 
         // This callback is executed whenever a previously disconnected
         // players reconnects.
-        node.on.preconnect(function(p) {
+        node.on.preconnect(function (p) {
             console.log('Oh...somebody reconnected in the waiting room!', p);
             node.game.pl.add(p);
         });
 
         // This must be done manually for now (maybe will change in the future).
-        node.on.mreconnect(function(p) {
+        node.on.mreconnect(function (p) {
             node.game.ml.add(p);
         });
 
         // This callback is executed when a player connects to the channel.
-        node.on.pconnect(function(p) {
+        node.on.pconnect(function (p) {
             var gameRoom, wRoom, tmpPlayerList, assignedRoom;
             var nPlayers, i, len;
             console.log('-----------Player connected ' + p.id);
 
-//            node.remoteAlert('Your code has been marked as in use. Do not ' +
-//                'leave this page, otherwise you will not be ' +
-//                'able to join the experiment again.', p.id);
+            //            node.remoteAlert('Your code has been marked as in use. Do not ' +
+            //                'leave this page, otherwise you will not be ' +
+            //                'able to join the experiment again.', p.id);
 
             // PlayerList object of waiting players.
             wRoom = room.clients.player;
@@ -217,7 +217,7 @@ module.exports = function(node, channel, room) {
                 });
 
                 // Setting metadata, settings, and plot.
-                tmpPlayerList.each(function(p) {
+                tmpPlayerList.each(function (p) {
                     // Clearing the waiting stage.
                     node.remoteCommand('stop', p.id);
                     // Setting the actual game.
@@ -240,7 +240,7 @@ module.exports = function(node, channel, room) {
             if (nPlayers) {
                 // If there are some players left out of the matching, notify
                 // them that they have to wait more.
-                wRoom.each(function(p) {
+                wRoom.each(function (p) {
                     node.say('waitingRoom', p.id, {
                         poolSize: POOL_SIZE,
                         nPlayers: nPlayers,
@@ -252,7 +252,7 @@ module.exports = function(node, channel, room) {
     });
 
     // This function will be executed once node.game.gameover() is called.
-    stager.setOnGameOver(function() {
+    stager.setOnGameOver(function () {
         console.log('^^^^^^^^^^^^^^^^GAME OVER^^^^^^^^^^^^^^^^^^');
     });
 

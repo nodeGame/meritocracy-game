@@ -334,7 +334,7 @@ module.exports = function(node, channel, gameRoom) {
     // Here we define the sequence of stages of the game (game plot).
     stager
         .init()
-    //    .next('precache')
+        .next('precache')
         .next('instructions')
         .next('quiz')
         .repeat('meritocracy', settings.REPEAT)

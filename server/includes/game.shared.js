@@ -12,15 +12,20 @@ module.exports = {
     // Group settings.
 
     // How many players have to connect before a random subset is drawn.
-    POOL_SIZE: 2,
+    POOL_SIZE: 8,
     // How many players in each group ( must be <= POOL_SIZE).
-    GROUP_SIZE: 2,
+    GROUP_SIZE: 8,
     // Minimum number of players that must be always connected.
-    MIN_PLAYERS: 2,
+    MIN_PLAYERS: 8,
 
     // Game settings.
+
+    // How many times the meritocracy stage is repeated.
     REPEAT: 4,
+    // Names of the groups.
     GROUP_NAMES: ['1', '2', '3', '4'],
+    // How many player in each group.
+    SUBGROUP_SIZE: 4,
     
     // Noise variance. High and low "meritocracy".
     NOISE_HIGH: 2,
@@ -34,6 +39,6 @@ module.exports = {
     DEBUG: true,
 
     // AUTO-PLAY.
-    AUTO: false
+    AUTO: true
 
 };

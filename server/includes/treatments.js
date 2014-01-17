@@ -24,7 +24,7 @@ module.exports = treatments;
 var NOISE_HIGH = settings.NOISE_HIGH;
 var NOISE_LOW = settings.NOISE_LOW;
 
-var GROUP_SIZE = settings.GROUP_SIZE;
+var SUBGROUP_SIZE = settings.SUBGROUP_SIZE;
 
 var GROUP_ACCOUNT_DIVIDER = settings.GROUP_ACCOUNT_DIVIDER;
 
@@ -164,7 +164,7 @@ function sortNoisyContributions(c1, c2) {
 /**
  * Returns payoff
  *
- * @param  {array} groups       contains values for each group/player
+ * @param  {array} contributions Array of contribution values by group
  * @param  {array} position     position of current player
  * @param  {object} currentStage current stage
  * @return {int}              payoff
@@ -190,28 +190,28 @@ function getPayoff(bars, position) {
 function doGroupMatching(sortedContribs) {
     var i, len, groups, entry, ranking, bars;
     var gId, gName;
-
     len = sortedContribs.length;
     groups = [];
     ranking = [];
     bars = [];
     gId = -1;
     for (i = 0; i < len; i++) {
-        if (i % GROUP_SIZE == 0) {
+        if (i % SUBGROUP_SIZE == 0) {
             ++gId;
             groups[gId] = [];
+            bars[gId] = [];
         }
         entry = sortedContribs[i];
         entry.group = groupNames[gId];
 
         groups[gId].push(entry);
         ranking.push(entry.player);
-        bars.push([entry.value.contribution, entry.value.demand]);
+        bars[gId].push([entry.value.contribution, entry.value.demand]);
     }
     return {
         groups: groups,
         ranking: ranking,
-        bars: [bars]
+        bars: bars
     };
 }
 
@@ -294,8 +294,8 @@ function emitPlayersResults(pId, bars, position, payoff) {
 }
 
 // Saves the outcome of a round to database, and communicates it to the clients.
-function finalizeRound(currentStage, bars,
-                       groupStats, groups, ranking, noisyGroupStats,
+function finalizeRound(currentStage, bars, groupStats, 
+                       groups, ranking, noisyGroupStats,
                        noisyGroups, noisyRanking) {
     
     var i, len, j, lenJ, contribObj,
@@ -350,11 +350,13 @@ treatments.exo_perfect = {
         previousStage = node.game.plot.previous(currentStage);
 
         receivedData = node.game.memory.stage[previousStage];
-
+        
         sortedContribs = receivedData
             .sort(sortContributions)
             .fetch();
 
+
+        debugger
         // Original Ranking (without noise).
         matching = doGroupMatching(sortedContribs);
         
@@ -362,7 +364,8 @@ treatments.exo_perfect = {
         ranking = matching.ranking;
         // Array of array of contributions objects.
         groups = matching.groups;
-         // Compute average contrib and demand in each group.
+
+        // Compute average contrib and demand in each group.
         groupStats = computeGroupStats(groups);
        
         // Add Noise (not in this case).
@@ -372,7 +375,7 @@ treatments.exo_perfect = {
 
         // Bars for display in clients.
         bars = matching.bars;
-        
+        //console.log(bars);
         // Save to db, and sends results to players.
         finalizeRound(currentStage, bars,
                       groupStats, groups, ranking,
@@ -411,7 +414,7 @@ treatments.exo_high = {
         groups = matching.groups;
         // Compute average contrib and demand in each group.
         groupStats = computeGroupStats(groups);
-      
+
         // Add Noise.
         receivedData = createNoise(receivedData, NOISE_LOW);
 
@@ -467,7 +470,7 @@ treatments.exo_low = {
         groups = matching.groups;
         // Compute average contrib and demand in each group.
         groupStats = computeGroupStats(groups);
-      
+
         // Add Noise.
         receivedData = createNoise(receivedData, NOISE_HIGH);
 
@@ -524,7 +527,7 @@ treatments.random = {
         groups = matching.groups;
         // Compute average contrib and demand in each group.
         groupStats = computeGroupStats(groups);
-      
+
         // Add Noise (not in this case).
         noisyRanking = ranking;
         noisyGroups = groups;
@@ -659,7 +662,7 @@ function getGroups(groups) {
     subGroup = [];
     gId = -1;
     for (i = 0; i < len; i++) {
-        if (i % GROUP_SIZE == 0) {
+        if (i % SUBGROUP_SIZE == 0) {
             ++gId;
             subGroup[gId] = [];
         }

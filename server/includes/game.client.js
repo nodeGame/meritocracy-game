@@ -96,16 +96,16 @@ stager.setOnInit(function() {
         if (checkResults.success) {
             contrib = parseInt(W.getElementById('contribution').value, 10);
             demand = parseInt(W.getElementById('demand').value, 10);
-        } 
+        }
         else {
-            previousChoice = node.game.getPreviousChoice();
 
             if (checkResults.errContrib) {
 
                 if (node.game.getCurrentGameStage().round === 1) {
                     contrib = JSUS.randomInt(-1, 10);
-                } 
+                }
                 else {
+                    previousChoice = node.game.getPreviousChoice();
                     contrib = previousChoice.contrib;
                 }
                 errorC = document.createElement('p');
@@ -119,8 +119,12 @@ stager.setOnInit(function() {
 
                 if (node.game.getCurrentGameStage().round === 1) {
                     demand = JSUS.randomInt(-1, 10);
-                } 
+                }
                 else {
+                    // Only if error on contrib, we have the previous choice.
+                    if (!previousChoice) {
+                        previousChoice = node.game.getPreviousChoice();
+                    }
                     demand = previousChoice.demand;
                 }
                 errorD = document.createElement('p');
@@ -137,7 +141,7 @@ stager.setOnInit(function() {
     };
 
     // Retrieves and checks the current input for contribution, and for
-    // demand (if requested). Returns an object with the results of the 
+    // demand (if requested). Returns an object with the results of the
     // validation. It also displays a message in case errors are found.
     this.checkInputs = function() {
         var contrib, demand, values;
@@ -180,11 +184,14 @@ stager.setOnInit(function() {
 
     // This function is called to create the bars.
     this.updateResults = function() {
-        var group, player, iter, jter, div, subdiv, color, save;
+        var group, player, i, j, div, subdiv, color, save;
         var values, barsDiv, showDemand;
 
         values = node.game.oldContribDemand,
-        showDemand = !! values[0][0][0][1];
+        showDemand = !!values[0][0][0][1];
+
+        console.log(values);
+        console.log(showDemand);
 
         barsDiv = W.getElementById('barsResults'),
         payoffSpan = W.getElementById('payoff');
@@ -193,13 +200,20 @@ stager.setOnInit(function() {
 
         bars = W.getFrameWindow().bars;
 
-        for (iter = 0; iter < values[0].length; iter++) {
-            group = values[0][iter];
+        for (i = 0; i < values[0].length; i++) {
+            group = values[0][i];
             div = document.createElement('div');
             div.classList.add('groupContainer');
-            for (jter = 0; jter < group.length; jter++) {
-                color = values[1][0] === iter && values[1][1] === jter ? [undefined, '#9932CC'] : ['#DEB887', '#A52A2A'];
-                player = group[jter];
+            for (j = 0; j < group.length; j++) {
+                // It is me?
+                if (values[1][0] === i && values[1][1] === j) {
+                    color = [undefined, '#9932CC'];
+                }
+                else {
+                    color = ['#DEB887', '#A52A2A'];
+                }
+
+                player = group[j];
                 subdiv = document.createElement('div');
                 bars.createBar(subdiv, player[0] * 10, color[0], player[0]);
 
@@ -235,14 +249,14 @@ stager.setOnInit(function() {
         if (treatment === 'blackbox') {
             toHide = W.getFrameDocument()
                 .getElementsByClassName('other-game-type');
-        } 
+        }
         else {
             toHide = W.getFrameDocument()
                 .getElementsByClassName('blackbox-game-type');
         }
 
-        for (iter = 0; iter < toHide.length; iter++) {
-            toHide[iter].style.display = 'none';
+        for (i = 0; i < toHide.length; i++) {
+            toHide[i].style.display = 'none';
         }
     };
 
@@ -268,7 +282,7 @@ stager.setOnInit(function() {
             if (treatment === 'endo') {
                 oldDemand = oldChoice.demand;
                 W.getElementById('yourOldDemand').innerHTML = oldDemand;
-            } 
+            }
             else {
                 W.getElementById('summaryPreviousDemand').style.display = 'none';
             }
@@ -310,7 +324,7 @@ function instructions() {
 
         if (/low|high/g.test(node.game.roomType)) {
             W.getElementById('lowhigh').style.display = 'inline';
-        } 
+        }
         else {
             W.getElementById(node.game.roomType).style.display = 'inline';
         }
@@ -395,7 +409,7 @@ function bid() {
     //
     /////////////////////////////////////////////
     W.loadFrame('/meritocracy/html/bidder.html', function() {
-        var toHide, iter;
+        var toHide, i;
         var b, options, other;
         var treatment;
 
@@ -420,8 +434,9 @@ function bid() {
         // AUTOPLAY.
         node.env('auto', function() {
             node.timer.randomExec(function() {
-                node.emit('BID_DONE', JSUS.randomInt(-1, 10),
-                    JSUS.randomInt(-1, 10), other);
+                validation = node.game.checkInputs();            
+                validInputs = node.game.correctInputs(validation);
+                node.emit('BID_DONE', validInputs, false);
             }, 4000);
         });
 
@@ -429,7 +444,7 @@ function bid() {
         node.on('TIMEUP', function() {
             var validation;
             console.log('TIMEUP !');
-            validation = node.game.checkInputs();
+            validation = node.game.checkInputs();            
             validInputs = node.game.correctInputs(validation);
             node.emit('BID_DONE', validInputs, true);
         });
@@ -456,27 +471,27 @@ function postgame() {
 
         var b = W.getElementById('comment_done');
         b.onclick = function() {
-            var iter,
-                T = W.getFrameDocument(),
-                gameName = T.getElementById('game-name').value,
-                stratComment = T.getElementById('strategy-comment').value,
-                socExp = T.getElementsByName('played-other-experiment'),
-                stratChoice = T.getElementsByName('followed-strategy-choice'),
-                comments = T.getElementById('comment').value;
+            var i,
+            T = W.getFrameDocument(),
+            gameName = T.getElementById('game-name').value,
+            stratComment = T.getElementById('strategy-comment').value,
+            socExp = T.getElementsByName('played-other-experiment'),
+            stratChoice = T.getElementsByName('followed-strategy-choice'),
+            comments = T.getElementById('comment').value;
 
             var errors = [], stratCommentErr = false, errDiv;
 
             // Getting values of form.
-            for (iter = 0; iter < socExp.length; iter++) {
-                if (socExp[iter].checked) {
-                    socExp = socExp[iter].value;
+            for (i = 0; i < socExp.length; i++) {
+                if (socExp[i].checked) {
+                    socExp = socExp[i].value;
                     break;
                 }
             }
 
-            for (iter = 0; iter < stratChoice.length; iter++) {
-                if (stratChoice[iter].checked) {
-                    stratChoice = stratChoice[iter].value;                    
+            for (i = 0; i < stratChoice.length; i++) {
+                if (stratChoice[i].checked) {
+                    stratChoice = stratChoice[i].value;
                     break;
                 }
             }
@@ -492,10 +507,10 @@ function postgame() {
             }
 
             if (['random',
-                'egoist',
-                'team',
-                'other'
-            ].indexOf(stratChoice) === -1) {
+                 'egoist',
+                 'team',
+                 'other'
+                ].indexOf(stratChoice) === -1) {
                 errors.push('3.');
             }
 
@@ -507,11 +522,11 @@ function postgame() {
             }
 
             if (errors.length) {
-                errDiv = W.getElementById('divErrors'); 
-                errors = '<p>Please answer question' + 
+                errDiv = W.getElementById('divErrors');
+                errors = '<p>Please answer question' +
                     (errors.length === 1 ?
                      ' ' + errors[0] : 's ' + errors.join(' ')) + '</p>';
-                
+
                 if (stratCommentErr) {
                     errors += '<p>Answer 3. is too short.</p>';
                 }
@@ -563,7 +578,7 @@ function clearFrame() {
 function notEnoughPlayers() {
     node.game.pause();
     W.lockFrame('The other player disconnected. We are now waiting to see if ' +
-        ' he or she reconnects. If not the game will be terminated.');
+                ' he or she reconnects. If not the game will be terminated.');
 }
 
 // Add all the stages into the stager.
@@ -689,13 +704,13 @@ stager.addStage({
 // we can build the game plot
 
 stager.init()
-//    .next('precache')
-.next('instructions')
-.next('quiz')
-.repeat('meritocracy', settings.REPEAT)
-.next('questionnaire')
+    .next('precache')
+    .next('instructions')
+    .next('quiz')
+    .repeat('meritocracy', settings.REPEAT)
+    .next('questionnaire')
 // .next('endgame')
-.gameover();
+    .gameover();
 
 // We serialize the game sequence before sending it.
 game.plot = stager.getState();

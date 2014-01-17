@@ -198,7 +198,7 @@ module.exports = function(node, channel, room) {
             for (; ++i < len;) {
 
                 // Doing the random matching.
-                tmpPlayerList = wRoom.shuffle().limit(POOL_SIZE);
+                tmpPlayerList = wRoom.shuffle().limit(GROUP_SIZE);
 
                 //Assigning a game room to this list of players
                 assignedRoom = decideRoom(arrayRoomLogic);

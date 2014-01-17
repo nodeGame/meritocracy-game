@@ -613,7 +613,7 @@ treatments.endo = {
         }
 
         return {
-            bars: bars,
+            bars: [bars],
             groups: groups,
             ranking: ranking
         };

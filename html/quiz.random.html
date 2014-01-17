@@ -3,6 +3,11 @@
 <link rel="stylesheet" type="text/css" href="css/quiz.css">
 <link rel="stylesheet" href="css/jqueryui.min.css" />
 <link rel="stylesheet" href="css/bootstrap.min.css" />
+<style type="text/css">
+  th, td {
+    text-align:center;
+  }
+</style>
 <body>
 
   <div id="container_quiz">
@@ -69,7 +74,7 @@
 
       </dl>
       <div id="done_box">
-        <button onclick='javascript:QUIZ.checkAnswers(this);' id="submitQuiz">Click here to check your answers, and start the game. <br>Correct answers <span id="answers_counter">0 / 4</span></button>
+        <button onclick='javascript:QUIZ.checkAnswers(this);' id="submitQuiz" class="btn btn-primary">Click here to check your answers, and start the game. <br>Correct answers <span id="answers_counter">0 / 4</span></button>
       </div>
     </div>
   </div>
@@ -78,10 +83,10 @@
 </body>
 <script src="/meritocracy/js/quiz.js"></script>
 <script type="text/javascript">
-QUIZ = QUIZ({
-  coinsEveryRound: 10,
-  lowestPayement: 7.5,
-  leastGuarantee: 15,
-  likeliness: 0
-});
+  QUIZ = QUIZ({
+    coinsEveryRound: 10,
+    lowestPayement: 7.5,
+    leastGuarantee: 15,
+    likeliness: 0
+  });
 </script>

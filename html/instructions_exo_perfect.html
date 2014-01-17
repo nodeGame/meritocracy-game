@@ -12,7 +12,7 @@
     text-align:justify;
     max-width:600px;
   }
-  td {
+  td, th {
     text-align:center;
   }
   body {
@@ -22,14 +22,13 @@
     width:100%;
     text-align:center;
     margin:auto;
-    background-color:#E0E0E0;
   }
 </style>
 <body>
   <div id="central-container">
     <h1>Instructions. Please read them carefully.</h1>
     <div id="instructions">
-    <div id="exo_perfect">
+      <div id="exo_perfect">
         <p>Welcome to our experiment! 16 people, that is you and 15 others, have joined us.</p>
 
         <p><strong>Your decision.</strong><br /> You will receive 10 coins per round for 20 rounds. Each round, you will have to choose how many coins to put directly into your personal account, and how many coins to put into a group account.</p>
@@ -46,7 +45,7 @@
 
         <p>The total amount of coins in your group account is equal to the sum of the contributions to the group account by each of the group members. That amount is then multiplied by 2 and distributed equally amongst group members. In other words, you will get a return equal to half of the group account total.</p>
 
-        <table>
+        <table class="table table-striped">
           <thead>
             <tr>
               <th>Total number of coins in your group</th><th>Your return</th>
@@ -67,4 +66,7 @@
 
         <p><strong>Total return.</strong><br /> The final amount of coins earned over the whole experiment is worth real money which will be paid out to you according to a fixed exchange rate of XXX.</p>
       </div>
+      
+      If you understood the instructions correctly press the button to proceed to the game. 
+      <input type="button" id="read" value="Proceed to the game" class="btn btn-lg btn-primary" />
     </body>

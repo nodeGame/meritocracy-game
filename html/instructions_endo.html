@@ -29,7 +29,7 @@
   <div id="central-container">
     <h1>Instructions. Please read them carefully.</h1>
     <div id="instructions">
-    <div id="endo">
+      <div id="endo">
         <p>Welcome to our experiment! 16 people, that is you and 15 others, have joined us.</p>
 
         <p>You will receive 10 coins per round for 20 rounds. Each round, you will have to make two independent decisions:</p>
@@ -48,7 +48,7 @@
 
         <p><i>Example 1:</i> This group is <strong>incompatible</strong> because you demand 10 but others only contribute 1.</p>
 
-        <table>
+        <table class="table table-striped">
           <thead>
             <tr>
               <th>Players</th><th>Contributions</th><th>Demands</th>
@@ -64,7 +64,7 @@
 
         <p><i>Example 2:</i> This group is <strong>compatible</strong> because you contribute as much as others demand, and you demand no more than others contribute. The same is true for all other players.</p>
 
-        <table>
+        <table class="table table-striped">
           <thead>
             <tr>
               <th>Players</th><th>Contributions</th><th>Demands</th>
@@ -92,7 +92,7 @@
 
         <p>The total amount of coins in your group account is equal to the sum of the contributions to the group account by each of the group members. Such amount is then multiplied by 2 and distributed equally amongst group members. In other words, you get half of the group account.</p>
 
-        <table>
+        <table class="table table-striped">
           <thead>
             <tr>
               <th>Total number of coins in your group</th><th>Your return</th>
@@ -113,4 +113,7 @@
 
         <p><strong>Total return.</strong><br /> The money which will be paid out to you according to a nal amount of coins earned over the whole experiment is worth real fixed exchange rate of XXX.</p>
       </div>
+      
+      If you understood the instructions correctly press the button to proceed to the game. 
+      <input type="button" id="read" value="Proceed to the game" class="btn btn-lg btn-primary" />
     </body>

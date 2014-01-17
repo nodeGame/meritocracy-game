@@ -186,6 +186,7 @@ stager.setOnInit(function () {
     this.updateResults = function() {
         var group, player, i, j, div, subdiv, color, save;
         var values, barsDiv, showDemand;
+        var text;
 
         values = node.game.oldContribDemand,
         showDemand = !!values[0][0][0][1];
@@ -205,17 +206,21 @@ stager.setOnInit(function () {
             div = document.createElement('div');
             div.classList.add('groupContainer');
             for (j = 0; j < group.length; j++) {
+                
+                player = group[j];
+
                 // It is me?
                 if (values[1][0] === i && values[1][1] === j) {
                     color = [undefined, '#9932CC'];
+                    text = '--> YOU ' + player[0];
                 }
                 else {
                     color = ['#DEB887', '#A52A2A'];
+                    text = player[0];
                 }
 
-                player = group[j];
                 subdiv = document.createElement('div');
-                bars.createBar(subdiv, player[0] * 10, color[0], player[0]);
+                bars.createBar(subdiv, player[0] * 10, color[0], text);
 
                 if (showDemand) {
                     subdiv.classList.add('playerContainer');

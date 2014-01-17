@@ -1,5 +1,5 @@
 /**
- * # Treatment conditions for meritocracy game. 
+ * # Treatment conditions for meritocracy game.
  * Copyright(c) 2014 Stefano Balietti
  * MIT Licensed
  *
@@ -38,14 +38,14 @@ function shuffleArray(o) {
     return o;
 };
 
-var gauss = (function() {
+var gauss = (function () {
     var space = null;
-    return function(mu, sigma) {
+    return function (mu, sigma) {
         var result = 0.0,
-        U = 0.0,
-        V = 0.0,
-        S = 0.0,
-        M;
+            U = 0.0,
+            V = 0.0,
+            S = 0.0,
+            M;
         if (space === null) {
             while (true) {
                 U = Math.random() * 2 - 1; // [0, 2) -> (-1, 2]
@@ -57,12 +57,14 @@ var gauss = (function() {
             }
             if (S < 1) {
                 M = Math.sqrt(-2.0 * Math.log(S) / S);
-            } else {
+            }
+            else {
                 M = Math.sqrt(2.0 * Math.log(S) / S);
             }
             space = V * M;
             result = mu + sigma * M * U;
-        } else {
+        }
+        else {
             result = space * sigma + mu;
             space = null;
         }
@@ -152,6 +154,14 @@ function sortContributions(c1, c2) {
     return 1;
 }
 
+// If two demands are exactly the same, then they are randomly ordered.
+function sortDemands(c1, c2) {
+    if (c1.value.demand > c2.value.demand) return -1;
+    if (c1.value.demand < c2.value.demand) return 1;
+    if (Math.random() <= 0.5) return -1;
+    return 1;
+}
+
 // If two contributions are exactly the same, then they are randomly ordered.
 function sortNoisyContributions(c1, c2) {
     if (c1.value.noisyContribution > c2.value.noisyContribution) return -1;
@@ -223,52 +233,51 @@ function computeGroupStats(groups) {
     var cSumSquared, dSumSquared, cSum, dSum, df;
     out = {};
     i = -1, len = groups.length;
-    for ( ; ++i < len ; ) {
+    for (; ++i < len;) {
         group = groups[i];
         groupName = groupNames[i];
         j = -1, lenJ = group.length;
-        
-        cSum = 0, 
+
+        cSum = 0,
         cSumSquared = 0;
 
         dSum = 0;
         dSumSquared = 0;
 
-        for ( ; ++j < lenJ ; ) {
+        for (; ++j < lenJ;) {
             entry = groups[i][j].value;
-            
+
             cSum += entry.contribution;
             cSumSquared = Math.pow(entry.contribution, 2);
-            
+
             if (ENDO) {
-                dSum += entry.demand;            
+                dSum += entry.demand;
                 dSumSquared = Math.pow(entry.demand, 2);
             }
         }
-        
+
         df = lenJ - 1;
 
         out[groupName] = {
             avgContr: cSum / lenJ,
-            stdContr: df <= 1 ? 'NA' : 
-                Math.sqrt((cSumSquared - (Math.pow(cSum, 2) / lenJ)) / df)
+            stdContr: df <= 1 ? 'NA' : Math.sqrt((cSumSquared - (Math.pow(cSum, 2) / lenJ)) / df)
         };
 
         if (ENDO) {
             out[groupName].avgDemand = dSum / lenJ;
-            out[groupName].stdDemand = df <= 1 ? 'NA' : 
+            out[groupName].stdDemand = df <= 1 ? 'NA' :
                 Math.sqrt((dSumSquared - (Math.pow(dSum, 2) / lenJ)) / df);
         }
-        else {            
+        else {
             out[groupName].avgDemand = 'NA';
-            out[groupName].stdDemand = 'NA';            
+            out[groupName].stdDemand = 'NA';
         }
     }
     return out;
 }
 
 /**
- * Create Noise on contribution. 
+ * Create Noise on contribution.
  * @param  {NDDB} receivedData Received data from client
  * @return {NDDB}              Received data, with noise field
  */
@@ -276,7 +285,7 @@ function createNoise(receivedData, variance) {
     var contrib, iter;
     var i, len;
     i = -1, len = receivedData.db.length;
-    for ( ; ++i < len ; ) {        
+    for (; ++i < len;) {
         contrib = receivedData.db[i].contribution;
         receivedData.db[i].noisyContribution = contrib +
             gauss(0, variance);
@@ -295,38 +304,38 @@ function emitPlayersResults(pId, bars, position, payoff) {
 
 // Saves the outcome of a round to database, and communicates it to the clients.
 function finalizeRound(currentStage, bars,
-                       groupStats, groups, ranking, noisyGroupStats,
-                       noisyGroups, noisyRanking) {
-    
+    groupStats, groups, ranking, noisyGroupStats,
+    noisyGroups, noisyRanking) {
+
     var i, len, j, lenJ, contribObj,
-    pId, positionInNoisyRank, playerPayoff;
+        pId, positionInNoisyRank, playerPayoff;
 
     // Save the results at the group level.
     node.game.saveRoundResults(ranking, groupStats,
-                               noisyRanking, noisyGroupStats);
-    
+        noisyRanking, noisyGroupStats);
+
     // Save the results for each player, and notify him.
     i = -1, len = noisyGroups.length;
-    for ( ; ++i < len ; ) {
+    for (; ++i < len;) {
         j = -1, lenJ = noisyGroups[i].length;
-        for ( ; ++j < lenJ ; ) {
+        for (; ++j < lenJ;) {
             contribObj = noisyGroups[i][j];
-            
+
             // Position in Rank (array of group id, position within group).
             positionInNoisyRank = [i, j];
             pId = contribObj.player;
-            
+
             playerPayoff = getPayoff(bars, positionInNoisyRank);
-            
-            node.game.savePlayerValues(contribObj, playerPayoff, 
-                                       positionInNoisyRank,
-                                       ranking,
-                                       noisyRanking,
-                                       groupStats,
-                                       currentStage);
+
+            node.game.savePlayerValues(contribObj, playerPayoff,
+                positionInNoisyRank,
+                ranking,
+                noisyRanking,
+                groupStats,
+                currentStage);
 
             emitPlayersResults(pId, bars, positionInNoisyRank,
-                               playerPayoff);
+                playerPayoff);
         }
     }
 }
@@ -337,15 +346,15 @@ function finalizeRound(currentStage, bars,
 // EXO PERFECT.
 treatments.exo_perfect = {
 
-    sendResults: function() {
+    sendResults: function () {
         var currentStage, previousStage,
-        receivedData,
-        sortedContribs,
-        matching,
-        ranking, groups, groupStats,
-        noisyRanking, noisyGroups, noisyGroupStats,
-        bars;
-       
+            receivedData,
+            sortedContribs,
+            matching,
+            ranking, groups, groupStats,
+            noisyRanking, noisyGroups, noisyGroupStats,
+            bars;
+
         currentStage = node.game.getCurrentGameStage();
         previousStage = node.game.plot.previous(currentStage);
 
@@ -357,14 +366,14 @@ treatments.exo_perfect = {
 
         // Original Ranking (without noise).
         matching = doGroupMatching(sortedContribs);
-        
+
         // Array of sorted player ids, from top to lowest contribution.
         ranking = matching.ranking;
         // Array of array of contributions objects.
         groups = matching.groups;
-         // Compute average contrib and demand in each group.
+        // Compute average contrib and demand in each group.
         groupStats = computeGroupStats(groups);
-       
+
         // Add Noise (not in this case).
         noisyRanking = ranking;
         noisyGroups = groups;
@@ -372,11 +381,11 @@ treatments.exo_perfect = {
 
         // Bars for display in clients.
         bars = matching.bars;
-        
+
         // Save to db, and sends results to players.
         finalizeRound(currentStage, bars,
-                      groupStats, groups, ranking,
-                      noisyGroupStats, noisyGroups, noisyRanking);
+            groupStats, groups, ranking,
+            noisyGroupStats, noisyGroups, noisyRanking);
     }
 };
 
@@ -384,18 +393,18 @@ treatments.exo_perfect = {
 // EXO HIGH.
 treatments.exo_high = {
 
-    sendResults: function() {
+    sendResults: function () {
         var currentStage, previousStage,
-        receivedData,
-        sortedContribs,
-        matching,
-        ranking, groups, groupStats,
-        noisyRanking, noisyGroups, noisyGroupStats,
-        bars;
-       
+            receivedData,
+            sortedContribs,
+            matching,
+            ranking, groups, groupStats,
+            noisyRanking, noisyGroups, noisyGroupStats,
+            bars;
+
         currentStage = node.game.getCurrentGameStage();
         previousStage = node.game.plot.previous(currentStage);
-         
+
         receivedData = node.game.memory.stage[previousStage];
 
         sortedContribs = receivedData
@@ -404,23 +413,23 @@ treatments.exo_high = {
 
         // Original Ranking (without noise).
         matching = doGroupMatching(sortedContribs);
-        
+
         // Array of sorted player ids, from top to lowest contribution.
         ranking = matching.ranking;
         // Array of array of contributions objects.
         groups = matching.groups;
         // Compute average contrib and demand in each group.
         groupStats = computeGroupStats(groups);
-      
+
         // Add Noise.
         receivedData = createNoise(receivedData, NOISE_LOW);
 
         sortedContribs = receivedData
             .sort(sortNoisyContributions)
             .fetch();
-        
+
         matching = doGroupMatching(sortedContribs);
-        
+
         // Array of sorted player ids, from top to lowest contribution.
         noisyRanking = matching.ranking;
         // Array of array of contributions objects.
@@ -430,28 +439,28 @@ treatments.exo_high = {
 
         // Bars for display in clients.
         bars = matching.bars;
-        
+
         // Save to db, and sends results to players.
         finalizeRound(currentStage, bars,
-                      groupStats, groups, ranking,
-                      noisyGroupStats, noisyGroups, noisyRanking);
+            groupStats, groups, ranking,
+            noisyGroupStats, noisyGroups, noisyRanking);
     }
 };
 
 // EXO LOW.
 treatments.exo_low = {
-    sendResults: function() {
+    sendResults: function () {
         var currentStage, previousStage,
-        receivedData,
-        sortedContribs,
-        matching,
-        ranking, groups, groupStats,
-        noisyRanking, noisyGroups, noisyGroupStats,
-        bars;
-       
+            receivedData,
+            sortedContribs,
+            matching,
+            ranking, groups, groupStats,
+            noisyRanking, noisyGroups, noisyGroupStats,
+            bars;
+
         currentStage = node.game.getCurrentGameStage();
         previousStage = node.game.plot.previous(currentStage);
-         
+
         receivedData = node.game.memory.stage[previousStage];
 
         sortedContribs = receivedData
@@ -460,23 +469,23 @@ treatments.exo_low = {
 
         // Original Ranking (without noise).
         matching = doGroupMatching(sortedContribs);
-        
+
         // Array of sorted player ids, from top to lowest contribution.
         ranking = matching.ranking;
         // Array of array of contributions objects.
         groups = matching.groups;
         // Compute average contrib and demand in each group.
         groupStats = computeGroupStats(groups);
-      
+
         // Add Noise.
         receivedData = createNoise(receivedData, NOISE_HIGH);
 
         sortedContribs = receivedData
             .sort(sortNoisyContributions)
             .fetch();
-        
+
         matching = doGroupMatching(sortedContribs);
-        
+
         // Array of sorted player ids, from top to lowest contribution.
         noisyRanking = matching.ranking;
         // Array of array of contributions objects.
@@ -486,28 +495,28 @@ treatments.exo_low = {
 
         // Bars for display in clients.
         bars = matching.bars;
-        
+
         // Save to db, and sends results to players.
         finalizeRound(currentStage, bars,
-                      groupStats, groups, ranking,
-                      noisyGroupStats, noisyGroups, noisyRanking);
+            groupStats, groups, ranking,
+            noisyGroupStats, noisyGroups, noisyRanking);
     }
 };
 
 // EXO RANDO.
 treatments.random = {
-    sendResults: function() {
+    sendResults: function () {
         var currentStage, previousStage,
-        receivedData,
-        sortedContribs,
-        matching,
-        ranking, groups, groupStats,
-        noisyRanking, noisyGroups, noisyGroupStats,
-        bars;
-       
+            receivedData,
+            sortedContribs,
+            matching,
+            ranking, groups, groupStats,
+            noisyRanking, noisyGroups, noisyGroupStats,
+            bars;
+
         currentStage = node.game.getCurrentGameStage();
         previousStage = node.game.plot.previous(currentStage);
-         
+
         receivedData = node.game.memory.stage[previousStage];
 
         // Shuffle contributions randomly.
@@ -517,14 +526,14 @@ treatments.random = {
 
         // Original Ranking (without noise).
         matching = doGroupMatching(sortedContribs);
-        
+
         // Array of sorted player ids, from top to lowest contribution.
         ranking = matching.ranking;
         // Array of array of contributions objects.
         groups = matching.groups;
         // Compute average contrib and demand in each group.
         groupStats = computeGroupStats(groups);
-      
+
         // Add Noise (not in this case).
         noisyRanking = ranking;
         noisyGroups = groups;
@@ -532,138 +541,196 @@ treatments.random = {
 
         // Bars for display in clients.
         bars = matching.bars;
-        
+
         // Save to db, and sends results to players.
         finalizeRound(currentStage, bars,
-                      groupStats, groups, ranking,
-                      noisyGroupStats, noisyGroups, noisyRanking);
+            groupStats, groups, ranking,
+            noisyGroupStats, noisyGroups, noisyRanking);
     }
 };
 
 // EXO ENDO. (TODO)
-treatments.endo = treatments.exo_perfect;
+treatments.endo = {
+    /*
+     * TODO: (In a function treatments.endo.endoMatching())
+     * - Take player with lowest demand and 3 players with lowest contrib, that matches this lowest demand.
+     * - They form a group
+     * - Take nest lowest demand and repeat line 1 3x.
+     */
+    endoGroupMatching: function (sortedContribs, sortedDemands) {
 
-// BLACKBOX.
-treatments.blackbox = treatments.exo_perfect;
+    },
+
+    sendResults: function () {
+        var currentStage, previousStage,
+            receivedData,
+            sortedContribs,
+            matching,
+            ranking, groups, groupStats,
+            noisyRanking, noisyGroups, noisyGroupStats,
+            bars;
+
+        currentStage = node.game.getCurrentGameStage();
+        previousStage = node.game.plot.previous(currentStage);
+
+        receivedData = node.game.memory.stage[previousStage];
+
+        sortedContribs = receivedData
+            .sort(sortContributions)
+            .fetch();
+
+        sortedDemands = receivedData
+            .sort(sortDemands)
+            .fetch();
+
+        treatments.endoGroupMatching(sortedContribs, sortedDemands);
 
 
-// NOT USED AT THE MOMENT
+        // Original Ranking (without noise).
+        matching = doGroupMatching(sortedContribs);
 
+        // Array of sorted player ids, from top to lowest contribution.
+        ranking = matching.ranking;
+        // Array of array of contributions objects.
+        groups = matching.groups;
+        // Compute average contrib and demand in each group.
+        groupStats = computeGroupStats(groups);
 
+        // Add Noise (not in this case).
+        noisyRanking = ranking;
+        noisyGroups = groups;
+        noisyGroupStats = groupStats;
 
-/**
- * Returns position of player in ranking
- * @param  {array} ranking contains players' ids
- * @param  {object} p       player object
- * @return {array}         first group, then position in group
- */
-function getPosition(ranking, p) {
-    var position = [];
-    position[0] = Math.floor(ranking.indexOf(p.id) / 4);
-    position[1] = ranking.indexOf(p.id) % 4;
-    return position;
-}
+        // Bars for display in clients.
+        bars = matching.bars;
 
-/**
- * Assigns a group to each player
- * @param {array} ranking  Array of players' ids
- */
-function groupMatching(ranking) {
-    var iter,
-    group,
-    person;
-    for (iter = 0; iter < ranking.length; iter++) {
-        group = Math.floor(iter / 4);
-        group = groupNames[group];
-        person = node.game.pl.id.update(ranking[iter], {
-            group: group
-        });
-    }
-}
-
-/**
- * Returns group averages and values for players in same group.
- * @param  {object} player       player from receivedData
- * @param  {NDDB} receivedData Data received from client
- * @param  {object} p            player object
- * @param  {array} groupValues  averages of each group
- * @return {object}              contains groupBars and playerBars
- */
-function getGroupsPlayerBars(player, receivedData, p, groupValues) {
-    var playersBars = [],
-    groupsBars = [],
-    allPlayers,
-    group,
-    otherGroups;
-    
-    player = [player.value.contribution, player.value.demand];
-
-    allPlayers = receivedData.selexec('group', '=', p.group).fetch();
-    playersBars.push(player);
-    for (player in allPlayers) {
-        player = allPlayers[player];
-        if (player.player !== p.id) {
-            playersBars.push([player.value.contribution, player.value.demand]);
-        }
-    }
-
-    group = groupValues[p.group];
-    groupsBars.push(group);
-    otherGroups = groupNames;
-    for (group in otherGroups) {
-        group = otherGroups[group];
-        if (p.group !== group) {
-            groupsBars.push(groupValues[group]);
-        }
-    }
-    return {
-        players: playersBars,
-        groups: groupsBars,
+        // Save to db, and sends results to players.
+        finalizeRound(currentStage, bars,
+            groupStats, groups, ranking,
+            noisyGroupStats, noisyGroups, noisyRanking);
     };
-}
 
-/**
- * Computes average contribution and demand for each group
- *
- * @param  {NDDB} receivedData Data received from clients 
- * @return {array} Contains average values for each group.
- */
-function getGroupValues(receivedData) {
-    var groupValues = {},
-    group,
-    name,
-    groupContrib,
-    groupDemand;
+    // BLACKBOX.
+    treatments.blackbox = treatments.exo_perfect;
 
-    for (name in groupNames) {
-        if (groupNames.hasOwnProperty(name)) {
-            name = groupNames[name];
-            group = receivedData.selexec('group', '=', name).fetch();
-            groupContrib = group.reduce(averageContribution, 0) / group.length;
-            groupDemand = group.reduce(averageDemand, 0) / group.length;
-            groupValues[name] = [groupContrib, groupDemand];
+
+    // NOT USED AT THE MOMENT
+
+
+
+    /**
+     * Returns position of player in ranking
+     * @param  {array} ranking contains players' ids
+     * @param  {object} p       player object
+     * @return {array}         first group, then position in group
+     */
+    function getPosition(ranking, p) {
+        var position = [];
+        position[0] = Math.floor(ranking.indexOf(p.id) / 4);
+        position[1] = ranking.indexOf(p.id) % 4;
+        return position;
+    }
+
+    /**
+     * Assigns a group to each player
+     * @param {array} ranking  Array of players' ids
+     */
+    function groupMatching(ranking) {
+        var iter,
+            group,
+            person;
+        for (iter = 0; iter < ranking.length; iter++) {
+            group = Math.floor(iter / 4);
+            group = groupNames[group];
+            person = node.game.pl.id.update(ranking[iter], {
+                group: group
+            });
         }
     }
-    
-    return groupValues;
-}
 
-/**
- * Divides a ranking array into 4 groups. NOT GROUP MATCHING
- * @param  {array} groups contains contribution and demand of players
- * @return {array}        contains arrays, which contains contribution
- */
-function getGroups(groups) {
-    var i, len, subGroup, gId;
-    len = groups.length;
-    subGroup = [];
-    gId = -1;
-    for (i = 0; i < len; i++) {
-        if (i % GROUP_SIZE == 0) {
-            ++gId;
-            subGroup[gId] = [];
+    /**
+     * Returns group averages and values for players in same group.
+     * @param  {object} player       player from receivedData
+     * @param  {NDDB} receivedData Data received from client
+     * @param  {object} p            player object
+     * @param  {array} groupValues  averages of each group
+     * @return {object}              contains groupBars and playerBars
+     */
+    function getGroupsPlayerBars(player, receivedData, p, groupValues) {
+        var playersBars = [],
+            groupsBars = [],
+            allPlayers,
+            group,
+            otherGroups;
+
+        player = [player.value.contribution, player.value.demand];
+
+        allPlayers = receivedData.selexec('group', '=', p.group).fetch();
+        playersBars.push(player);
+        for (player in allPlayers) {
+            player = allPlayers[player];
+            if (player.player !== p.id) {
+                playersBars.push([player.value.contribution, player.value.demand]);
+            }
         }
-        subGroup[gId].push([groups[i].contribution]);
+
+        group = groupValues[p.group];
+        groupsBars.push(group);
+        otherGroups = groupNames;
+        for (group in otherGroups) {
+            group = otherGroups[group];
+            if (p.group !== group) {
+                groupsBars.push(groupValues[group]);
+            }
+        }
+        return {
+            players: playersBars,
+            groups: groupsBars,
+        };
     }
-    return subGroup;
-}
+
+    /**
+     * Computes average contribution and demand for each group
+     *
+     * @param  {NDDB} receivedData Data received from clients
+     * @return {array} Contains average values for each group.
+     */
+    function getGroupValues(receivedData) {
+        var groupValues = {},
+            group,
+            name,
+            groupContrib,
+            groupDemand;
+
+        for (name in groupNames) {
+            if (groupNames.hasOwnProperty(name)) {
+                name = groupNames[name];
+                group = receivedData.selexec('group', '=', name).fetch();
+                groupContrib = group.reduce(averageContribution, 0) / group.length;
+                groupDemand = group.reduce(averageDemand, 0) / group.length;
+                groupValues[name] = [groupContrib, groupDemand];
+            }
+        }
+
+        return groupValues;
+    }
+
+    /**
+     * Divides a ranking array into 4 groups. NOT GROUP MATCHING
+     * @param  {array} groups contains contribution and demand of players
+     * @return {array}        contains arrays, which contains contribution
+     */
+    function getGroups(groups) {
+        var i, len, subGroup, gId;
+        len = groups.length;
+        subGroup = [];
+        gId = -1;
+        for (i = 0; i < len; i++) {
+            if (i % GROUP_SIZE == 0) {
+                ++gId;
+                subGroup[gId] = [];
+            }
+            subGroup[gId].push([groups[i].contribution]);
+        }
+        return subGroup;
+    }

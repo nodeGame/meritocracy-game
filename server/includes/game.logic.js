@@ -181,7 +181,8 @@ module.exports = function(node, channel, gameRoom) {
                     to: 'ALL'
                 }));
                 delete disconnected[p.id];
-            } else {
+            }
+            else {
                 // Player was not authorized, redirect to a warning page.
                 node.redirect('/meritocracy/unauth.htm', p.id);
             }

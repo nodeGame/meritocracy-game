@@ -214,7 +214,6 @@ function doGroupMatching(sortedContribs) {
         }
         entry = sortedContribs[i];
         entry.group = groupNames[gId];
-        debugger;
         groups[gId].push(entry);
         ranking.push(entry.player);
         bars.push([entry.value.contribution, entry.value.demand]);

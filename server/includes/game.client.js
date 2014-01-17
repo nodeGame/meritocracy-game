@@ -635,7 +635,7 @@ stager.addStage({
     //  - an object containing properties _milliseconds_, and _timeup_
     //     the latter being the name of the event to fire (default DONE)
     // - or a function returning the number of milliseconds.
-    timer: 6000000,
+    timer: 60000,
     done: clearFrame
 });
 
@@ -644,7 +644,7 @@ stager.addStep({
     cb: bid,
     done: clearFrame,
     timer: {
-        milliseconds: 200000,
+        milliseconds: 10000,
         timeup: 'TIMEUP'
     }
 });
@@ -652,7 +652,7 @@ stager.addStep({
 stager.addStep({
     id: 'results',
     cb: showResults,
-    timer: 1000000
+    timer: 10000
 });
 
 stager.addStage({
@@ -691,7 +691,7 @@ stager.addStage({
 stager.init()
 //    .next('precache')
 .next('instructions')
-    .next('quiz')
+.next('quiz')
 .repeat('meritocracy', settings.REPEAT)
 .next('questionnaire')
 // .next('endgame')

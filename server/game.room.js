@@ -67,7 +67,7 @@ module.exports = function(node, channel, room) {
     // Assigns a treatment condition to a group.
     var decideRoom = function(arrayRoom) {
         //Implement logic here.
-        return arrayRoom[1];
+        return arrayRoom[5];
     };
     
     // Load shared settings.
@@ -198,7 +198,7 @@ module.exports = function(node, channel, room) {
             for (; ++i < len;) {
 
                 // Doing the random matching.
-                tmpPlayerList = wRoom.shuffle().limit(GROUP_SIZE);
+                tmpPlayerList = wRoom.shuffle().limit(POOL_SIZE);
 
                 //Assigning a game room to this list of players
                 assignedRoom = decideRoom(arrayRoomLogic);

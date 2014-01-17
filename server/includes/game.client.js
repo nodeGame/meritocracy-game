@@ -31,7 +31,7 @@ game.globals = {};
 
 // INIT and GAMEOVER
 
-stager.setOnInit(function() {
+stager.setOnInit(function () {
     var that = this;
     var waitingForPlayers;
     node.game.INITIAL_COINS = node.env('INITIAL_COINS');
@@ -55,7 +55,7 @@ stager.setOnInit(function() {
     // - player.css
     W.setupFrame('PLAYER');
 
-    node.on('BID_DONE', function(bid, isTimeOut) {
+    node.on('BID_DONE', function (bid, isTimeOut) {
         node.game.timer.stop();
         W.getElementById('submitOffer').disabled = 'disabled';
         node.set('bid', {
@@ -68,11 +68,11 @@ stager.setOnInit(function() {
         node.done();
     });
 
-    this.shouldCheckDemand = function() {
+    this.shouldCheckDemand = function () {
         return node.env('roomType') === "endo";
     };
 
-    this.getPreviousChoice = function() {
+    this.getPreviousChoice = function () {
         var values;
         // Old contribution and demand for all players.
         values = node.game.oldContribDemand;
@@ -82,14 +82,14 @@ stager.setOnInit(function() {
         };
     };
 
-    this.getPreviousPayoff = function() {
+    this.getPreviousPayoff = function () {
         return node.game.oldContribDemand[2];
     };
 
     // Takes in input the results of _checkInputs_ and correct eventual
     // mistakes. If in the first round a random value is chosen, otherwise
     // the previous decision is repeated. It also updates the screen.
-    this.correctInputs = function(checkResults) {
+    this.correctInputs = function (checkResults) {
         var contrib, demand, previousChoice;
         var errorC, errorD;
 
@@ -143,7 +143,7 @@ stager.setOnInit(function() {
     // Retrieves and checks the current input for contribution, and for
     // demand (if requested). Returns an object with the results of the
     // validation. It also displays a message in case errors are found.
-    this.checkInputs = function() {
+    this.checkInputs = function () {
         var contrib, demand, values;
         var divErrors, errorC, errorD;
 
@@ -153,7 +153,7 @@ stager.setOnInit(function() {
         divErrors.innerHTML = '';
 
         // Always check the contribution.
-        contrib = W.getElementById('contribution').value;;
+        contrib = W.getElementById('contribution').value;
 
         if (!node.game.isValidContribution(contrib)) {
             errorC = document.createElement('p');
@@ -193,7 +193,7 @@ stager.setOnInit(function() {
         console.log(values);
         console.log(showDemand);
 
-        barsDiv = W.getElementById('barsResults'),
+        barsDiv = W.getElementById('barsResults');
         payoffSpan = W.getElementById('payoff');
 
         barsDiv.innerHTML = '';
@@ -230,17 +230,18 @@ stager.setOnInit(function() {
         payoffSpan.innerHTML = save + ' + ' + (+values[2] - save) + ' = ' + values[2];
     };
 
-    this.isValidContribution = function(n) {
+    this.isValidContribution = function (n) {
         n = parseInt(n, 10);
         return !isNaN(n) && isFinite(n) && n >= 0 && n <= 10;
     };
 
-    this.isValidDemand = function(n) {
+    this.isValidDemand = function (n) {
         n = parseInt(n, 10);
         return !isNaN(n) && isFinite(n) && n >= 0 && n <= 10;
     };
 
-    this.fitPage2Treatment = function(treatment) {
+    this.fitPage2Treatment = function (treatment) {
+        var iter, toHide;
         // Hides Demand if room type is not endo.
         W.getElementById('demandBox').style.display =
             treatment === 'endo' ? '' : 'none';
@@ -260,7 +261,7 @@ stager.setOnInit(function() {
         }
     };
 
-    this.displaySummaryPrevRound = function(treatment) {
+    this.displaySummaryPrevRound = function (treatment) {
         var oldChoice, oldContrib, oldDemand, payoff, save, groupReturn;
 
         // Shows previous round if round number is not 1.
@@ -291,7 +292,7 @@ stager.setOnInit(function() {
 
 });
 
-stager.setOnGameOver(function() {
+stager.setOnGameOver(function () {
     // Do something.
 });
 
@@ -307,33 +308,27 @@ function precache() {
         // '/meritocracy/html/resp.html',    // loadFrame calls (for demonstration)
         '/meritocracy/html/postgame.html',
         '/meritocracy/html/ended.html'
-    ], function() {
+    ], function () {
         // Pre-Caching done; proceed to the next stage.
         node.done();
     });
 }
 
 function instructions() {
+    var treatment = /low|high/g.test(node.game.roomType) ?
+        'lowhigh' : node.game.roomType;
 
-    W.loadFrame('/meritocracy/html/instructions.html', function() {
+    W.loadFrame('/meritocracy/html/instructions_' + treatment + '.html',
+        function () {
 
-        var b = W.getElementById('read');
-        b.onclick = function() {
-            node.done();
-        };
-
-        if (/low|high/g.test(node.game.roomType)) {
-            W.getElementById('lowhigh').style.display = 'inline';
-        }
-        else {
-            W.getElementById(node.game.roomType).style.display = 'inline';
-        }
-
-        node.env('auto', function() {
-            node.timer.randomEmit('DONE', 2000);
+            var b = W.getElementById('read');
+            b.onclick = function () {
+                node.done();
+            };
+            node.env('auto', function () {
+                node.timer.randomEmit('DONE', 2000);
+            });            
         });
-
-    });
 
     console.log('Instructions');
 }
@@ -344,8 +339,8 @@ function quiz() {
         '/meritocracy/html/quiz.exo_high_low.html' :
         '/meritocracy/html/quiz.' + node.game.roomType + '.html';
 
-    W.loadFrame(quizpage, function() {
-        node.env('auto', function() {
+    W.loadFrame(quizpage, function () {
+        node.env('auto', function () {
             node.timer.randomEmit('DONE', 2000);
         });
     });
@@ -355,8 +350,8 @@ function quiz() {
 
 function showResults(values) {
 
-    W.loadFrame('/meritocracy/html/results.html', function() {
-        node.on.data('results', function(values) {
+    W.loadFrame('/meritocracy/html/results.html', function () {
+        node.on.data('results', function (values) {
             var treatment, b, demand;
             treatment = node.env('roomType');
 
@@ -374,7 +369,7 @@ function showResults(values) {
             this.updateResults();
 
             b = W.getElementById('submitOffer');
-            b.onclick = function() {
+            b.onclick = function () {
                 node.done();
             };
         });
@@ -441,7 +436,7 @@ function bid() {
         });
 
         // TIMEUP.
-        node.on('TIMEUP', function() {
+        node.on('TIMEUP', function () {
             var validation;
             console.log('TIMEUP !');
             validation = node.game.checkInputs();            
@@ -449,7 +444,7 @@ function bid() {
             node.emit('BID_DONE', validInputs, true);
         });
 
-        b.onclick = function() {
+        b.onclick = function () {
             var validation;
             validation = node.game.checkInputs();
             if (!validation.success) return;
@@ -463,9 +458,9 @@ function bid() {
 }
 
 function postgame() {
-    W.loadFrame('/meritocracy/html/postgame.html', function() {
+    W.loadFrame('/meritocracy/html/postgame.html', function () {
 
-        node.env('auto', function() {
+        node.env('auto', function () {
             node.timer.randomEmit('DONE');
         });
 
@@ -479,7 +474,9 @@ function postgame() {
             stratChoice = T.getElementsByName('followed-strategy-choice'),
             comments = T.getElementById('comment').value;
 
-            var errors = [], stratCommentErr = false, errDiv;
+            var errors = [],
+                stratCommentErr = false,
+                errDiv;
 
             // Getting values of form.
             for (i = 0; i < socExp.length; i++) {
@@ -524,8 +521,8 @@ function postgame() {
             if (errors.length) {
                 errDiv = W.getElementById('divErrors');
                 errors = '<p>Please answer question' +
-                    (errors.length === 1 ?
-                     ' ' + errors[0] : 's ' + errors.join(' ')) + '</p>';
+                    (errors.length === 1 ? ' ' + errors[0] : 
+                     's ' + errors.join(' ')) + '</p>';
 
                 if (stratCommentErr) {
                     errors += '<p>Answer 3. is too short.</p>';
@@ -561,8 +558,8 @@ function postgame() {
 }
 
 function endgame() {
-    W.loadFrame('/meritocracy/html/ended.html', function() {
-        node.on.data('WIN', function(msg) {
+    W.loadFrame('/meritocracy/html/ended.html', function () {
+        node.on.data('WIN', function (msg) {
             W.write('Your bonus in this game is: ' + msg.data || 0);
         });
     });

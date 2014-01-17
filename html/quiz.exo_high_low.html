@@ -4,9 +4,12 @@
 <link rel="stylesheet" href="css/jqueryui.min.css" />
 <link rel="stylesheet" href="css/bootstrap.min.css" />
 <style type="text/css">
-tr, th, td, table {
-  text-align:center;
-}
+  tr, th, td, table {
+    text-align:center;
+  }
+  #done_box {
+    text-align:center;
+  }
 </style>
 <body>
 
@@ -63,17 +66,17 @@ tr, th, td, table {
           <span id="likeliness_result" class="quiz_result"></span>
           <form name="likeliness" id="likeliness">
             <p> Given the following setup: </p>
-              <table align="center">
-                <thead>
-                  <tr><th>Player/s</th><th>Contribution to Group Account</th></tr>
-                </thead>
-                <tbody>
-                  <tr><td>You</td><td>5</td></tr>
-                  <tr><td>Other 7 players</td><td>5</td></tr>
-                  <tr><td>Other 4 players</td><td>10</td></tr>
-                  <tr><td>Other 4 players</td><td>0</td></tr>
-                </tbody>
-              </table>
+            <table class="table table-striped" align="center">
+              <thead>
+                <tr><th>Player/s</th><th>Contribution to Group Account</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>You</td><td>5</td></tr>
+                <tr><td>Other 7 players</td><td>5</td></tr>
+                <tr><td>Other 4 players</td><td>10</td></tr>
+                <tr><td>Other 4 players</td><td>0</td></tr>
+              </tbody>
+            </table>
             <p> what will your position be in the ranking ? </p>
             <p>
               <input type="radio" name="likeliness" value="anyRank"> I am equally likely to take any rank (always false)<br>
@@ -86,7 +89,7 @@ tr, th, td, table {
 
       </dl>
       <div id="done_box">
-        <button onclick='javascript:QUIZ.checkAnswers(this);' id="submitQuiz">Click here to check your answers, and start the game. <br>Correct answers <span id="answers_counter">0 / 4</span></button>
+        <button onclick='javascript:QUIZ.checkAnswers(this);' id="submitQuiz" class="btn btn-primary">Click here to check your answers, and start the game. <br>Correct answers <span id="answers_counter">0 / 4</span></button>
       </div>
     </div>
   </div>
@@ -95,10 +98,10 @@ tr, th, td, table {
 </body>
 <script src="/meritocracy/js/quiz.js"></script>
 <script type="text/javascript">
-QUIZ = QUIZ({
-  coinsEveryRound: 10,
-  lowestPayement: 7.5,
-  leastGuarantee: 15,
-  likeliness: 'average'
-});
+  QUIZ = QUIZ({
+    coinsEveryRound: 10,
+    lowestPayement: 7.5,
+    leastGuarantee: 15,
+    likeliness: 'average'
+  });
 </script>

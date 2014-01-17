@@ -3,6 +3,14 @@
 <link rel="stylesheet" type="text/css" href="css/quiz.css">
 <link rel="stylesheet" href="css/jqueryui.min.css" />
 <link rel="stylesheet" href="css/bootstrap.min.css" />
+<style type="text/css">
+  th, td {
+    text-align:center;
+  }
+  #done_box {
+    text-align:center;
+  }
+</style>
 <body>
 
   <div id="container_quiz">
@@ -55,7 +63,7 @@
 
       </dl>
       <div id="done_box">
-        <button onclick='javascript:QUIZ.checkAnswers(this);' id="submitQuiz">Click here to check your answers, and start the game. <br>Correct answers <span id="answers_counter">0 / 3</span></button>
+        <button onclick='javascript:QUIZ.checkAnswers(this);' id="submitQuiz" class="btn btn-primary" align="center">Click here to check your answers, and start the game. <br>Correct answers <span id="answers_counter">0 / 3</span></button>
       </div>
     </div>
   </div>

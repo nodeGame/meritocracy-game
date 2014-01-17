@@ -34,7 +34,8 @@ var groupNames = settings.GROUP_NAMES;
 var INITIAL_COINS = settings.INITIAL_COINS;
 
 function shuffleArray(o) {
-    for (var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+    for (var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--
+        i], o[i] = o[j], o[j] = x);
     return o;
 };
 
@@ -213,7 +214,7 @@ function doGroupMatching(sortedContribs) {
         }
         entry = sortedContribs[i];
         entry.group = groupNames[gId];
-
+        debugger;
         groups[gId].push(entry);
         ranking.push(entry.player);
         bars.push([entry.value.contribution, entry.value.demand]);
@@ -260,7 +261,8 @@ function computeGroupStats(groups) {
 
         out[groupName] = {
             avgContr: cSum / lenJ,
-            stdContr: df <= 1 ? 'NA' : Math.sqrt((cSumSquared - (Math.pow(cSum, 2) / lenJ)) / df)
+            stdContr: df <= 1 ? 'NA' : Math.sqrt((cSumSquared - (Math.pow(cSum,
+                2) / lenJ)) / df)
         };
 
         if (ENDO) {
@@ -549,16 +551,73 @@ treatments.random = {
     }
 };
 
-// EXO ENDO. (TODO)
+// EXO ENDO. TODO: Test it with at least 16 players.
 treatments.endo = {
-    /*
-     * TODO: (In a function treatments.endo.endoMatching())
-     * - Take player with lowest demand and 3 players with lowest contrib, that matches this lowest demand.
-     * - They form a group
-     * - Take nest lowest demand and repeat line 1 3x.
-     */
-    endoGroupMatching: function (sortedContribs, sortedDemands) {
+    endoGroupMatching: function (sortedContribs) {
+        var noGroup = [],
+            bars, ranking, iter, jter, temp,
+            alreadyTaken = [],
+            currentGroup
+            groups = [];
+        sortedContribs = sortedContribs.reverse();
+        for (iter = 0; iter < sortedContribs.length; iter++) {
+            temp = {
+                items: [iter],
+                minContrib: sortedContribs[iter].value.contribution,
+                maxDemand: sortedContribs[iter].value.demand,
+            };
+            for (jter = 0; jter < sortedContribs.length; jter++) {
+                if (temp.minContrib > sortedContribs[jter].value.demand &&
+                    temp.maxDemand < sortedContribs[jter].value.contibution && !
+                    alreadyTaken[jter]) {
+                    // Add to the current temp group
+                    temp.items.push(jter);
+                    temp.minContrib = Math.min(temp.minContrib,
+                        sortedContribs[jter].value.contribution);
+                    temp.maxDemand = Math.max(temp.maxDemand,
+                        sortedContribs.value.contribution);
+                }
+            }
 
+            if (temp.items.length >= GROUP_SIZE) {
+                currentGroup = [];
+                for (jter = 0; jter < GROUP_SIZE; jter++) {
+                    currentGroup.push(sortedContribs[temp.items[jter]]);
+                    ranking.push(sortedContribs[temp.items[jter]].player);
+                    bars.push([
+                        sortedContribs[temp.items[jter]].value.contribution,
+                        sortedContribs[temp.items[jter]].value.demand,
+                    ]);
+                    alreadyTaken[temp.items[jter]] = true;
+                }
+                groups.push(currentGroup);
+
+            }
+            else {
+                noGroup.push(sortedContribs);
+            }
+        }
+
+        // Creating groups from no group.
+        noGroup = shuffleArray(noGroup);
+        for (iter = 0; iter * GROUP_SIZE < noGroup.length; iter++) {
+            groups.push(noGroup.slice(iter * GROUP_SIZE, (iter + 1) *
+                GROUP_SIZE));
+        }
+
+        for (iter = 0; iter < noGroup.length; iter++) {
+            ranking.push(noGroup[iter].player);
+            bars.push([
+                noGroup[iter].value.contribution,
+                noGroup[iter].value.demand,
+            ]);
+        }
+
+        return {
+            bars: bars,
+            groups: groups,
+            ranking: ranking
+        };
     },
 
     sendResults: function () {
@@ -579,11 +638,7 @@ treatments.endo = {
             .sort(sortContributions)
             .fetch();
 
-        sortedDemands = receivedData
-            .sort(sortDemands)
-            .fetch();
-
-        treatments.endoGroupMatching(sortedContribs, sortedDemands);
+        treatments.endoGroupMatching(sortedContribs);
 
 
         // Original Ranking (without noise).
@@ -666,7 +721,8 @@ function getGroupsPlayerBars(player, receivedData, p, groupValues) {
 
     player = [player.value.contribution, player.value.demand];
 
-    allPlayers = receivedData.selexec('group', '=', p.group).fetch();
+    allPlayers = receivedData.selexec('group', '=', p.group)
+        .fetch();
     playersBars.push(player);
     for (player in allPlayers) {
         player = allPlayers[player];
@@ -706,7 +762,8 @@ function getGroupValues(receivedData) {
     for (name in groupNames) {
         if (groupNames.hasOwnProperty(name)) {
             name = groupNames[name];
-            group = receivedData.selexec('group', '=', name).fetch();
+            group = receivedData.selexec('group', '=', name)
+                .fetch();
             groupContrib = group.reduce(averageContribution, 0) / group.length;
             groupDemand = group.reduce(averageDemand, 0) / group.length;
             groupValues[name] = [groupContrib, groupDemand];

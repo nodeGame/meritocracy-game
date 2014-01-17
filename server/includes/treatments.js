@@ -608,129 +608,130 @@ treatments.endo = {
         finalizeRound(currentStage, bars,
             groupStats, groups, ranking,
             noisyGroupStats, noisyGroups, noisyRanking);
+    },
+};
+
+// BLACKBOX.
+treatments.blackbox = treatments.exo_perfect;
+
+
+// NOT USED AT THE MOMENT
+
+
+
+/**
+ * Returns position of player in ranking
+ * @param  {array} ranking contains players' ids
+ * @param  {object} p       player object
+ * @return {array}         first group, then position in group
+ */
+function getPosition(ranking, p) {
+    var position = [];
+    position[0] = Math.floor(ranking.indexOf(p.id) / 4);
+    position[1] = ranking.indexOf(p.id) % 4;
+    return position;
+}
+
+/**
+ * Assigns a group to each player
+ * @param {array} ranking  Array of players' ids
+ */
+function groupMatching(ranking) {
+    var iter,
+        group,
+        person;
+    for (iter = 0; iter < ranking.length; iter++) {
+        group = Math.floor(iter / 4);
+        group = groupNames[group];
+        person = node.game.pl.id.update(ranking[iter], {
+            group: group
+        });
+    }
+}
+
+/**
+ * Returns group averages and values for players in same group.
+ * @param  {object} player       player from receivedData
+ * @param  {NDDB} receivedData Data received from client
+ * @param  {object} p            player object
+ * @param  {array} groupValues  averages of each group
+ * @return {object}              contains groupBars and playerBars
+ */
+function getGroupsPlayerBars(player, receivedData, p, groupValues) {
+    var playersBars = [],
+        groupsBars = [],
+        allPlayers,
+        group,
+        otherGroups;
+
+    player = [player.value.contribution, player.value.demand];
+
+    allPlayers = receivedData.selexec('group', '=', p.group).fetch();
+    playersBars.push(player);
+    for (player in allPlayers) {
+        player = allPlayers[player];
+        if (player.player !== p.id) {
+            playersBars.push([player.value.contribution, player.value.demand]);
+        }
+    }
+
+    group = groupValues[p.group];
+    groupsBars.push(group);
+    otherGroups = groupNames;
+    for (group in otherGroups) {
+        group = otherGroups[group];
+        if (p.group !== group) {
+            groupsBars.push(groupValues[group]);
+        }
+    }
+    return {
+        players: playersBars,
+        groups: groupsBars,
     };
+}
 
-    // BLACKBOX.
-    treatments.blackbox = treatments.exo_perfect;
+/**
+ * Computes average contribution and demand for each group
+ *
+ * @param  {NDDB} receivedData Data received from clients
+ * @return {array} Contains average values for each group.
+ */
+function getGroupValues(receivedData) {
+    var groupValues = {},
+        group,
+        name,
+        groupContrib,
+        groupDemand;
 
-
-    // NOT USED AT THE MOMENT
-
-
-
-    /**
-     * Returns position of player in ranking
-     * @param  {array} ranking contains players' ids
-     * @param  {object} p       player object
-     * @return {array}         first group, then position in group
-     */
-    function getPosition(ranking, p) {
-        var position = [];
-        position[0] = Math.floor(ranking.indexOf(p.id) / 4);
-        position[1] = ranking.indexOf(p.id) % 4;
-        return position;
-    }
-
-    /**
-     * Assigns a group to each player
-     * @param {array} ranking  Array of players' ids
-     */
-    function groupMatching(ranking) {
-        var iter,
-            group,
-            person;
-        for (iter = 0; iter < ranking.length; iter++) {
-            group = Math.floor(iter / 4);
-            group = groupNames[group];
-            person = node.game.pl.id.update(ranking[iter], {
-                group: group
-            });
+    for (name in groupNames) {
+        if (groupNames.hasOwnProperty(name)) {
+            name = groupNames[name];
+            group = receivedData.selexec('group', '=', name).fetch();
+            groupContrib = group.reduce(averageContribution, 0) / group.length;
+            groupDemand = group.reduce(averageDemand, 0) / group.length;
+            groupValues[name] = [groupContrib, groupDemand];
         }
     }
 
-    /**
-     * Returns group averages and values for players in same group.
-     * @param  {object} player       player from receivedData
-     * @param  {NDDB} receivedData Data received from client
-     * @param  {object} p            player object
-     * @param  {array} groupValues  averages of each group
-     * @return {object}              contains groupBars and playerBars
-     */
-    function getGroupsPlayerBars(player, receivedData, p, groupValues) {
-        var playersBars = [],
-            groupsBars = [],
-            allPlayers,
-            group,
-            otherGroups;
+    return groupValues;
+}
 
-        player = [player.value.contribution, player.value.demand];
-
-        allPlayers = receivedData.selexec('group', '=', p.group).fetch();
-        playersBars.push(player);
-        for (player in allPlayers) {
-            player = allPlayers[player];
-            if (player.player !== p.id) {
-                playersBars.push([player.value.contribution, player.value.demand]);
-            }
+/**
+ * Divides a ranking array into 4 groups. NOT GROUP MATCHING
+ * @param  {array} groups contains contribution and demand of players
+ * @return {array}        contains arrays, which contains contribution
+ */
+function getGroups(groups) {
+    var i, len, subGroup, gId;
+    len = groups.length;
+    subGroup = [];
+    gId = -1;
+    for (i = 0; i < len; i++) {
+        if (i % GROUP_SIZE == 0) {
+            ++gId;
+            subGroup[gId] = [];
         }
-
-        group = groupValues[p.group];
-        groupsBars.push(group);
-        otherGroups = groupNames;
-        for (group in otherGroups) {
-            group = otherGroups[group];
-            if (p.group !== group) {
-                groupsBars.push(groupValues[group]);
-            }
-        }
-        return {
-            players: playersBars,
-            groups: groupsBars,
-        };
+        subGroup[gId].push([groups[i].contribution]);
     }
-
-    /**
-     * Computes average contribution and demand for each group
-     *
-     * @param  {NDDB} receivedData Data received from clients
-     * @return {array} Contains average values for each group.
-     */
-    function getGroupValues(receivedData) {
-        var groupValues = {},
-            group,
-            name,
-            groupContrib,
-            groupDemand;
-
-        for (name in groupNames) {
-            if (groupNames.hasOwnProperty(name)) {
-                name = groupNames[name];
-                group = receivedData.selexec('group', '=', name).fetch();
-                groupContrib = group.reduce(averageContribution, 0) / group.length;
-                groupDemand = group.reduce(averageDemand, 0) / group.length;
-                groupValues[name] = [groupContrib, groupDemand];
-            }
-        }
-
-        return groupValues;
-    }
-
-    /**
-     * Divides a ranking array into 4 groups. NOT GROUP MATCHING
-     * @param  {array} groups contains contribution and demand of players
-     * @return {array}        contains arrays, which contains contribution
-     */
-    function getGroups(groups) {
-        var i, len, subGroup, gId;
-        len = groups.length;
-        subGroup = [];
-        gId = -1;
-        for (i = 0; i < len; i++) {
-            if (i % GROUP_SIZE == 0) {
-                ++gId;
-                subGroup[gId] = [];
-            }
-            subGroup[gId].push([groups[i].contribution]);
-        }
-        return subGroup;
-    }
+    return subGroup;
+}

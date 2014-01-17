@@ -96,14 +96,16 @@ stager.setOnInit(function() {
         if (checkResults.success) {
             contrib = parseInt(W.getElementById('contribution').value, 10);
             demand = parseInt(W.getElementById('demand').value, 10);
-        } else {
+        } 
+        else {
             previousChoice = node.game.getPreviousChoice();
 
             if (checkResults.errContrib) {
 
                 if (node.game.getCurrentGameStage().round === 1) {
                     contrib = JSUS.randomInt(-1, 10);
-                } else {
+                } 
+                else {
                     contrib = previousChoice.contrib;
                 }
                 errorC = document.createElement('p');
@@ -117,7 +119,8 @@ stager.setOnInit(function() {
 
                 if (node.game.getCurrentGameStage().round === 1) {
                     demand = JSUS.randomInt(-1, 10);
-                } else {
+                } 
+                else {
                     demand = previousChoice.demand;
                 }
                 errorD = document.createElement('p');
@@ -233,7 +236,8 @@ stager.setOnInit(function() {
         if (treatment === 'blackbox') {
             toHide = W.getFrameDocument()
                 .getElementsByClassName('other-game-type');
-        } else {
+        } 
+        else {
             toHide = W.getFrameDocument()
                 .getElementsByClassName('blackbox-game-type');
         }
@@ -265,7 +269,8 @@ stager.setOnInit(function() {
             if (treatment === 'endo') {
                 oldDemand = oldChoice.demand;
                 W.getElementById('yourOldDemand').innerHTML = oldDemand;
-            } else {
+            } 
+            else {
                 W.getElementById('summaryPreviousDemand').style.display = 'none';
             }
         }
@@ -306,7 +311,8 @@ function instructions() {
 
         if (/low|high/g.test(node.game.roomType)) {
             W.getElementById('lowhigh').style.display = 'inline';
-        } else {
+        } 
+        else {
             W.getElementById(node.game.roomType).style.display = 'inline';
         }
 
@@ -451,7 +457,6 @@ function postgame() {
 
         var b = W.getElementById('comment_done');
         b.onclick = function() {
-            debugger;
             var iter,
                 T = W.getFrameDocument(),
                 gameName = T.getElementById('game-name').value,
@@ -459,6 +464,8 @@ function postgame() {
                 socExp = T.getElementsByName('played-other-experiment'),
                 stratChoice = T.getElementsByName('followed-strategy-choice'),
                 comments = T.getElementById('comment').value;
+
+            var errors = [], stratCommentErr = false, errDiv;
 
             // Getting values of form.
             for (iter = 0; iter < socExp.length; iter++) {
@@ -470,16 +477,19 @@ function postgame() {
 
             for (iter = 0; iter < stratChoice.length; iter++) {
                 if (stratChoice[iter].checked) {
-                    stratChoice = stratChoice[iter].value;
+                    stratChoice = stratChoice[iter].value;                    
                     break;
                 }
             }
 
             // Checking if values are correct.
+
+            if (gameName === '') {
+                errors.push('1.');
+            }
+
             if (['0', '1'].indexOf(socExp.toString()) === -1) {
-                W.getElementById('divErrors').innerHTML =
-                    '<p>Please select an answer for each question with *.</p>';
-                return false;
+                errors.push('2.');
             }
 
             if (['random',
@@ -487,14 +497,27 @@ function postgame() {
                 'team',
                 'other'
             ].indexOf(stratChoice) === -1) {
-                W.getElementById('divErrors').innerHTML =
-                    '<p>Please select an answer for question 3.</p>';
-                return false;
+                errors.push('3.');
             }
 
-            if (gameName === '') {
-                W.getElementById('divErrors').innerHTML =
-                    '<p>Please give a game name at question 1.</p>';
+            if (stratChoice === 'other') {
+                if (stratComment.length < 5) {
+                    errors.push('3.');
+                    stratCommentErr = true;
+                }
+            }
+
+            if (errors.length) {
+                errDiv = W.getElementById('divErrors'); 
+                errors = '<p>Please answer question' + 
+                    (errors.length === 1 ?
+                     ' ' + errors[0] : 's ' + errors.join(' ')) + '</p>';
+                
+                if (stratCommentErr) {
+                    errors += '<p>Answer 3. is too short.</p>';
+                }
+
+                errDiv.innerHTML = errors;
                 return false;
             }
 
@@ -613,7 +636,7 @@ stager.addStage({
     //  - an object containing properties _milliseconds_, and _timeup_
     //     the latter being the name of the event to fire (default DONE)
     // - or a function returning the number of milliseconds.
-    timer: 6000000,
+    timer: 60000,
     done: clearFrame
 });
 
@@ -622,7 +645,7 @@ stager.addStep({
     cb: bid,
     done: clearFrame,
     timer: {
-        milliseconds: 200000,
+        milliseconds: 10000,
         timeup: 'TIMEUP'
     }
 });
@@ -630,7 +653,7 @@ stager.addStep({
 stager.addStep({
     id: 'results',
     cb: showResults,
-    timer: 1000000
+    timer: 10000
 });
 
 stager.addStage({
@@ -666,13 +689,11 @@ stager.addStage({
 // Now that all the stages have been added,
 // we can build the game plot
 
-var REPEAT = 20;
-
 stager.init()
 //    .next('precache')
-//.next('instructions')
-//    .next('quiz')
-//.repeat('meritocracy', REPEAT)
+.next('instructions')
+.next('quiz')
+.repeat('meritocracy', settings.REPEAT)
 .next('questionnaire')
 // .next('endgame')
 .gameover();

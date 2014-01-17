@@ -41,8 +41,6 @@ var settings = require(__dirname + '/game.shared.js');
 var nbRequiredPlayers = settings.MIN_PLAYERS;
 // Group names.
 var groupNames = settings.GROUP_NAMES;
-// How many repetitions.
-var REPEAT = settings.REPEAT;
 
 // Here we export the logic function. Receives three parameters:
 // - node: the NodeGameClient object.
@@ -131,7 +129,7 @@ module.exports = function(node, channel, gameRoom) {
                 'NA' : p.noiseContribution;
 
             finalGroupStats = groupStats[groupNames[positionInNoisyRank[0]]];
-            debugger
+
             mdb.store({
                 session: gameRoom.name,
                 condition: treatment,
@@ -338,10 +336,10 @@ module.exports = function(node, channel, gameRoom) {
     stager
         .init()
     //    .next('precache')
-    //.next('instructions')
-    //    .next('quiz')
-    //.repeat('meritocracy', REPEAT)
-    .next('questionnaire')
+        .next('instructions')
+        .next('quiz')
+        .repeat('meritocracy', settings.REPEAT)
+        .next('questionnaire')
     // .next('endgame')
     .gameover();
 

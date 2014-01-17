@@ -19,7 +19,7 @@ module.exports = {
     MIN_PLAYERS: 2,
 
     // Game settings.
-    REPEAT: 20,
+    REPEAT: 4,
     GROUP_NAMES: ['1', '2', '3', '4'],
     
     // Noise variance. High and low "meritocracy".

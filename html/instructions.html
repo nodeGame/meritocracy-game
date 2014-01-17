@@ -25,224 +25,224 @@
 </style>
 <body>
   <div id="central-container">
-  <h1>Instructions. Please read them carefully.</h1>
-  <div id="instructions">
-    <div id="blackbox" class="invisible">
-      <p>Welcome to our experiment !</p>
+    <h1>Instructions. Please read them carefully.</h1>
+    <div id="instructions">
+      <div id="blackbox" class="invisible">
+        <p>Welcome to our experiment !</p>
 
-      <p><strong>Your decision.</strong><br />You will receive 10 coins per round for 20 rounds. Each round, you will have to choose how many coins to put directly into your personal box, and how many coins to put into a black box.</p>
+        <p><strong>Your decision.</strong><br />You will receive 10 coins per round for 20 rounds. Each round, you will have to choose how many coins to put directly into your personal box, and how many coins to put into a black box.</p>
 
-      <p><strong>Return from personal box.</strong><br /> Each coin that you put into your personal box each round goes one-to-one towards your final earnings in the game.</p>
+        <p><strong>Return from personal box.</strong><br /> Each coin that you put into your personal box each round goes one-to-one towards your final earnings in the game.</p>
 
-      <p><strong>Return from black box.</strong><br /> Each coin that you put into the black box will pay you back a positive amount of money computed by an unknown mathematical function.</p>
+        <p><strong>Return from black box.</strong><br /> Each coin that you put into the black box will pay you back a positive amount of money computed by an unknown mathematical function.</p>
 
-      <p>The black box function will <strong>not</strong> change over the 20 rounds, and it may or may not depend on how many coins others put into the black box.</p>
+        <p>The black box function will <strong>not</strong> change over the 20 rounds, and it may or may not depend on how many coins others put into the black box.</p>
 
-      <p>For any positive amount of coins that you put into the black box, you may or may not receive a higher amount back from the black box, but the black box will never pay you less than zero. If you put zero coins in the black box, you may or may not receive a positive amount.</p>
+        <p>For any positive amount of coins that you put into the black box, you may or may not receive a higher amount back from the black box, but the black box will never pay you less than zero. If you put zero coins in the black box, you may or may not receive a positive amount.</p>
 
-      <p><strong>Total return.</strong><br /> The money which will be paid out to you according to a final amount of coins earned over the whole experiment is worth real fixed exchange rate of XXX.</p>
+        <p><strong>Total return.</strong><br /> The money which will be paid out to you according to a final amount of coins earned over the whole experiment is worth real fixed exchange rate of XXX.</p>
+      </div>
+      <div id="random" class="invisible">
+        <p>Welcome to our experiment! 16 people, that is you and 15 others, have joined us.</p>
+
+        <p><strong>Your decision.</strong><br /> You will receive 10 coins per round for 20 rounds. Each round, you will have to choose how many coins to put directly into your personal account, and how many coins to put into a group account.</p>
+
+        <p><strong>Random group matching.</strong><br /> Each round you will be randomly assigned to a new group. Each group consists of 4 people, that is, you and three (possibly different) random others.</p>
+
+        <p><strong>Return from personal account.</strong><br /> Each coin that you put into your personal account each round goes one-to-one towards your final earnings in the game.</p>
+
+        <p><strong>Return from group account.</strong><br /> Each coin that you put into the group account will pay you back some positive amount of money as described below.</p>
+
+        <p>The total amount of coins in your group account is equal to the sum of the contributions to the group account by each of the group members. That amount is then multiplied by 2 and distributed equally amongst group members. In other words, you will get a return equal to half of the group account total.</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Total number of coins in your group</th><th>Your return</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>0</td><td>0</td></tr>
+            <tr><td>10</td><td>5</td></tr>
+            <tr><td>15</td><td>7.5</td></tr>
+            <tr><td>28</td><td>14</td></tr>
+            <tr><td>...</td><td>...</td></tr>
+            <tr><td>40</td><td>20</td></tr>
+          </tbody>
+          <tfoot>
+            <tr><th>Any amount</th><th>Half of that amount</th></tr>
+          </tfoot>
+        </table>
+
+        <p><strong>Total return.</strong> The money which will be paid out to you according to a final amount of coins earned over the whole experiment is worth real fixed exchange rate of XXX.</p>
+      </div>
+      <div id="exo_perfect" class="invisible">
+        <p>Welcome to our experiment! 16 people, that is you and 15 others, have joined us.</p>
+
+        <p><strong>Your decision.</strong><br /> You will receive 10 coins per round for 20 rounds. Each round, you will have to choose how many coins to put directly into your personal account, and how many coins to put into a group account.</p>
+
+        <p><strong>Ordered group matching.</strong><br /> Each round you will be assigned to a new group of 4 people, that is, you and three (possibly different) others. Which group you are assigned to depends on your and others contributions to the group account in the following way.</p>
+
+        <p>All contributions will be ranked from 1 to 16 on a list from highest contribution to lowest contribution. Based on this order, the first 4 people in the list form Group 1, the next 4 people in the list form Group 2, the third 4 people in the list form Group 3, and the last 4 people form Group 4.</p>
+
+        <p>In case two or more players contributed equally in the same round, their relative position in the ranking will be decided randomly.</p>
+
+        <p><strong>Return from personal account.</strong><br /> Each coin that you put into your personal account each round goes one-to-one towards your final earnings in the game.</p>
+
+        <p><strong>Return from group account.</strong><br /> Each coin that you put into the group account will pay you back some positive amount of money as described below.</p>
+
+        <p>The total amount of coins in your group account is equal to the sum of the contributions to the group account by each of the group members. That amount is then multiplied by 2 and distributed equally amongst group members. In other words, you will get a return equal to half of the group account total.</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Total number of coins in your group</th><th>Your return</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>0</td><td>0</td></tr>
+            <tr><td>10</td><td>5</td></tr>
+            <tr><td>15</td><td>7.5</td></tr>
+            <tr><td>28</td><td>14</td></tr>
+            <tr><td>...</td><td>...</td></tr>
+            <tr><td>40</td><td>20</td></tr>
+          </tbody>
+          <tfoot>
+            <tr><th>Any amount</th><th>Half of that amount</th></tr>
+          </tfoot>
+        </table>
+
+        <p><strong>Total return.</strong><br /> The final amount of coins earned over the whole experiment is worth real money which will be paid out to you according to a fixed exchange rate of XXX.</p>
+      </div>
+      <div id="lowhigh" class="invisible">
+        <p>Welcome to our experiment ! 16 people, that is you and 15 others, have joined us.</p>
+
+        <p><strong>Your decision.</strong><br /> You will receive 10 coins per round for 20 rounds. Each round, you will have to choose how many coins to put directly into your personal account, and how many coins to put into a group account.</p>
+
+        <p><strong>Group matching with noise.</strong><br /> Each round you will be assigned to a new group of 4 people, that is, you and three (possibly different) others. Which group you are assigned to depends on your and others contributions to the group account, and is determined in the following three steps.</p>
+
+        <p><strong>Step 1: Preliminary ordering.</strong><br /> First, a preliminary list is created on which contributions are ranked from 1 to 16 from highest contribution to lowest contribution. In case two or more players contributed equally in the same round, their relative position in the ranking will be decided randomly.</p>
+
+        <p><strong>Step 2: Noisy ordering.</strong><br /> From your and every other player's actual contribution, we obtain a unique noisy contribution by adding an i.i.d. (independent and identically distributed) Normal variable with mean zero and variance XXX. The noisy contributions are ranked from 1 to 16 from highest contribution to lowest contribution on the final list.</p>
+
+        <p><strong>Step 3: Group matching.</strong><br /> Based on the final list, the first 4 people on that list form Group 1, the next 4 people in the list form Group 2, the third 4 people in the list form Group 3, and the last 4 people form Group 4.</p>
+
+        <p><i>Example.</i> Suppose two people are ranked in this noisy way. Suppose person A contributes 8 and person B contributes 6. Then, the preliminary ordering is A (contribution 8) &gt; B (contribution 6). Now, we add to each number an iid Normal variable with mean zero and variance XXX to get the noisy contributions. Suppose the draw of the two numbers gives -1.6 for A and +1.2 for B, then the final ordering is reversed: A (noisy contribution 6.4) &lt;  B (input 7.2).</p>
+
+        <p><strong>Return from personal account.</strong><br /> Each coin that you put into your personal account each round goes one-to-one towards your final earnings in the game.</p>
+
+        <p><strong>Return from group account.</strong><br /> Each coin that you put into the group account will pay you back some positive amount of money as described below.</p>
+
+        <p>The total amount of coins in your group account is equal to the sum of the contributions to the group account by each of the group members. That amount is then multiplied by 2 and distributed equally among group members. In other words, you will get a return equal to half of the group account total.</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Total number of coins in your group</th><th>Your return</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>0</td><td>0</td></tr>
+            <tr><td>10</td><td>5</td></tr>
+            <tr><td>15</td><td>7.5</td></tr>
+            <tr><td>28</td><td>14</td></tr>
+            <tr><td>...</td><td>...</td></tr>
+            <tr><td>40</td><td>20</td></tr>
+          </tbody>
+          <tfoot>
+            <tr><th>Any amount</th><th>Half of that amount</th></tr>
+          </tfoot>
+        </table>
+
+        <p><strong>Total return.</strong><br /> The money which will be paid out to you according to a final amount of coins earned over the whole experiment is worth real fixed exchange rate of XXX.</p>
+      </div>
+      <div id="endo" class="invisible">
+        <p>Welcome to our experiment! 16 people, that is you and 15 others, have joined us.</p>
+
+        <p>You will receive 10 coins per round for 20 rounds. Each round, you will have to make two independent decisions:</p>
+
+        <p><strong>Your decision 1.</strong><br /> You have to choose how many coins to put directly into your personal account and how many coins to put into a group account.</p>
+
+        <p><strong>Your decision 2.</strong><br /> You have to choose your demand level, that is, you have to specify how much you expect others in your group to contribute for you to voluntarily form a group with them.</p>
+
+        <p><strong>Group matching.</strong><br /> Each round you will be assigned to a new group of 4 people, that is, you and three (possibly different) others. Which group you are assigned to depends on decisions 1 and 2 made by all players.</p>
+
+        <p>We will try to form compatible groups first, and we will start creating incompatible groups randomly once no more compatible groups can be formed.</p>
+
+        <p>Compatible groups are groups where the contributions of all group members are higher or equal the demand levels of all other group members.</p>
+
+        <p>Here are two examples, one of a compatible and one of an incompatible group:</p>
+
+        <p><i>Example 1:</i> This group is <strong>incompatible</strong> because you demand 10 but others only contribute 1.</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Players</th><th>Contributions</th><th>Demands</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>You</td><td>0</td><td>10</td></tr>
+            <tr><td>OtherA</td><td>1</td><td>0</td></tr>
+            <tr><td>OtherB</td><td>1</td><td>0</td></tr>
+            <tr><td>OtherC</td><td>1</td><td>0</td></tr>
+          </tbody>
+        </table>
+
+        <p><i>Example 2:</i> This group is <strong>compatible</strong> because you contribute as much as others demand, and you demand no more than others contribute. The same is true for all other players.</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Players</th><th>Contributions</th><th>Demands</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>You</td><td>8</td><td>8</td></tr>
+            <tr><td>OtherA</td><td>9</td><td>7</td></tr>
+            <tr><td>OtherB</td><td>8</td><td>7</td></tr>
+            <tr><td>OtherC</td><td>10</td><td>7</td></tr>
+          </tbody>
+        </table>
+
+        <p>We will begin the matching process starting from the highest contributions, and form groups going down. Depending on your and others' demands and contributions, this may either lead to:</p>
+
+        <ul>
+          <li>four compatible groups, ranked from high to low contributions;</li>
+          <li>a mixed set of compatible and incompatible groups (compatible groups containing higher contributions because formed first);</li>
+          <li>four incompatible groups formed independently of demands and contributions.</li>
+        </ul>
+
+        <p><strong>Return from personal account.</strong><br /> Each coin that you put into your personal account each round goes one-to-one towards your final earnings in the game.</p>
+
+        <p><strong>Return from group account.</strong><br /> Each coin that you put into the group account will pay you back some positive amount of money as described below.</p>
+
+        <p>The total amount of coins in your group account is equal to the sum of the contributions to the group account by each of the group members. Such amount is then multiplied by 2 and distributed equally amongst group members. In other words, you get half of the group account.</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Total number of coins in your group</th><th>Your return</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>0</td><td>0</td></tr>
+            <tr><td>10</td><td>5</td></tr>
+            <tr><td>15</td><td>7.5</td></tr>
+            <tr><td>28</td><td>14</td></tr>
+            <tr><td>...</td><td>...</td></tr>
+            <tr><td>40</td><td>20</td></tr>
+          </tbody>
+          <tfoot>
+            <tr><th>Any amount</th><th>Half of that amount</th></tr>
+          </tfoot>
+        </table>
+
+        <p><strong>Total return.</strong><br /> The money which will be paid out to you according to a nal amount of coins earned over the whole experiment is worth real fixed exchange rate of XXX.</p>
+      </div>
     </div>
-    <div id="random" class="invisible">
-      <p>Welcome to our experiment! 16 people, that is you and 15 others, have joined us.</p>
-
-      <p><strong>Your decision.</strong><br /> You will receive 10 coins per round for 20 rounds. Each round, you will have to choose how many coins to put directly into your personal account, and how many coins to put into a group account.</p>
-
-      <p><strong>Random group matching.</strong><br /> Each round you will be randomly assigned to a new group. Each group consists of 4 people, that is, you and three (possibly different) random others.</p>
-
-      <p><strong>Return from personal account.</strong><br /> Each coin that you put into your personal account each round goes one-to-one towards your final earnings in the game.</p>
-
-      <p><strong>Return from group account.</strong><br /> Each coin that you put into the group account will pay you back some positive amount of money as described below.</p>
-
-      <p>The total amount of coins in your group account is equal to the sum of the contributions to the group account by each of the group members. That amount is then multiplied by 2 and distributed equally amongst group members. In other words, you will get a return equal to half of the group account total.</p>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Total number of coins in your group</th><th>Your return</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>0</td><td>0</td></tr>
-          <tr><td>10</td><td>5</td></tr>
-          <tr><td>15</td><td>7.5</td></tr>
-          <tr><td>28</td><td>14</td></tr>
-          <tr><td>...</td><td>...</td></tr>
-          <tr><td>40</td><td>20</td></tr>
-        </tbody>
-        <tfoot>
-          <tr><th>Any amount</th><th>Half of that amount</th></tr>
-        </tfoot>
-      </table>
-
-      <p><strong>Total return.</strong> The money which will be paid out to you according to a final amount of coins earned over the whole experiment is worth real fixed exchange rate of XXX.</p>
-    </div>
-    <div id="exo_perfect" class="invisible">
-      <p>Welcome to our experiment! 16 people, that is you and 15 others, have joined us.</p>
-
-      <p><strong>Your decision.</strong><br /> You will receive 10 coins per round for 20 rounds. Each round, you will have to choose how many coins to put directly into your personal account, and how many coins to put into a group account.</p>
-
-      <p><strong>Ordered group matching.</strong><br /> Each round you will be assigned to a new group of 4 people, that is, you and three (possibly different) others. Which group you are assigned to depends on your and others contributions to the group account in the following way.</p>
-
-      <p>All contributions will be ranked from 1 to 16 on a list from highest contribution to lowest contribution. Based on this order, the first 4 people in the list form Group 1, the next 4 people in the list form Group 2, the third 4 people in the list form Group 3, and the last 4 people form Group 4.</p>
-
-      <p>In case two or more players contributed equally in the same round, their relative position in the ranking will be decided randomly.</p>
-
-      <p><strong>Return from personal account.</strong><br /> Each coin that you put into your personal account each round goes one-to-one towards your final earnings in the game.</p>
-
-      <p><strong>Return from group account.</strong><br /> Each coin that you put into the group account will pay you back some positive amount of money as described below.</p>
-
-      <p>The total amount of coins in your group account is equal to the sum of the contributions to the group account by each of the group members. That amount is then multiplied by 2 and distributed equally amongst group members. In other words, you will get a return equal to half of the group account total.</p>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Total number of coins in your group</th><th>Your return</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>0</td><td>0</td></tr>
-          <tr><td>10</td><td>5</td></tr>
-          <tr><td>15</td><td>7.5</td></tr>
-          <tr><td>28</td><td>14</td></tr>
-          <tr><td>...</td><td>...</td></tr>
-          <tr><td>40</td><td>20</td></tr>
-        </tbody>
-        <tfoot>
-          <tr><th>Any amount</th><th>Half of that amount</th></tr>
-        </tfoot>
-      </table>
-
-      <p><strong>Total return.</strong><br /> The final amount of coins earned over the whole experiment is worth real money which will be paid out to you according to a fixed exchange rate of XXX.</p>
-    </div>
-    <div id="lowhigh" class="invisible">
-      <p>Welcome to our experiment ! 16 people, that is you and 15 others, have joined us.</p>
-
-      <p><strong>Your decision.</strong><br /> You will receive 10 coins per round for 20 rounds. Each round, you will have to choose how many coins to put directly into your personal account, and how many coins to put into a group account.</p>
-
-      <p><strong>Group matching with noise.</strong><br /> Each round you will be assigned to a new group of 4 people, that is, you and three (possibly different) others. Which group you are assigned to depends on your and others contributions to the group account, and is determined in the following three steps.</p>
-
-      <p><strong>Step 1: Preliminary ordering.</strong><br /> First, a preliminary list is created on which contributions are ranked from 1 to 16 from highest contribution to lowest contribution. In case two or more players contributed equally in the same round, their relative position in the ranking will be decided randomly.</p>
-
-      <p><strong>Step 2: Noisy ordering.</strong><br /> From your and every other player's actual contribution, we obtain a unique noisy contribution by adding an i.i.d. (independent and identically distributed) Normal variable with mean zero and variance XXX. The noisy contributions are ranked from 1 to 16 from highest contribution to lowest contribution on the final list.</p>
-
-      <p><strong>Step 3: Group matching.</strong><br /> Based on the final list, the first 4 people on that list form Group 1, the next 4 people in the list form Group 2, the third 4 people in the list form Group 3, and the last 4 people form Group 4.</p>
-
-      <p><i>Example.</i> Suppose two people are ranked in this noisy way. Suppose person A contributes 8 and person B contributes 6. Then, the preliminary ordering is A (contribution 8) &gt; B (contribution 6). Now, we add to each number an iid Normal variable with mean zero and variance XXX to get the noisy contributions. Suppose the draw of the two numbers gives -1.6 for A and +1.2 for B, then the final ordering is reversed: A (noisy contribution 6.4) &lt;  B (input 7.2).</p>
-
-      <p><strong>Return from personal account.</strong><br /> Each coin that you put into your personal account each round goes one-to-one towards your final earnings in the game.</p>
-
-      <p><strong>Return from group account.</strong><br /> Each coin that you put into the group account will pay you back some positive amount of money as described below.</p>
-
-      <p>The total amount of coins in your group account is equal to the sum of the contributions to the group account by each of the group members. That amount is then multiplied by 2 and distributed equally among group members. In other words, you will get a return equal to half of the group account total.</p>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Total number of coins in your group</th><th>Your return</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>0</td><td>0</td></tr>
-          <tr><td>10</td><td>5</td></tr>
-          <tr><td>15</td><td>7.5</td></tr>
-          <tr><td>28</td><td>14</td></tr>
-          <tr><td>...</td><td>...</td></tr>
-          <tr><td>40</td><td>20</td></tr>
-        </tbody>
-        <tfoot>
-          <tr><th>Any amount</th><th>Half of that amount</th></tr>
-        </tfoot>
-      </table>
-
-      <p><strong>Total return.</strong><br /> The money which will be paid out to you according to a final amount of coins earned over the whole experiment is worth real fixed exchange rate of XXX.</p>
-    </div>
-    <div id="endo" class="invisible">
-      <p>Welcome to our experiment! 16 people, that is you and 15 others, have joined us.</p>
-
-      <p>You will receive 10 coins per round for 20 rounds. Each round, you will have to make two independent decisions:</p>
-
-      <p><strong>Your decision 1.</strong><br /> You have to choose how many coins to put directly into your personal account and how many coins to put into a group account.</p>
-
-      <p><strong>Your decision 2.</strong><br /> You have to choose your demand level, that is, you have to specify how much you expect others in your group to contribute for you to voluntarily form a group with them.</p>
-
-      <p><strong>Group matching.</strong><br /> Each round you will be assigned to a new group of 4 people, that is, you and three (possibly different) others. Which group you are assigned to depends on decisions 1 and 2 made by all players.</p>
-
-      <p>We will try to form compatible groups first, and we will start creating incompatible groups randomly once no more compatible groups can be formed.</p>
-
-      <p>Compatible groups are groups where the contributions of all group members are higher or equal the demand levels of all other group members.</p>
-
-      <p>Here are two examples, one of a compatible and one of an incompatible group:</p>
-
-      <p><i>Example 1:</i> This group is <strong>incompatible</strong> because you demand 10 but others only contribute 1.</p>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Players</th><th>Contributions</th><th>Demands</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>You</td><td>0</td><td>10</td></tr>
-          <tr><td>OtherA</td><td>1</td><td>0</td></tr>
-          <tr><td>OtherB</td><td>1</td><td>0</td></tr>
-          <tr><td>OtherC</td><td>1</td><td>0</td></tr>
-        </tbody>
-      </table>
-
-      <p><i>Example 2:</i> This group is <strong>compatible</strong> because you contribute as much as others demand, and you demand no more than others contribute. The same is true for all other players.</p>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Players</th><th>Contributions</th><th>Demands</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>You</td><td>8</td><td>8</td></tr>
-          <tr><td>OtherA</td><td>9</td><td>7</td></tr>
-          <tr><td>OtherB</td><td>8</td><td>7</td></tr>
-          <tr><td>OtherC</td><td>10</td><td>7</td></tr>
-        </tbody>
-      </table>
-
-      <p>We will begin the matching process starting from the highest contributions, and form groups going down. Depending on your and others' demands and contributions, this may either lead to:</p>
-
-      <ul>
-        <li>four compatible groups, ranked from high to low contributions;</li>
-        <li>a mixed set of compatible and incompatible groups (compatible groups containing higher contributions because formed first);</li>
-        <li>four incompatible groups formed independently of demands and contributions.</li>
-      </ul>
-
-      <p><strong>Return from personal account.</strong><br /> Each coin that you put into your personal account each round goes one-to-one towards your final earnings in the game.</p>
-
-      <p><strong>Return from group account.</strong><br /> Each coin that you put into the group account will pay you back some positive amount of money as described below.</p>
-
-      <p>The total amount of coins in your group account is equal to the sum of the contributions to the group account by each of the group members. Such amount is then multiplied by 2 and distributed equally amongst group members. In other words, you get half of the group account.</p>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Total number of coins in your group</th><th>Your return</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>0</td><td>0</td></tr>
-          <tr><td>10</td><td>5</td></tr>
-          <tr><td>15</td><td>7.5</td></tr>
-          <tr><td>28</td><td>14</td></tr>
-          <tr><td>...</td><td>...</td></tr>
-          <tr><td>40</td><td>20</td></tr>
-        </tbody>
-        <tfoot>
-          <tr><th>Any amount</th><th>Half of that amount</th></tr>
-        </tfoot>
-      </table>
-
-      <p><strong>Total return.</strong><br /> The money which will be paid out to you according to a nal amount of coins earned over the whole experiment is worth real fixed exchange rate of XXX.</p>
-    </div>
-  </div>
-  If you understood the instructions correctly press the button to proceed to the game. 
-  <input type="button" id="read" value="Proceed to the game" class="btn btn-lg btn-primary" />
+    If you understood the instructions correctly press the button to proceed to the game. 
+    <input type="button" id="read" value="Proceed to the game" class="btn btn-lg btn-primary" />
     
   </div>
 </body>

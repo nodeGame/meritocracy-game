@@ -276,8 +276,8 @@ function computeGroupStats(groups) {
 
         out[groupName] = {
             avgContr: cSum / lenJ,
-            stdContr: df <= 1 ? 'NA' : Math.sqrt((cSumSquared - (Math.pow(cSum,
-                2) / lenJ)) / df)
+            stdContr: df <= 1 ? 'NA' : 
+                Math.sqrt((cSumSquared - (Math.pow(cSum, 2) / lenJ)) / df)
         };
 
         if (ENDO) {

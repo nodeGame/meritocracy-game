@@ -35,7 +35,10 @@ stager.setOnInit(function () {
     var that = this;
     var waitingForPlayers;
     node.game.INITIAL_COINS = node.env('INITIAL_COINS');
-    node.game.oldContribDemand = null;
+
+    node.game.oldContrib = null;
+    node.game.oldDemand = null;
+    node.game.oldPayoff = null;
 
     // Change so that roomtype is set as decided in game.room.
     node.game.roomType = node.env('roomType');
@@ -63,6 +66,9 @@ stager.setOnInit(function () {
             contribution: bid.contrib,
             isTimeOut: isTimeOut
         });
+        node.game.oldContrib = bid.contrib;
+        node.game.oldDemand = bid.demand;
+
         console.log(' Your contribution: ' + bid.contrib + '.');
         console.log(' Your demand: ' + bid.demand + '.');
         node.done();
@@ -70,20 +76,6 @@ stager.setOnInit(function () {
 
     this.shouldCheckDemand = function () {
         return node.env('roomType') === "endo";
-    };
-
-    this.getPreviousChoice = function () {
-        var values;
-        // Old contribution and demand for all players.
-        values = node.game.oldContribDemand;
-        return {
-            contrib: +values[0][values[1][0]][values[1][1]][0],
-            demand: +values[0][values[1][0]][values[1][1]][1]
-        };
-    };
-
-    this.getPreviousPayoff = function () {
-        return node.game.oldContribDemand[2];
     };
 
     // Takes in input the results of _checkInputs_ and correct eventual
@@ -105,8 +97,7 @@ stager.setOnInit(function () {
                     contrib = JSUS.randomInt(-1, 10);
                 }
                 else {
-                    previousChoice = node.game.getPreviousChoice();
-                    contrib = previousChoice.contrib;
+                    contrib = node.game.oldContrib;
                 }
                 errorC = document.createElement('p');
                 errorC.innerHTML = 'Your contribution was set to ' + contrib;
@@ -121,11 +112,7 @@ stager.setOnInit(function () {
                     demand = JSUS.randomInt(-1, 10);
                 }
                 else {
-                    // Only if error on contrib, we have the previous choice.
-                    if (!previousChoice) {
-                        previousChoice = node.game.getPreviousChoice();
-                    }
-                    demand = previousChoice.demand;
+                    demand = node.game.oldDemand;
                 }
                 errorD = document.createElement('p');
                 errorD.innerHTML = 'Your demand was set to ' + demand;
@@ -183,15 +170,16 @@ stager.setOnInit(function () {
     };
 
     // This function is called to create the bars.
-    this.updateResults = function() {
+    this.updateResults = function(barsValues) {
         var group, player, i, j, div, subdiv, color, save;
-        var values, barsDiv, showDemand;
-        var text;
+        var barsValues, barsDiv, showDemand;
+        var text, groupHeader, groupNames;
 
-        values = node.game.oldContribDemand,
-        showDemand = !!values[0][0][0][1];
+        groupNames = ['A', 'B', 'C', 'D'];
 
-        console.log(values);
+        showDemand = node.env('roomType') === 'endo';
+
+        console.log(barsValues);
         console.log(showDemand);
 
         barsDiv = W.getElementById('barsResults');
@@ -201,18 +189,21 @@ stager.setOnInit(function () {
 
         bars = W.getFrameWindow().bars;
 
-        for (i = 0; i < values[0].length; i++) {
-            group = values[0][i];
+        for (i = 0; i < barsValues[0].length; i++) {
+            group = barsValues[0][i];
             div = document.createElement('div');
             div.classList.add('groupContainer');
+            groupHeader = document.createElement('h4');
+            groupHeader.innerHTML = 'Group ' + groupNames[i];
+            div.appendChild(groupHeader);
             for (j = 0; j < group.length; j++) {
                 
                 player = group[j];
 
                 // It is me?
-                if (values[1][0] === i && values[1][1] === j) {
+                if (barsValues[1][0] === i && barsValues[1][1] === j) {
                     color = [undefined, '#9932CC'];
-                    text = '--> YOU ' + player[0];
+                    text = 'YOU ' + player[0];
                 }
                 else {
                     color = ['#DEB887', '#A52A2A'];
@@ -231,21 +222,24 @@ stager.setOnInit(function () {
             barsDiv.appendChild(div);
         }
 
-        save = node.game.INITIAL_COINS - values[0][values[1][0]][values[1][1]][0];
-        payoffSpan.innerHTML = save + ' + ' + (+values[2] - save) + ' = ' + values[2];
+        node.game.oldPayoff = +barsValues[2]; // final payoff
+
+        save = node.game.INITIAL_COINS - node.game.oldContrib;
+        payoffSpan.innerHTML = save + ' + ' + (barsValues[2] - save) +
+            ' = ' + node.game.oldPayoff;
     };
 
-    this.isValidContribution = function (n) {
+    this.isValidContribution = function(n) {
         n = parseInt(n, 10);
         return !isNaN(n) && isFinite(n) && n >= 0 && n <= 10;
     };
 
-    this.isValidDemand = function (n) {
+    this.isValidDemand = function(n) {
         n = parseInt(n, 10);
         return !isNaN(n) && isFinite(n) && n >= 0 && n <= 10;
     };
 
-    this.fitPage2Treatment = function (treatment) {
+    this.fitPage2Treatment = function(treatment) {
         var iter, toHide;
         // Hides Demand if room type is not endo.
         W.getElementById('demandBox').style.display =
@@ -266,28 +260,25 @@ stager.setOnInit(function () {
         }
     };
 
-    this.displaySummaryPrevRound = function (treatment) {
-        var oldChoice, oldContrib, oldDemand, payoff, save, groupReturn;
+    this.displaySummaryPrevRound = function(treatment) {
+        var save, groupReturn;
 
         // Shows previous round if round number is not 1.
         if (node.game.getCurrentGameStage().round !== 1) {
 
-            oldChoice = node.game.getPreviousChoice();
-            oldContrib = oldChoice.contrib;
-            payoff = node.game.getPreviousPayoff();
-            save = node.game.INITIAL_COINS - oldContrib;
-            groupReturn = payoff - save;
+            save = node.game.INITIAL_COINS - node.game.oldContrib;
+            groupReturn = node.game.oldPayoff - save;
 
             W.getElementById('previous-round-info').style.display = 'block';
             // Updates display for current round.
             W.getElementById('yourPB').innerHTML = save;
-            W.getElementById('yourOldContrib').innerHTML = oldContrib;
+            W.getElementById('yourOldContrib').innerHTML = node.game.oldContrib;
             W.getElementById('yourReturn').innerHTML = groupReturn;
-            W.getElementById('yourPayoff').innerHTML = payoff;
+            W.getElementById('yourPayoff').innerHTML = node.game.oldPayoff;
 
             if (treatment === 'endo') {
-                oldDemand = oldChoice.demand;
-                W.getElementById('yourOldDemand').innerHTML = oldDemand;
+                W.getElementById('yourOldDemand').innerHTML = 
+                    node.game.oldDemand;
             }
             else {
                 W.getElementById('summaryPreviousDemand').style.display = 'none';
@@ -353,25 +344,23 @@ function quiz() {
     console.log('Quiz');
 }
 
-function showResults(values) {
+function showResults(bars) {
 
     W.loadFrame('/meritocracy/html/results.html', function () {
-        node.on.data('results', function (values) {
-            var treatment, b, demand;
-            treatment = node.env('roomType');
-
+        node.on.data('results', function(msg) {
+            var treatment, b;
             console.log('Received results.');
-            values = !! values ? values.data : node.game.oldContribDemand;
-            node.game.oldContribDemand = values;
 
+            barsValues = msg.data;
             node.game.fitPage2Treatment(treatment);
 
+            treatment = node.env('roomType');            
             if (treatment === 'endo') {
-                demand = +values[0][values[1][0]][values[1][1]][1];
-                W.getElementById('yourOldDemand').innerHTML = demand;
+                W.getElementById('yourOldDemand').innerHTML = 
+                    node.game.oldDemand;
             }
 
-            this.updateResults();
+            this.updateResults(barsValues);
 
             b = W.getElementById('submitOffer');
             b.onclick = function () {
@@ -669,7 +658,7 @@ stager.addStep({
 stager.addStep({
     id: 'results',
     cb: showResults,
-    timer: 10000
+    timer: 100000
 });
 
 stager.addStage({

@@ -66,8 +66,8 @@ module.exports = function (node, channel, room) {
 
     // Assigns a treatment condition to a group.
     var decideRoom = function (arrayRoom) {
-        //Implement logic here.
-        return arrayRoom[5];
+        // Implement logic here.
+        return arrayRoom[1];
     };
 
     // Load shared settings.

@@ -9,6 +9,8 @@
  * ---
  */
 
+var J = require('JSUS').JSUS;
+
 // Share through channel.require
 var node = module.parent.exports.node;
 var treatment = module.parent.exports.treatment;
@@ -32,106 +34,6 @@ var groupNames = settings.GROUP_NAMES;
 
 // Number of coins for each player at the beginning of each round
 var INITIAL_COINS = settings.INITIAL_COINS;
-
-function shuffleArray(o) {
-    for (var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--
-        i], o[i] = o[j], o[j] = x);
-    return o;
-};
-
-var gauss = (function () {
-    var space = null;
-    return function (mu, sigma) {
-        var result = 0.0,
-            U = 0.0,
-            V = 0.0,
-            S = 0.0,
-            M;
-        if (space === null) {
-            while (true) {
-                U = Math.random() * 2 - 1; // [0, 2) -> (-1, 2]
-                V = Math.random() * 2 - 1;
-                S = U * U + V * V;
-                if (S < 1 || S !== 0) {
-                    break;
-                }
-            }
-            if (S < 1) {
-                M = Math.sqrt(-2.0 * Math.log(S) / S);
-            }
-            else {
-                M = Math.sqrt(2.0 * Math.log(S) / S);
-            }
-            space = V * M;
-            result = mu + sigma * M * U;
-        }
-        else {
-            result = space * sigma + mu;
-            space = null;
-        }
-        return result;
-    };
-})();
-
-// var gauss = function(mu, sigma) {
-//     var interval_low = -1.0,
-//         interval_high = 1.0,
-//         step = 0.001,
-//         SIZE = parseInt(parseInt(interval_high - interval_low) / step),
-//         numbers = [],
-//         result;
-//     for (var i = 0; i < SIZE; i++) {
-//         result = Math.exp(-Math.pow(interval_low + (i * step) - mu, 2) / (2 * Math.pow(sigma, 2)));
-//         result = (1.0 / (sigma * Math.sqrt(2 * Math.PI))) * result;
-//         numbers.push(result);
-//     }
-//     return numbers;
-// };
-// 
-// function NormSInv(p) {
-//     var a1 = -39.6968302866538,
-//         a2 = 220.946098424521,
-//         a3 = -275.928510446969;
-//     var a4 = 138.357751867269,
-//         a5 = -30.6647980661472,
-//         a6 = 2.50662827745924;
-//     var b1 = -54.4760987982241,
-//         b2 = 161.585836858041,
-//         b3 = -155.698979859887;
-//     var b4 = 66.8013118877197,
-//         b5 = -13.2806815528857,
-//         c1 = -7.78489400243029E-03;
-//     var c2 = -0.322396458041136,
-//         c3 = -2.40075827716184,
-//         c4 = -2.54973253934373;
-//     var c5 = 4.37466414146497,
-//         c6 = 2.93816398269878,
-//         d1 = 7.78469570904146E-03;
-//     var d2 = 0.32246712907004,
-//         d3 = 2.445134137143,
-//         d4 = 3.75440866190742;
-//     var p_low = 0.02425,
-//         p_high = 1 - p_low;
-//     var q, r;
-//     var retVal;
-
-//     if ((p < 0) || (p > 1)) {
-//         alert("NormSInv: Argument out of range.");
-//         retVal = 0;
-//     } else if (p < p_low) {
-//         q = Math.sqrt(-2 * Math.log(p));
-//         retVal = (((((c1 * q + c2) * q + c3) * q + c4) * q + c5) * q + c6) / ((((d1 * q + d2) * q + d3) * q + d4) * q + 1);
-//     } else if (p <= p_high) {
-//         q = p - 0.5;
-//         r = q * q;
-//         retVal = (((((a1 * r + a2) * r + a3) * r + a4) * r + a5) * r + a6) * q / (((((b1 * r + b2) * r + b3) * r + b4) * r + b5) * r + 1);
-//     } else {
-//         q = Math.sqrt(-2 * Math.log(1 - p));
-//         retVal = -(((((c1 * q + c2) * q + c3) * q + c4) * q + c5) * q + c6) / ((((d1 * q + d2) * q + d3) * q + d4) * q + 1);
-//     }
-
-//     return retVal;
-// }
 
 // Functions used in map-reduce.
 
@@ -225,6 +127,120 @@ function doGroupMatching(sortedContribs) {
     };
 }
 
+// Group Matching for ENDO condition
+function endoGroupMatching(sortedContribs) {
+    var noGroup, alreadyTaken;
+    var bars, ranking, iter, jter, temp;
+    var currentGroup, entryI, entryJ, groups, gId;
+    var len;
+
+    // Helper variables.
+    noGroup = [];
+    alreadyTaken = {};
+
+    // Main output.
+    groups = [];
+    bars = [];
+    ranking = [];
+    
+    gId = -1;
+    len = sortedContribs.length;
+
+    for (iter = 0; iter < len; iter++) {
+        if (alreadyTaken[iter]) continue;
+        entryI = sortedContribs[iter];
+        // Base object. New entries will be added here, if compatible.
+        temp = {
+            groups: [entryI],
+            ranking: [entryI.player],
+            bars: [entryI.value.contribution, entryI.value.demand],
+            minContrib: entryI.value.contribution,
+            maxDemand: entryI.value.demand
+        };
+
+        for (jter = (iter + 1); jter < len; jter++) {
+            if (alreadyTaken[jter]) continue;
+
+            // Check this entry.
+            entryJ = sortedContribs[jter];
+
+            // Since contributions are sorted we don't check further.
+            if (entryJ.value.contibution < temp.maxDemand) {
+                noGroup.push(entryJ);
+                break;
+            }
+
+            if (entryJ.value.demand <= temp.minContrib) {
+
+                // Add entryJ to the current temp group.
+                temp.groups.push(entryJ);
+                temp.ranking.push(jter);
+                temp.bars.push([entryJ.value.contribution, entryJ.value.demand]);
+
+                // Update requirements for the group.                
+                temp.minContrib = Math.min(temp.minContrib, entryJ.value.contribution);
+                temp.maxDemand = Math.max(temp.maxDemand, entryJ.value.demand);
+
+                // Check if we have enough compatible players in group.
+                if (temp.groups.length >= SUBGROUP_SIZE) {
+                    // Update group-id counter.
+                    ++gId;
+
+                    // Add the group the main output.
+                    groups.push(temp.groups);
+                    ranking = ranking.concat(temp.ranking);
+                    bars.push(temp.bars);
+                    
+                    // Mark all entries as taken.
+                    for (jter = 0; jter < SUBGROUP_SIZE; jter++) {
+                        entryJ = temp.groups[jter];
+                        alreadyTaken[entryJ.player] = entryJ.player;
+                        entryJ.group = groupNames[gId];
+                    }                
+                    break;
+                }
+                
+            }
+        
+            // We don't have enough players left to try to complete the group.
+            else if ((len - (jter+1)) < (SUBGROUP_SIZE - temp.groups.length)) {
+                // Mark entryI as without group.
+                noGroup.push(entryI);
+                break;
+            }
+        }        
+    }
+
+    if (noGroup.length) {
+        debugger
+        // Creating random groups from entries in no group.
+        noGroup = J.shuffle(noGroup);
+        debugger
+        for (i = 0; i < noGroup.length; i++) {
+            if (i % SUBGROUP_SIZE == 0) {
+                ++gId;
+                groups[gId] = [];
+                bars[gId] = [];
+            }
+            entryJ = noGroup[i];
+            entryJ.group = groupNames[gId];
+            groups[gId].push(entryJ);
+            ranking.push(entryJ.player);
+            bars[gId].push([entryJ.value.contribution, entryJ.value.demand]);
+            
+            console.log(entryJ.value.contribution, entryJ.value.demand);
+        }
+        console.log(noGroup.length);
+    }
+
+    return {
+        groups: groups,
+        ranking: ranking,
+        bars: bars
+    };
+}
+
+
 function computeGroupStats(groups) {
     var i, len, group;
     var j, lenJ, entry;
@@ -289,7 +305,7 @@ function createNoise(receivedData, variance) {
     for (; ++i < len;) {
         contrib = receivedData.db[i].contribution;
         receivedData.db[i].noisyContribution = contrib +
-            gauss(0, variance);
+            J.nextNormal(0, variance);
     }
     return receivedData;
 }
@@ -552,74 +568,8 @@ treatments.random = {
 
 // EXO ENDO. TODO: Test it with at least 16 players.
 treatments.endo = {
-    endoGroupMatching: function (sortedContribs) {
-        var noGroup = [],
-            bars, ranking, iter, jter, temp,
-            alreadyTaken = [],
-            currentGroup
-            groups = [];
-        sortedContribs = sortedContribs.reverse();
-        for (iter = 0; iter < sortedContribs.length; iter++) {
-            temp = {
-                items: [iter],
-                minContrib: sortedContribs[iter].value.contribution,
-                maxDemand: sortedContribs[iter].value.demand,
-            };
-            for (jter = 0; jter < sortedContribs.length; jter++) {
-                if (temp.minContrib > sortedContribs[jter].value.demand &&
-                    temp.maxDemand < sortedContribs[jter].value.contibution && !
-                    alreadyTaken[jter]) {
-                    // Add to the current temp group
-                    temp.items.push(jter);
-                    temp.minContrib = Math.min(temp.minContrib,
-                        sortedContribs[jter].value.contribution);
-                    temp.maxDemand = Math.max(temp.maxDemand,
-                        sortedContribs.value.contribution);
-                }
-            }
 
-            if (temp.items.length >= GROUP_SIZE) {
-                currentGroup = [];
-                for (jter = 0; jter < GROUP_SIZE; jter++) {
-                    currentGroup.push(sortedContribs[temp.items[jter]]);
-                    ranking.push(sortedContribs[temp.items[jter]].player);
-                    bars.push([
-                        sortedContribs[temp.items[jter]].value.contribution,
-                        sortedContribs[temp.items[jter]].value.demand,
-                    ]);
-                    alreadyTaken[temp.items[jter]] = true;
-                }
-                groups.push(currentGroup);
-
-            }
-            else {
-                noGroup.push(sortedContribs);
-            }
-        }
-
-        // Creating groups from no group.
-        noGroup = shuffleArray(noGroup);
-        for (iter = 0; iter * GROUP_SIZE < noGroup.length; iter++) {
-            groups.push(noGroup.slice(iter * GROUP_SIZE, (iter + 1) *
-                GROUP_SIZE));
-        }
-
-        for (iter = 0; iter < noGroup.length; iter++) {
-            ranking.push(noGroup[iter].player);
-            bars.push([
-                noGroup[iter].value.contribution,
-                noGroup[iter].value.demand,
-            ]);
-        }
-
-        return {
-            bars: [bars],
-            groups: groups,
-            ranking: ranking
-        };
-    },
-
-    sendResults: function () {
+    sendResults: function() {
         var currentStage, previousStage,
             receivedData,
             sortedContribs,
@@ -637,8 +587,7 @@ treatments.endo = {
             .sort(sortContributions)
             .fetch();
 
-        treatments.endoGroupMatching(sortedContribs);
-
+        matching = endoGroupMatching(sortedContribs);
 
         // Original Ranking (without noise).
         matching = doGroupMatching(sortedContribs);
@@ -672,6 +621,11 @@ treatments.blackbox = treatments.exo_perfect;
 // NOT USED AT THE MOMENT
 
 
+function shuffleArray(o) {
+    for (var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--
+        i], o[i] = o[j], o[j] = x);
+    return o;
+};
 
 /**
  * Returns position of player in ranking

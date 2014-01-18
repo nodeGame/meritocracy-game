@@ -12,16 +12,16 @@ module.exports = {
     // Group settings.
 
     // How many players have to connect before a random subset is drawn.
-    POOL_SIZE: 8,
+    POOL_SIZE: 16,
     // How many players in each group ( must be <= POOL_SIZE).
-    GROUP_SIZE: 8,
+    GROUP_SIZE: 16,
     // Minimum number of players that must be always connected.
-    MIN_PLAYERS: 8,
+    MIN_PLAYERS: 16,
 
     // Game settings.
 
     // How many times the meritocracy stage is repeated.
-    REPEAT: 4,
+    REPEAT: 20,
     // Names of the groups.
     GROUP_NAMES: ['1', '2', '3', '4'],
     // How many player in each group.

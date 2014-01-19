@@ -129,9 +129,9 @@ function doGroupMatching(sortedContribs) {
 // Group Matching for ENDO condition
 function endoGroupMatching(sortedContribs) {
     var noGroup, alreadyTaken;
-    var bars, ranking, iter, jter, temp;
+    var bars, ranking, i, j, temp;
     var currentGroup, entryI, entryJ, groups, gId;
-    var len;
+    var len, limit;
 
     // Helper variables.
     noGroup = [];
@@ -144,43 +144,53 @@ function endoGroupMatching(sortedContribs) {
     
     gId = -1;
     len = sortedContribs.length;
+    limit = len - SUBGROUP_SIZE;
 
-    for (iter = 0; iter < len; iter++) {
-        if (alreadyTaken[iter]) continue;
+    for (i = 0; i < len; i++) {
 
-        entryI = sortedContribs[iter];
+        entryI = sortedContribs[i];
+        if (alreadyTaken[entryI.player]) continue;
+
+        // Last elements should already had formed a group, if it was possible.
+        if (i > limit) {
+            noGroup.push(entryI);
+            continue;
+        }
+
         // Base object. New entries will be added here, if compatible.
         temp = {
             groups: [entryI],
             ranking: [entryI.player],
-            bars: [entryI.value.contribution, entryI.value.demand],
+            bars: [[entryI.value.contribution, entryI.value.demand]],
             minContrib: entryI.value.contribution,
             maxDemand: entryI.value.demand
         };
 
         // Check if a group can be made with remaining entries. Entries with
         // higher contributions have been checked already.
-        for (jter = (iter + 1); jter < len; jter++) {
-            if (alreadyTaken[jter]) continue;
-
+        for (j = (i + 1); j < len; j++) {
             // Check this entry.
-            entryJ = sortedContribs[jter];
+            entryJ = sortedContribs[j];
+            if (alreadyTaken[entryJ.player]) continue;            
+
 
             // Since contributions are sorted we don't check further.
-            if (entryJ.value.contibution < temp.maxDemand) {
+            if (entryJ.value.contribution < temp.maxDemand) {          
                 noGroup.push(entryI);
                 break;
             }
-
+            
+            // Entry is compatible.
             if (entryJ.value.demand <= temp.minContrib) {
 
                 // Add entryJ to the current temp group.
                 temp.groups.push(entryJ);
-                temp.ranking.push(jter);
+                temp.ranking.push(entryJ.player);
                 temp.bars.push([entryJ.value.contribution, entryJ.value.demand]);
 
                 // Update requirements for the group.                
-                temp.minContrib = Math.min(temp.minContrib, entryJ.value.contribution);
+                temp.minContrib = Math.min(temp.minContrib, 
+                                           entryJ.value.contribution);
                 temp.maxDemand = Math.max(temp.maxDemand, entryJ.value.demand);
 
                 // Check if we have enough compatible players in group.
@@ -194,8 +204,8 @@ function endoGroupMatching(sortedContribs) {
                     bars.push(temp.bars);
                     
                     // Mark all entries as taken.
-                    for (jter = 0; jter < SUBGROUP_SIZE; jter++) {
-                        entryJ = temp.groups[jter];
+                    for (j = 0; j < SUBGROUP_SIZE; j++) {
+                        entryJ = temp.groups[j];
                         alreadyTaken[entryJ.player] = entryJ.player;
                         entryJ.group = groupNames[gId];
                     }                
@@ -205,19 +215,17 @@ function endoGroupMatching(sortedContribs) {
             }
         
             // We don't have enough players left to try to complete the group.
-            else if ((len - (jter+1)) < (SUBGROUP_SIZE - temp.groups.length)) {
+            else if ((len - (j+1)) < (SUBGROUP_SIZE - temp.groups.length)) {
                 // Mark entryI as without group.
                 noGroup.push(entryI);
                 break;
             }
         }        
     }
-
+ 
     if (noGroup.length) {
-        debugger
         // Creating random groups from entries in no group.
-        noGroup = J.shuffle(noGroup);
-        debugger
+        noGroup = J.shuffle(noGroup);        
         for (i = 0; i < noGroup.length; i++) {
             if (i % SUBGROUP_SIZE == 0) {
                 ++gId;
@@ -228,11 +236,8 @@ function endoGroupMatching(sortedContribs) {
             entryJ.group = groupNames[gId];
             groups[gId].push(entryJ);
             ranking.push(entryJ.player);
-            bars[gId].push([entryJ.value.contribution, entryJ.value.demand]);
-            
-            console.log(entryJ.value.contribution, entryJ.value.demand);
+            bars[gId].push([entryJ.value.contribution, entryJ.value.demand]);           
         }
-        console.log(noGroup.length);
     }
 
     return {
@@ -241,7 +246,6 @@ function endoGroupMatching(sortedContribs) {
         bars: bars
     };
 }
-
 
 function computeGroupStats(groups) {
     var i, len, group;

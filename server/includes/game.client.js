@@ -173,7 +173,13 @@ stager.setOnInit(function () {
     this.updateResults = function(barsValues) {
         var group, player, i, j, div, subdiv, color, save;
         var barsValues, barsDiv, showDemand;
-        var text, groupHeader, groupNames;
+        var text, groupHeader, groupHeaderText, groupNames;
+
+        // Notice: _barsValues_ array:
+        // 0: array: contr, demand
+        // 1: array: group, position in group
+        // 2: payoff
+        // 3: array: groups are compatible or not (only endo)
 
         groupNames = ['A', 'B', 'C', 'D'];
 
@@ -194,7 +200,13 @@ stager.setOnInit(function () {
             div = document.createElement('div');
             div.classList.add('groupContainer');
             groupHeader = document.createElement('h4');
-            groupHeader.innerHTML = 'Group ' + groupNames[i];
+            groupHeaderText = 'Group ' + groupNames[i];
+            if (showDemand) {
+                groupHeaderText += barsValues[3][i] ? ' (' : ' (not ';
+                groupHeaderText += 'compatible)';                    
+            }
+            groupHeader.innerHTML = groupHeaderText;
+
             div.appendChild(groupHeader);
             for (j = 0; j < group.length; j++) {
                 
@@ -215,7 +227,12 @@ stager.setOnInit(function () {
 
                 if (showDemand) {
                     subdiv.classList.add('playerContainer');
-                    bars.createBar(subdiv, player[1] * 10, color[1], player[1]);
+                    text = player[1];                    
+                    // It is me?
+                    if (barsValues[1][0] === i && barsValues[1][1] === j) {
+                        text = 'YOU ' + text;
+                    }                    
+                    bars.createBar(subdiv, player[1] * 10, color[1], text);
                 }
                 div.appendChild(subdiv);
             }

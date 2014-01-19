@@ -125,12 +125,12 @@ function doGroupMatching(sortedContribs) {
         bars: bars
     };
 }
-
 // Group Matching for ENDO condition
 function endoGroupMatching(sortedContribs) {
-    var noGroup, alreadyTaken;
-    var bars, ranking, i, j, temp;
-    var currentGroup, entryI, entryJ, groups, gId;
+    var i, j;
+    var bars, ranking, groups, compatibility;
+    var noGroup, alreadyTaken, temp;
+    var entryI, entryJ, gId;
     var len, limit;
 
     // Helper variables.
@@ -141,6 +141,7 @@ function endoGroupMatching(sortedContribs) {
     groups = [];
     bars = [];
     ranking = [];
+    compatibility = [];
     
     gId = -1;
     len = sortedContribs.length;
@@ -202,6 +203,7 @@ function endoGroupMatching(sortedContribs) {
                     groups.push(temp.groups);
                     ranking = ranking.concat(temp.ranking);
                     bars.push(temp.bars);
+                    compatibility[gId] = 1;
                     
                     // Mark all entries as taken.
                     for (j = 0; j < SUBGROUP_SIZE; j++) {
@@ -213,7 +215,7 @@ function endoGroupMatching(sortedContribs) {
                 }
                 
             }
-        
+            
             // We don't have enough players left to try to complete the group.
             else if ((len - (j+1)) < (SUBGROUP_SIZE - temp.groups.length)) {
                 // Mark entryI as without group.
@@ -222,7 +224,7 @@ function endoGroupMatching(sortedContribs) {
             }
         }        
     }
- 
+    
     if (noGroup.length) {
         // Creating random groups from entries in no group.
         noGroup = J.shuffle(noGroup);        
@@ -236,16 +238,19 @@ function endoGroupMatching(sortedContribs) {
             entryJ.group = groupNames[gId];
             groups[gId].push(entryJ);
             ranking.push(entryJ.player);
-            bars[gId].push([entryJ.value.contribution, entryJ.value.demand]);           
+            bars[gId].push([entryJ.value.contribution, entryJ.value.demand]);
+            compatibility[gId] = 0;
         }
     }
 
     return {
         groups: groups,
         ranking: ranking,
-        bars: bars
+        bars: bars,
+        compatibility: compatibility
     };
 }
+
 
 function computeGroupStats(groups) {
     var i, len, group;
@@ -319,23 +324,23 @@ function createNoise(receivedData, variance) {
 /**
  * Send and saves received values for each player.
  */
-function emitPlayersResults(pId, bars, position, payoff) {
+function emitPlayersResults(pId, bars, position, payoff, compatibility) {
     var finalBars;
-    finalBars = [bars, position, payoff];
+    finalBars = [bars, position, payoff, compatibility];
     node.say('results', pId, finalBars);
 }
 
 // Saves the outcome of a round to database, and communicates it to the clients.
 function finalizeRound(currentStage, bars,
                        groupStats, groups, ranking, noisyGroupStats,
-                       noisyGroups, noisyRanking) {
+                       noisyGroups, noisyRanking, compatibility) {
 
     var i, len, j, lenJ, contribObj,
-        pId, positionInNoisyRank, playerPayoff;
+    pId, positionInNoisyRank, playerPayoff;
 
     // Save the results at the group level.
     node.game.saveRoundResults(ranking, groupStats,
-        noisyRanking, noisyGroupStats);
+                               noisyRanking, noisyGroupStats);
 
     // Save the results for each player, and notify him.
     i = -1, len = noisyGroups.length;
@@ -351,14 +356,14 @@ function finalizeRound(currentStage, bars,
             playerPayoff = getPayoff(bars, positionInNoisyRank);
 
             node.game.savePlayerValues(contribObj, playerPayoff,
-                positionInNoisyRank,
-                ranking,
-                noisyRanking,
-                groupStats,
-                currentStage);
+                                       positionInNoisyRank,
+                                       ranking,
+                                       noisyRanking,
+                                       groupStats,
+                                       currentStage);
 
             emitPlayersResults(pId, bars, positionInNoisyRank,
-                playerPayoff);
+                               playerPayoff, compatibility);
         }
     }
 }
@@ -371,12 +376,12 @@ treatments.exo_perfect = {
 
     sendResults: function () {
         var currentStage, previousStage,
-            receivedData,
-            sortedContribs,
-            matching,
-            ranking, groups, groupStats,
-            noisyRanking, noisyGroups, noisyGroupStats,
-            bars;
+        receivedData,
+        sortedContribs,
+        matching,
+        ranking, groups, groupStats,
+        noisyRanking, noisyGroups, noisyGroupStats,
+        bars;
 
         currentStage = node.game.getCurrentGameStage();
         previousStage = node.game.plot.previous(currentStage);
@@ -407,8 +412,8 @@ treatments.exo_perfect = {
 
         // Save to db, and sends results to players.
         finalizeRound(currentStage, bars,
-            groupStats, groups, ranking,
-            noisyGroupStats, noisyGroups, noisyRanking);
+                      groupStats, groups, ranking,
+                      noisyGroupStats, noisyGroups, noisyRanking);
     }
 };
 
@@ -418,12 +423,12 @@ treatments.exo_high = {
 
     sendResults: function () {
         var currentStage, previousStage,
-            receivedData,
-            sortedContribs,
-            matching,
-            ranking, groups, groupStats,
-            noisyRanking, noisyGroups, noisyGroupStats,
-            bars;
+        receivedData,
+        sortedContribs,
+        matching,
+        ranking, groups, groupStats,
+        noisyRanking, noisyGroups, noisyGroupStats,
+        bars;
 
         currentStage = node.game.getCurrentGameStage();
         previousStage = node.game.plot.previous(currentStage);
@@ -465,8 +470,8 @@ treatments.exo_high = {
 
         // Save to db, and sends results to players.
         finalizeRound(currentStage, bars,
-            groupStats, groups, ranking,
-            noisyGroupStats, noisyGroups, noisyRanking);
+                      groupStats, groups, ranking,
+                      noisyGroupStats, noisyGroups, noisyRanking);
     }
 };
 
@@ -474,12 +479,12 @@ treatments.exo_high = {
 treatments.exo_low = {
     sendResults: function () {
         var currentStage, previousStage,
-            receivedData,
-            sortedContribs,
-            matching,
-            ranking, groups, groupStats,
-            noisyRanking, noisyGroups, noisyGroupStats,
-            bars;
+        receivedData,
+        sortedContribs,
+        matching,
+        ranking, groups, groupStats,
+        noisyRanking, noisyGroups, noisyGroupStats,
+        bars;
 
         currentStage = node.game.getCurrentGameStage();
         previousStage = node.game.plot.previous(currentStage);
@@ -521,8 +526,8 @@ treatments.exo_low = {
 
         // Save to db, and sends results to players.
         finalizeRound(currentStage, bars,
-            groupStats, groups, ranking,
-            noisyGroupStats, noisyGroups, noisyRanking);
+                      groupStats, groups, ranking,
+                      noisyGroupStats, noisyGroups, noisyRanking);
     }
 };
 
@@ -530,12 +535,12 @@ treatments.exo_low = {
 treatments.random = {
     sendResults: function () {
         var currentStage, previousStage,
-            receivedData,
-            sortedContribs,
-            matching,
-            ranking, groups, groupStats,
-            noisyRanking, noisyGroups, noisyGroupStats,
-            bars;
+        receivedData,
+        sortedContribs,
+        matching,
+        ranking, groups, groupStats,
+        noisyRanking, noisyGroups, noisyGroupStats,
+        bars;
 
         currentStage = node.game.getCurrentGameStage();
         previousStage = node.game.plot.previous(currentStage);
@@ -567,8 +572,8 @@ treatments.random = {
 
         // Save to db, and sends results to players.
         finalizeRound(currentStage, bars,
-            groupStats, groups, ranking,
-            noisyGroupStats, noisyGroups, noisyRanking);
+                      groupStats, groups, ranking,
+                      noisyGroupStats, noisyGroups, noisyRanking);
     }
 };
 
@@ -577,12 +582,12 @@ treatments.endo = {
 
     sendResults: function() {
         var currentStage, previousStage,
-            receivedData,
-            sortedContribs,
-            matching,
-            ranking, groups, groupStats,
-            noisyRanking, noisyGroups, noisyGroupStats,
-            bars;
+        receivedData,
+        sortedContribs,
+        matching,
+        ranking, groups, groupStats,
+        noisyRanking, noisyGroups, noisyGroupStats,
+        bars;
 
         currentStage = node.game.getCurrentGameStage();
         previousStage = node.game.plot.previous(currentStage);
@@ -594,9 +599,6 @@ treatments.endo = {
             .fetch();
 
         matching = endoGroupMatching(sortedContribs);
-
-        // Original Ranking (without noise).
-        matching = doGroupMatching(sortedContribs);
 
         // Array of sorted player ids, from top to lowest contribution.
         ranking = matching.ranking;
@@ -613,10 +615,13 @@ treatments.endo = {
         // Bars for display in clients.
         bars = matching.bars;
 
+        compatibility = matching.compatibility
+
         // Save to db, and sends results to players.
         finalizeRound(currentStage, bars,
-            groupStats, groups, ranking,
-            noisyGroupStats, noisyGroups, noisyRanking);
+                      groupStats, groups, ranking,
+                      noisyGroupStats, noisyGroups, noisyRanking,
+                      compatibility);
     },
 };
 
@@ -629,7 +634,7 @@ treatments.blackbox = treatments.exo_perfect;
 
 function shuffleArray(o) {
     for (var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--
-        i], o[i] = o[j], o[j] = x);
+                                                                             i], o[i] = o[j], o[j] = x);
     return o;
 };
 
@@ -652,8 +657,8 @@ function getPosition(ranking, p) {
  */
 function groupMatching(ranking) {
     var iter,
-        group,
-        person;
+    group,
+    person;
     for (iter = 0; iter < ranking.length; iter++) {
         group = Math.floor(iter / 4);
         group = groupNames[group];
@@ -673,10 +678,10 @@ function groupMatching(ranking) {
  */
 function getGroupsPlayerBars(player, receivedData, p, groupValues) {
     var playersBars = [],
-        groupsBars = [],
-        allPlayers,
-        group,
-        otherGroups;
+    groupsBars = [],
+    allPlayers,
+    group,
+    otherGroups;
 
     player = [player.value.contribution, player.value.demand];
 
@@ -713,10 +718,10 @@ function getGroupsPlayerBars(player, receivedData, p, groupValues) {
  */
 function getGroupValues(receivedData) {
     var groupValues = {},
-        group,
-        name,
-        groupContrib,
-        groupDemand;
+    group,
+    name,
+    groupContrib,
+    groupDemand;
 
     for (name in groupNames) {
         if (groupNames.hasOwnProperty(name)) {

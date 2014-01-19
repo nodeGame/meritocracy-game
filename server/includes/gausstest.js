@@ -4,9 +4,10 @@ var groupNames = ['1','2','3','4'];
 
 // Group Matching for ENDO condition
 function endoGroupMatching(sortedContribs) {
-    var noGroup, alreadyTaken;
-    var bars, ranking, i, j, temp;
-    var currentGroup, entryI, entryJ, groups, gId;
+    var i, j;
+    var bars, ranking, groups, compatibility;
+    var noGroup, alreadyTaken, temp;
+    var entryI, entryJ, gId;
     var len, limit;
 
     // Helper variables.
@@ -17,6 +18,7 @@ function endoGroupMatching(sortedContribs) {
     groups = [];
     bars = [];
     ranking = [];
+    compatibility = [];
     
     gId = -1;
     len = sortedContribs.length;
@@ -78,6 +80,7 @@ function endoGroupMatching(sortedContribs) {
                     groups.push(temp.groups);
                     ranking = ranking.concat(temp.ranking);
                     bars.push(temp.bars);
+                    compatibility[gId] = 1;
                     
                     // Mark all entries as taken.
                     for (j = 0; j < SUBGROUP_SIZE; j++) {
@@ -112,14 +115,16 @@ function endoGroupMatching(sortedContribs) {
             entryJ.group = groupNames[gId];
             groups[gId].push(entryJ);
             ranking.push(entryJ.player);
-            bars[gId].push([entryJ.value.contribution, entryJ.value.demand]);           
+            bars[gId].push([entryJ.value.contribution, entryJ.value.demand]);
+            compatibility[gId] = 0;
         }
     }
 
     return {
         groups: groups,
         ranking: ranking,
-        bars: bars
+        bars: bars,
+        compatibility: compatibility
     };
 }
 
@@ -260,10 +265,141 @@ var items = [
 // 2,3,5,6
 // 9,10,11,13
 
+var items = [
+    {
+        player: 1,
+        value: {
+            contribution: 10,
+            demand: 0,
+        }
+    },
+
+    {
+        player: 2,
+        value: {
+            contribution: 10,
+            demand: 6,
+        }
+    },
+
+    {
+        player: 3,
+        value: {
+            contribution: 9,
+            demand: 3,
+        }
+    },
+
+    {
+        player: 4,
+        value: {
+            contribution: 8,
+            demand: 9,
+        }
+    },
+
+    {
+        player: 5,
+        value: {
+            contribution: 7,
+            demand: 4,
+        }
+    },
+
+    {
+        player: 6,
+        value: {
+            contribution: 3,
+            demand: 6,
+        }
+    },
+
+    {
+        player: 7,
+        value: {
+            contribution: 8,
+            demand: 6,
+        }
+    },
+
+   {
+        player: 8,
+        value: {
+            contribution: 8,
+            demand: 8,
+        }
+    },
+
+   {
+        player: 9,
+        value: {
+            contribution: 2,
+            demand: 6,
+        }
+    },
+
+   {
+        player: 10,
+        value: {
+            contribution: 6,
+            demand: 8,
+        }
+    },
+
+   {
+        player: 11,
+        value: {
+            contribution: 3,
+            demand: 5,
+        }
+    },
+
+   {
+        player: 12,
+        value: {
+            contribution: 5,
+            demand: 6,
+        }
+    },
+
+   {
+        player: 13,
+        value: {
+            contribution: 1,
+            demand: 7,
+        }
+    },
+
+   {
+        player: 14,
+        value: {
+            contribution: 3,
+            demand: 9,
+        }
+    },
+
+  {
+        player: 15,
+        value: {
+            contribution: 3,
+            demand: 3,
+        }
+    },
+
+  {
+        player: 16,
+        value: {
+            contribution: 0,
+            demand: 9,
+        }
+    }
+
+];
+
 
 var a = endoGroupMatching(items);
 
-console.log(a.groups);
+console.log(a);
 
 return;
 

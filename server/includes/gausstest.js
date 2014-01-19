@@ -1,3 +1,268 @@
+
+var SUBGROUP_SIZE = 4;
+var groupNames = ['1','2','3','4'];
+
+// Group Matching for ENDO condition
+function endoGroupMatching(sortedContribs) {
+    var noGroup, alreadyTaken;
+    var bars, ranking, iter, jter, temp;
+    var currentGroup, entryI, entryJ, groups, gId;
+    var len;
+
+    // Helper variables.
+    noGroup = [];
+    alreadyTaken = {};
+
+    // Main output.
+    groups = [];
+    bars = [];
+    ranking = [];
+    
+    gId = -1;
+    len = sortedContribs.length;
+
+    for (iter = 0; iter < len; iter++) {
+        if (alreadyTaken[iter]) continue;
+
+        entryI = sortedContribs[iter];
+        // Base object. New entries will be added here, if compatible.
+        temp = {
+            groups: [entryI],
+            ranking: [entryI.player],
+            bars: [entryI.value.contribution, entryI.value.demand],
+            minContrib: entryI.value.contribution,
+            maxDemand: entryI.value.demand
+        };
+
+        // Check if a group can be made with remaining entries. Entries with
+        // higher contributions have been checked already.
+        for (jter = (iter + 1); jter < len; jter++) {
+            if (alreadyTaken[jter]) continue;
+
+            // Check this entry.
+            entryJ = sortedContribs[jter];
+
+            // Since contributions are sorted we don't check further.
+            if (entryJ.value.contibution < temp.maxDemand) {
+                noGroup.push(entryI);
+                break;
+            }
+
+            if (entryJ.value.demand <= temp.minContrib) {
+
+                // Add entryJ to the current temp group.
+                temp.groups.push(entryJ);
+                temp.ranking.push(jter);
+                temp.bars.push([entryJ.value.contribution, entryJ.value.demand]);
+
+                // Update requirements for the group.                
+                temp.minContrib = Math.min(temp.minContrib, entryJ.value.contribution);
+                temp.maxDemand = Math.max(temp.maxDemand, entryJ.value.demand);
+
+                // Check if we have enough compatible players in group.
+                if (temp.groups.length >= SUBGROUP_SIZE) {
+                    // Update group-id counter.
+                    ++gId;
+
+                    // Add the group the main output.
+                    groups.push(temp.groups);
+                    ranking = ranking.concat(temp.ranking);
+                    bars.push(temp.bars);
+                    
+                    // Mark all entries as taken.
+                    for (jter = 0; jter < SUBGROUP_SIZE; jter++) {
+                        entryJ = temp.groups[jter];
+                        alreadyTaken[entryJ.player] = entryJ.player;
+                        entryJ.group = groupNames[gId];
+                    }                
+                    break;
+                }
+                
+            }
+        
+            // We don't have enough players left to try to complete the group.
+            else if ((len - (jter+1)) < (SUBGROUP_SIZE - temp.groups.length)) {
+                // Mark entryI as without group.
+                noGroup.push(entryI);
+                break;
+            }
+        }        
+    }
+
+    if (noGroup.length) {
+        debugger
+        // Creating random groups from entries in no group.
+        noGroup = J.shuffle(noGroup);
+        debugger
+        for (i = 0; i < noGroup.length; i++) {
+            if (i % SUBGROUP_SIZE == 0) {
+                ++gId;
+                groups[gId] = [];
+                bars[gId] = [];
+            }
+            entryJ = noGroup[i];
+            entryJ.group = groupNames[gId];
+            groups[gId].push(entryJ);
+            ranking.push(entryJ.player);
+            bars[gId].push([entryJ.value.contribution, entryJ.value.demand]);
+            
+            console.log(entryJ.value.contribution, entryJ.value.demand);
+        }
+        console.log(noGroup.length);
+    }
+
+    return {
+        groups: groups,
+        ranking: ranking,
+        bars: bars
+    };
+}
+
+
+var items = [
+    {
+        player: 1,
+        value: {
+            contribution: 10,
+            demand: 10,
+        }
+    },
+
+    {
+        player: 2,
+        value: {
+            contribution: 10,
+            demand: 5,
+        }
+    },
+
+    {
+        player: 3,
+        value: {
+            contribution: 8,
+            demand: 4,
+        }
+    },
+
+    {
+        player: 4,
+        value: {
+            contribution: 8,
+            demand: 9,
+        }
+    },
+
+    {
+        player: 5,
+        value: {
+            contribution: 8,
+            demand: 3,
+        }
+    },
+
+    {
+        player: 6,
+        value: {
+            contribution: 6,
+            demand: 6,
+        }
+    },
+
+    {
+        player: 7,
+        value: {
+            contribution: 6,
+            demand: 6,
+        }
+    },
+
+   {
+        player: 8,
+        value: {
+            contribution: 5,
+            demand: 5,
+        }
+    },
+
+   {
+        player: 9,
+        value: {
+            contribution: 5,
+            demand: 1,
+        }
+    },
+
+   {
+        player: 10,
+        value: {
+            contribution: 4,
+            demand: 1,
+        }
+    },
+
+   {
+        player: 11,
+        value: {
+            contribution: 3,
+            demand: 2,
+        }
+    },
+
+   {
+        player: 12,
+        value: {
+            contribution: 3,
+            demand: 10,
+        }
+    },
+
+   {
+        player: 13,
+        value: {
+            contribution: 3,
+            demand: 2,
+        }
+    },
+
+   {
+        player: 14,
+        value: {
+            contribution: 1,
+            demand: 0,
+        }
+    },
+
+  {
+        player: 15,
+        value: {
+            contribution: 1,
+            demand: 0,
+        }
+    },
+
+  {
+        player: 16,
+        value: {
+            contribution: 0,
+            demand: 0,
+        }
+    }
+
+];
+
+// NO GROUP: 1,4,7,8,12,14,15,16
+
+// 2,3,5,6
+// 9,10,11,13
+
+
+var a = endoGroupMatching(items);
+
+console.log(a.groups);
+
+return;
+
+
 /**
  * Generates random numbers with Normal Gaussian distribution.
  *

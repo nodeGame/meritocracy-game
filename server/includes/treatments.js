@@ -21,7 +21,6 @@ var ENDO = treatment === 'endo';
 var treatments = {};
 module.exports = treatments;
 
-
 // Noise variance. High and low stands for "meritocracy", not for noise.
 var NOISE_HIGH = settings.NOISE_HIGH;
 var NOISE_LOW = settings.NOISE_LOW;
@@ -148,6 +147,7 @@ function endoGroupMatching(sortedContribs) {
 
     for (iter = 0; iter < len; iter++) {
         if (alreadyTaken[iter]) continue;
+
         entryI = sortedContribs[iter];
         // Base object. New entries will be added here, if compatible.
         temp = {
@@ -158,6 +158,8 @@ function endoGroupMatching(sortedContribs) {
             maxDemand: entryI.value.demand
         };
 
+        // Check if a group can be made with remaining entries. Entries with
+        // higher contributions have been checked already.
         for (jter = (iter + 1); jter < len; jter++) {
             if (alreadyTaken[jter]) continue;
 
@@ -166,7 +168,7 @@ function endoGroupMatching(sortedContribs) {
 
             // Since contributions are sorted we don't check further.
             if (entryJ.value.contibution < temp.maxDemand) {
-                noGroup.push(entryJ);
+                noGroup.push(entryI);
                 break;
             }
 

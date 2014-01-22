@@ -19,6 +19,12 @@ module.exports = {
     MIN_PLAYERS: 16,
 
     // Game settings.
+    TREATMENTS: ['blackbox', 'endo', 'random', 
+                'exo_low', 'exo_high', 'exo_perfect'],
+
+    // Which treatment to play.
+    // Leave undefined for a randomly chosen treatment.
+    CHOSEN_TREATMENT: 'endo', 
 
     // How many times the meritocracy stage is repeated.
     REPEAT: 20,

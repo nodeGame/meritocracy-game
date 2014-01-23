@@ -101,7 +101,7 @@ var bars = function () {
             bar.innerHTML = '<div class="progress-label">' + text + '</div>';
             jQuery(bar)
                 .progressbar({
-                    value: value
+                    value: value || 1
                 });
             location.appendChild(bar);
 

@@ -88,6 +88,7 @@ var bars = function () {
          * @param  {string} text     text to put inside the bar
          */
         createBar: function (location, value, color, text) {
+            console.log(text);
             var margin, bar = document.createElement('div');
             if (!location || typeof value === 'undefined') {
                 return false;
@@ -95,7 +96,7 @@ var bars = function () {
             if (value < 1) {
                 value = value * 100;
             }
-            if (!text && text !== 0) {
+            if (typeof text === 'undefined') {
                 text = '';
             }
             bar.innerHTML = '<div class="progress-label">' + text + '</div>';
@@ -106,7 +107,7 @@ var bars = function () {
             location.appendChild(bar);
 
             // Display optimizations
-            margin = value > 0 ? (100 - value + testThreshold) : 90;
+            margin = value > 0 ? (100 - value + testThreshold) : 50;
             bar = jQuery(bar);
             if (color) {
                 bar.find('.ui-progressbar-value')

@@ -99,10 +99,11 @@ var bars = function () {
                 text = '';
             }
             bar.innerHTML =
-                '<div style="display:inline-block;width:25%;border-right:solid black 2px;">&nbsp;</div>' +
-                '<div style="display:inline-block;width:25%;border-right:solid black 2px;">&nbsp;</div>' +
-                '<div style="display:inline-block;width:25%;border-right:solid black 2px;">&nbsp;</div>' +
-                '<div class="progress-label">' + text + '</div>';
+                '<div class="progress-label" style="float:right;">' + text +
+                '</div>' +
+                '<div style="opacity:0.4;display:inline-block;width:25%;border-right:solid black 2px;">&nbsp;</div>' +
+                '<div style="opacity:0.4;display:inline-block;width:25%;border-right:solid black 2px;">&nbsp;</div>' +
+                '<div style="opacity:0.4;display:inline-block;width:25%;border-right:solid black 2px;">&nbsp;</div>';
             jQuery(bar)
                 .progressbar({
                     value: value || 1

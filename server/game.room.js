@@ -11,6 +11,8 @@ module.exports = function (node, channel, room) {
 
     var path = require('path');
 
+    var J = require('JSUS').JSUS;
+
     // Reads in descil-mturk configuration.
     var confPath = path.resolve(__dirname, 'descil.conf.js');
 
@@ -44,31 +46,42 @@ module.exports = function (node, channel, room) {
     var logicPath = __dirname + '/includes/game.logic';
 
     // Creating the array for association between room and their logic
-    var arrayRoomLogic = [{
-        group: 'blackbox',
-        logicPath: logicPath,
-    }, {
-        group: 'endo',
-        logicPath: logicPath,
-    }, {
-        group: 'random',
-        logicPath: logicPath,
-    }, {
-        group: 'exo_low',
-        logicPath: logicPath,
-    }, {
-        group: 'exo_high',
-        logicPath: logicPath,
-    }, {
-        group: 'exo_perfect',
-        logicPath: logicPath,
-    }, ];
+    var roomLogics = {
+        blackbox: {
+            group: 'blackbox',
+            logicPath: logicPath,
+        }, 
+        endo: {
+            group: 'endo',
+            logicPath: logicPath,
+        }, 
+        random: {
+            group: 'random',
+            logicPath: logicPath,
+        }, 
+        exo_low: {
+            group: 'exo_low',
+            logicPath: logicPath,
+        }, 
+        exo_high: {
+            group: 'exo_high',
+            logicPath: logicPath,
+        }, 
+        exo_perfect: {
+            group: 'exo_perfect',
+            logicPath: logicPath,
+        }
+    };
 
     // Assigns a treatment condition to a group.
-    var decideRoom = function (arrayRoom) {
+    function decideRoom(treatment) {        
+        if ('undefined' === typeof treatment) {            
+            treatment = J.randomInt(0,settings.TREATMENTS.length);
+            treatment = settings.TREATMENTS[treatment];
+        }
         // Implement logic here.
-        return arrayRoom[1];
-    };
+        return roomLogics[treatment];
+    }
 
     // Load shared settings.
     var settings = require(__dirname + '/includes/game.shared.js');
@@ -201,7 +214,7 @@ module.exports = function (node, channel, room) {
                 tmpPlayerList = wRoom.shuffle().limit(GROUP_SIZE);
 
                 //Assigning a game room to this list of players
-                assignedRoom = decideRoom(arrayRoomLogic);
+                assignedRoom = decideRoom(settings.CHOSEN_TREATMENT);
 
                 // Creating a sub gaming room.
                 // The object must contains the following information:

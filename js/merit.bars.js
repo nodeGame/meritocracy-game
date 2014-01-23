@@ -100,14 +100,15 @@ var bars = function () {
             }
             bar.innerHTML =
                 '<div class="progress-label" style="float:right;">' + text +
-                '</div>' +
-                '<div style="opacity:0.4;display:inline-block;width:25%;border-right:solid black 2px;">&nbsp;</div>' +
-                '<div style="opacity:0.4;display:inline-block;width:25%;border-right:solid black 2px;">&nbsp;</div>' +
-                '<div style="opacity:0.4;display:inline-block;width:25%;border-right:solid black 2px;">&nbsp;</div>';
+                '</div>';
             jQuery(bar)
                 .progressbar({
                     value: value || 1
                 });
+            bar.innerHTML +=
+                '<div style="position:absolute;left:0%;display:inline-block;width:25%;border-right:solid black 2px;">&nbsp;</div>' +
+                '<div style="position:absolute;left:25%;display:inline-block;width:25%;border-right:solid black 2px;">&nbsp;</div>' +
+                '<div style="position:absolute;left:50%;display:inline-block;width:25%;border-right:solid black 2px;">&nbsp;</div>';
             location.appendChild(bar);
 
             // Display optimizations
@@ -121,7 +122,10 @@ var bars = function () {
             }
 
             bar.find('.ui-progressbar-value')
-                .css('margin', '0px');
+                .css({
+                    margin: '0px',
+                    display: 'inline-block',
+                });
             bar.css({
                 display: 'inline - block',
                 margin: '0px',

@@ -12,19 +12,20 @@ module.exports = {
     // Group settings.
 
     // How many players have to connect before a random subset is drawn.
-    POOL_SIZE: 4,
+    POOL_SIZE: 2,
     // How many players in each group ( must be <= POOL_SIZE).
-    GROUP_SIZE: 4,
+    GROUP_SIZE: 2,
     // Minimum number of players that must be always connected.
-    MIN_PLAYERS: 4,
+    MIN_PLAYERS: 2,
 
     // Game settings.
-    TREATMENTS: ['blackbox', 'endo', 'random', 
-                'exo_low', 'exo_high', 'exo_perfect'],
+    TREATMENTS: ['blackbox', 'endo', 'random',
+        'exo_low', 'exo_high', 'exo_perfect'
+    ],
 
     // Which treatment to play.
     // Leave undefined for a randomly chosen treatment.
-    CHOSEN_TREATMENT: 'endo', 
+    CHOSEN_TREATMENT: 'endo',
 
     // How many times the meritocracy stage is repeated.
     REPEAT: 20,

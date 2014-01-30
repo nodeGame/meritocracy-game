@@ -100,6 +100,8 @@ var bars = function () {
             }
             bar.innerHTML =
                 '<div class="progress-label" style="float:right;z-index:100;">' +
+                Math.round(value / 10) +
+                '</div><div class="progress-label-right" style="font-weight:bold;float:right;margin-right:2%;margin-bottom:5px;">' +
                 text + '</div>';
             jQuery(bar)
                 .progressbar({
@@ -112,7 +114,7 @@ var bars = function () {
             location.appendChild(bar);
 
             // Display optimizations
-            margin = value > 0 ? (100 - value + testThreshold) : 85;
+            margin = value > 0 ? (100 - value + testThreshold) : 95;
             bar = jQuery(bar);
             if (color) {
                 bar.find('.ui-progressbar-value')

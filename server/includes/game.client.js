@@ -60,7 +60,8 @@ stager.setOnInit(function () {
 
     node.on('BID_DONE', function (bid, isTimeOut) {
         node.game.timer.stop();
-        W.getElementById('submitOffer').disabled = 'disabled';
+        W.getElementById('submitOffer')
+            .disabled = 'disabled';
         node.set('bid', {
             demand: bid.demand,
             contribution: bid.contrib,
@@ -86,29 +87,36 @@ stager.setOnInit(function () {
         var errorC, errorD;
 
         if (checkResults.success) {
-            contrib = parseInt(W.getElementById('contribution').value, 10);
-            demand = parseInt(W.getElementById('demand').value, 10);
+            contrib = parseInt(W.getElementById('contribution')
+                .value, 10);
+            demand = parseInt(W.getElementById('demand')
+                .value, 10);
         }
         else {
 
             if (checkResults.errContrib) {
 
-                if (node.game.getCurrentGameStage().round === 1) {
+                if (node.game.getCurrentGameStage()
+                    .round === 1) {
                     contrib = JSUS.randomInt(-1, 10);
                 }
                 else {
                     contrib = node.game.oldContrib;
                 }
                 errorC = document.createElement('p');
-                errorC.innerHTML = 'Your contribution was set to ' + contrib;
-                W.getElementById('divErrors').appendChild(errorC);
-                W.getElementById('contribution').value = contrib;
+                errorC.innerHTML = 'Your contribution was set to ' +
+                    contrib;
+                W.getElementById('divErrors')
+                    .appendChild(errorC);
+                W.getElementById('contribution')
+                    .value = contrib;
             }
 
             // In ENDO we check the demand too.
             if (checkResults.errDemand) {
 
-                if (node.game.getCurrentGameStage().round === 1) {
+                if (node.game.getCurrentGameStage()
+                    .round === 1) {
                     demand = JSUS.randomInt(-1, 10);
                 }
                 else {
@@ -116,8 +124,10 @@ stager.setOnInit(function () {
                 }
                 errorD = document.createElement('p');
                 errorD.innerHTML = 'Your demand was set to ' + demand;
-                W.getElementById('divErrors').appendChild(errorD);
-                W.getElementById('demand').value = demand;
+                W.getElementById('divErrors')
+                    .appendChild(errorD);
+                W.getElementById('demand')
+                    .value = demand;
             }
         }
 
@@ -140,7 +150,8 @@ stager.setOnInit(function () {
         divErrors.innerHTML = '';
 
         // Always check the contribution.
-        contrib = W.getElementById('contribution').value;
+        contrib = W.getElementById('contribution')
+            .value;
 
         if (!node.game.isValidContribution(contrib)) {
             errorC = document.createElement('p');
@@ -152,7 +163,8 @@ stager.setOnInit(function () {
         // In ENDO we check the demand too.
         if (node.game.shouldCheckDemand()) {
 
-            demand = W.getElementById('demand').value;
+            demand = W.getElementById('demand')
+                .value;
 
             if (!node.game.isValidDemand(demand)) {
                 errorD = document.createElement('p');
@@ -170,7 +182,7 @@ stager.setOnInit(function () {
     };
 
     // This function is called to create the bars.
-    this.updateResults = function(barsValues) {
+    this.updateResults = function (barsValues) {
         var group, player, i, j, div, subdiv, color, save;
         var barsValues, barsDiv, showDemand;
         var text, groupHeader, groupHeaderText, groupNames;
@@ -193,7 +205,8 @@ stager.setOnInit(function () {
 
         barsDiv.innerHTML = '';
 
-        bars = W.getFrameWindow().bars;
+        bars = W.getFrameWindow()
+            .bars;
 
         for (i = 0; i < barsValues[0].length; i++) {
             group = barsValues[0][i];
@@ -203,23 +216,23 @@ stager.setOnInit(function () {
             groupHeaderText = 'Group ' + groupNames[i];
             if (showDemand) {
                 groupHeaderText += barsValues[3][i] ? ' (' : ' (not ';
-                groupHeaderText += 'compatible)';                    
+                groupHeaderText += 'compatible)';
             }
             groupHeader.innerHTML = groupHeaderText;
 
             div.appendChild(groupHeader);
             for (j = 0; j < group.length; j++) {
-                
+
                 player = group[j];
 
                 // It is me?
                 if (barsValues[1][0] === i && barsValues[1][1] === j) {
                     color = [undefined, '#9932CC'];
-                    text = 'YOU ' + player[0];
+                    text = 'YOU';
                 }
                 else {
                     color = ['#DEB887', '#A52A2A'];
-                    text = player[0];
+                    text = '';
                 }
 
                 subdiv = document.createElement('div');
@@ -227,11 +240,11 @@ stager.setOnInit(function () {
 
                 if (showDemand) {
                     subdiv.classList.add('playerContainer');
-                    text = player[1];                    
+                    text = '';
                     // It is me?
                     if (barsValues[1][0] === i && barsValues[1][1] === j) {
-                        text = 'YOU ' + text;
-                    }                    
+                        text = 'YOU';
+                    }
                     bars.createBar(subdiv, player[1] * 10, color[1], text);
                 }
                 div.appendChild(subdiv);
@@ -246,20 +259,21 @@ stager.setOnInit(function () {
             ' = ' + node.game.oldPayoff;
     };
 
-    this.isValidContribution = function(n) {
+    this.isValidContribution = function (n) {
         n = parseInt(n, 10);
         return !isNaN(n) && isFinite(n) && n >= 0 && n <= 10;
     };
 
-    this.isValidDemand = function(n) {
+    this.isValidDemand = function (n) {
         n = parseInt(n, 10);
         return !isNaN(n) && isFinite(n) && n >= 0 && n <= 10;
     };
 
-    this.fitPage2Treatment = function(treatment) {
+    this.fitPage2Treatment = function (treatment) {
         var iter, toHide;
         // Hides Demand if room type is not endo.
-        W.getElementById('demandBox').style.display =
+        W.getElementById('demandBox')
+            .style.display =
             treatment === 'endo' ? '' : 'none';
 
         // Shows the correct helper text depending on game type.
@@ -277,28 +291,36 @@ stager.setOnInit(function () {
         }
     };
 
-    this.displaySummaryPrevRound = function(treatment) {
+    this.displaySummaryPrevRound = function (treatment) {
         var save, groupReturn;
 
         // Shows previous round if round number is not 1.
-        if (node.game.getCurrentGameStage().round !== 1) {
+        if (node.game.getCurrentGameStage()
+            .round !== 1) {
 
             save = node.game.INITIAL_COINS - node.game.oldContrib;
             groupReturn = node.game.oldPayoff - save;
 
-            W.getElementById('previous-round-info').style.display = 'block';
+            W.getElementById('previous-round-info')
+                .style.display = 'block';
             // Updates display for current round.
-            W.getElementById('yourPB').innerHTML = save;
-            W.getElementById('yourOldContrib').innerHTML = node.game.oldContrib;
-            W.getElementById('yourReturn').innerHTML = groupReturn;
-            W.getElementById('yourPayoff').innerHTML = node.game.oldPayoff;
+            W.getElementById('yourPB')
+                .innerHTML = save;
+            W.getElementById('yourOldContrib')
+                .innerHTML = node.game.oldContrib;
+            W.getElementById('yourReturn')
+                .innerHTML = groupReturn;
+            W.getElementById('yourPayoff')
+                .innerHTML = node.game.oldPayoff;
 
             if (treatment === 'endo') {
-                W.getElementById('yourOldDemand').innerHTML = 
+                W.getElementById('yourOldDemand')
+                    .innerHTML =
                     node.game.oldDemand;
             }
             else {
-                W.getElementById('summaryPreviousDemand').style.display = 'none';
+                W.getElementById('summaryPreviousDemand')
+                    .style.display = 'none';
             }
         }
     };
@@ -340,7 +362,7 @@ function instructions() {
             };
             node.env('auto', function () {
                 node.timer.randomEmit('DONE', 2000);
-            });            
+            });
         });
 
     console.log('Instructions');
@@ -364,16 +386,17 @@ function quiz() {
 function showResults(bars) {
 
     W.loadFrame('/meritocracy/html/results.html', function () {
-        node.on.data('results', function(msg) {
+        node.on.data('results', function (msg) {
             var treatment, b;
             console.log('Received results.');
 
             barsValues = msg.data;
             node.game.fitPage2Treatment(treatment);
 
-            treatment = node.env('roomType');            
+            treatment = node.env('roomType');
             if (treatment === 'endo') {
-                W.getElementById('yourOldDemand').innerHTML = 
+                W.getElementById('yourOldDemand')
+                    .innerHTML =
                     node.game.oldDemand;
             }
 
@@ -414,7 +437,7 @@ function bid() {
     // the frame was open.
     //
     /////////////////////////////////////////////
-    W.loadFrame('/meritocracy/html/bidder.html', function() {
+    W.loadFrame('/meritocracy/html/bidder.html', function () {
         var toHide, i;
         var b, options, other;
         var treatment;
@@ -424,13 +447,17 @@ function bid() {
         node.game.displaySummaryPrevRound(treatment);
 
         // Re-enable input.
-        W.getElementById('submitOffer').disabled = '';
+        W.getElementById('submitOffer')
+            .disabled = '';
         // Clear previous errors.
-        W.getElementById('divErrors').innerHTML = '';
+        W.getElementById('divErrors')
+            .innerHTML = '';
 
         // Clear contribution and demand inputs.
-        W.getElementById('demand').value = '';
-        W.getElementById('contribution').value = '';
+        W.getElementById('demand')
+            .value = '';
+        W.getElementById('contribution')
+            .value = '';
 
         // Customize the page for the different treatments.
         node.game.fitPage2Treatment(treatment);
@@ -438,9 +465,9 @@ function bid() {
         b = W.getElementById('submitOffer');
 
         // AUTOPLAY.
-        node.env('auto', function() {
-            node.timer.randomExec(function() {
-                validation = node.game.checkInputs();            
+        node.env('auto', function () {
+            node.timer.randomExec(function () {
+                validation = node.game.checkInputs();
                 validInputs = node.game.correctInputs(validation);
                 node.emit('BID_DONE', validInputs, false);
             }, 4000);
@@ -450,7 +477,7 @@ function bid() {
         node.on('TIMEUP', function () {
             var validation;
             console.log('TIMEUP !');
-            validation = node.game.checkInputs();            
+            validation = node.game.checkInputs();
             validInputs = node.game.correctInputs(validation);
             node.emit('BID_DONE', validInputs, true);
         });
@@ -476,14 +503,18 @@ function postgame() {
         });
 
         var b = W.getElementById('comment_done');
-        b.onclick = function() {
+        b.onclick = function () {
             var i,
-            T = W.getFrameDocument(),
-            gameName = T.getElementById('game-name').value,
-            stratComment = T.getElementById('strategy-comment').value,
-            socExp = T.getElementsByName('played-other-experiment'),
-            stratChoice = T.getElementsByName('followed-strategy-choice'),
-            comments = T.getElementById('comment').value;
+                T = W.getFrameDocument(),
+                gameName = T.getElementById('game-name')
+                    .value,
+                stratComment = T.getElementById('strategy-comment')
+                    .value,
+                socExp = T.getElementsByName('played-other-experiment'),
+                stratChoice = T.getElementsByName(
+                    'followed-strategy-choice'),
+                comments = T.getElementById('comment')
+                    .value;
 
             var errors = [],
                 stratCommentErr = false,
@@ -515,10 +546,10 @@ function postgame() {
             }
 
             if (['random',
-                 'egoist',
-                 'team',
-                 'other'
-                ].indexOf(stratChoice) === -1) {
+                'egoist',
+                'team',
+                'other'
+            ].indexOf(stratChoice) === -1) {
                 errors.push('3.');
             }
 
@@ -532,8 +563,8 @@ function postgame() {
             if (errors.length) {
                 errDiv = W.getElementById('divErrors');
                 errors = '<p>Please answer question' +
-                    (errors.length === 1 ? ' ' + errors[0] : 
-                     's ' + errors.join(' ')) + '</p>';
+                    (errors.length === 1 ? ' ' + errors[0] :
+                    's ' + errors.join(' ')) + '</p>';
 
                 if (stratCommentErr) {
                     errors += '<p>Answer 3. is too short.</p>';
@@ -586,7 +617,7 @@ function clearFrame() {
 function notEnoughPlayers() {
     node.game.pause();
     W.lockFrame('The other player disconnected. We are now waiting to see if ' +
-                ' he or she reconnects. If not the game will be terminated.');
+        ' he or she reconnects. If not the game will be terminated.');
 }
 
 // Add all the stages into the stager.
@@ -718,7 +749,7 @@ stager.init()
     .repeat('meritocracy', settings.REPEAT)
     .next('questionnaire')
 // .next('endgame')
-    .gameover();
+.gameover();
 
 // We serialize the game sequence before sending it.
 game.plot = stager.getState();

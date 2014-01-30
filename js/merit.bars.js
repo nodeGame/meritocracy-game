@@ -106,13 +106,13 @@ var bars = function () {
                     value: value || 1
                 });
             bar.innerHTML +=
-                '<div style="position:absolute;left:0%;display:inline-block;width:25%;border-right:solid black 2px;">&nbsp;</div>' +
-                '<div style="position:absolute;left:25%;display:inline-block;width:25%;border-right:solid black 2px;">&nbsp;</div>' +
-                '<div style="position:absolute;left:50%;display:inline-block;width:25%;border-right:solid black 2px;">&nbsp;</div>';
+                '<div style="position:absolute;left:0%;display:inline-block;width:25%;border-right:solid gray 1px;">&nbsp;</div>' +
+                '<div style="position:absolute;left:25%;display:inline-block;width:25%;border-right:solid gray 1px;">&nbsp;</div>' +
+                '<div style="position:absolute;left:50%;display:inline-block;width:25%;border-right:solid gray 1px;">&nbsp;</div>';
             location.appendChild(bar);
 
             // Display optimizations
-            margin = value > 0 ? (100 - value + testThreshold) : 50;
+            margin = value > 0 ? (100 - value + testThreshold) : 60;
             bar = jQuery(bar);
             if (color) {
                 bar.find('.ui-progressbar-value')

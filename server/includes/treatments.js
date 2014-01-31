@@ -72,7 +72,6 @@ function sortNoisyContributions(c1, c2) {
     return 1;
 }
 
-
 /**
  * Returns payoff
  *
@@ -89,7 +88,6 @@ function getPayoff(bars, position) {
     payoff = INITIAL_COINS - group[position[1]][0] + payoff;
     return payoff;
 }
-
 
 /**
  * Splits a sorted array of contributions objects into four groups
@@ -593,6 +591,10 @@ treatments.endo = {
         previousStage = node.game.plot.previous(currentStage);
 
         receivedData = node.game.memory.stage[previousStage];
+        
+        if (!receivedData) {
+            debugger
+        }
 
         sortedContribs = receivedData
             .sort(sortContributions)

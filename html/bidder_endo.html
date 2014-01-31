@@ -84,6 +84,14 @@
               <input type="number" min="0" max="10" id="contribution" class="inline" size="3" /> coins.
             </td>
           </tr>
+          <tr id="demandBox" style="display: none">
+            <td class="left">
+              <p>You agree to form a group with players that contributed no less than: </p>
+            </td>
+            <td>
+              <input type="number" min="0" max="10" id="demand" class="inline" size="3" /> coins.
+            </td>
+          </tr>
         </table>
       </div>
       
@@ -100,7 +108,10 @@
         <p>
           You decided to put <strong><span id="yourOldContrib"></span></strong> coins into the group account and the return was <strong><span id="yourReturn"></span></strong>.
         </p>
+        <p id="summaryPreviousDemand">
+          You agreed to form a group with players that contributed no less than <strong><span id="yourOldDemand"></span></strong>.
         <p> Your final payoff was <strong><span id="yourPayoff"></span></strong>.</p>
+        
       </div> 
       
       <div id="timeupReminder">

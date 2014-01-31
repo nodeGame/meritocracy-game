@@ -1,0 +1,65 @@
+/* CSS for results page. */
+
+/*.ui-progressbar {
+  display:inline-block;
+  position: relative;
+  height: 20px;
+  width: 320px;
+  }
+  .progress-label {
+  position:absolute;
+  left: 45%;
+  font-weight: bold;
+  font-size:10pt;
+  }*/
+
+.pushed-down {
+    margin-top:20px;
+}
+
+.mini-pushed-down {
+    margin-top:10px;
+}
+
+.big-pushed-down {
+    margin-top:100px;
+}
+
+.inline {
+    display:inline;
+}
+
+#divErrors {
+    color:red;
+}
+
+#barsResults {
+    border-top: 1px solid #CCC;
+}
+
+#results {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+#submitOffer {
+    margin-bottom:30px;
+}
+
+.groupContainer {
+    padding-left:10px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+    border-left: thick solid #2cabec;
+    -webkit-border-radius: 15px;
+    -moz-border-radius: 15px;
+    border-radius: 15px;
+}
+
+.playerContainer {
+    padding-left:10px;
+    border-left: thick solid #800000;
+    -webkit-border-radius: 15px;
+    -moz-border-radius: 15px;
+    border-radius: 15px;
+}

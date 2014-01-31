@@ -31,11 +31,14 @@ game.globals = {};
 
 // INIT and GAMEOVER
 
-stager.setOnInit(function () {
+stager.setOnInit(function() {
     var that = this;
-    var waitingForPlayers;
+    var waitingForPlayers, treatment;
+    
+    console.log('INIT PLAYER!');
+    
     node.game.INITIAL_COINS = node.env('INITIAL_COINS');
-
+    
     node.game.oldContrib = null;
     node.game.oldDemand = null;
     node.game.oldPayoff = null;
@@ -43,7 +46,41 @@ stager.setOnInit(function () {
     // Change so that roomtype is set as decided in game.room.
     node.game.roomType = node.env('roomType');
 
-    console.log('INIT PLAYER!');
+    // Adapting the game to the treatment.
+    node.game.instructionsPage = '/meritocracy/html/';
+    node.game.bidderPage = '/meritocracy/html/';
+    node.game.resultsPage = '/meritocracy/html/';
+    node.game.quizPage = '/meritocracy/html/';
+    
+    if (node.game.roomType === 'endo') {
+        node.game.bidderPage += 'bidder_endo.html';
+        node.game.resultsPage += 'results_endo.html';
+        node.game.instructionsPage += 'instructions_endo.html';
+        node.game.quizPage += 'quiz_endo.html';
+    }
+    else if (node.game.roomType = 'blackbox') {
+        node.game.bidderPage += 'bidder_blackbox.html';
+        node.game.resultsPage += 'results_blackbox.html';
+        node.game.instructionsPage += 'instructions_blackbox.html';
+        node.game.quizPage += 'quiz_blackbox.html'
+    }
+    else {
+        node.game.bidderPage += 'bidder.html';
+        node.game.resultsPage += 'results.html';
+        
+        if (node.game.roomType == 'random') {
+            node.game.instructionsPage += 'instructions_random.html';
+            node.game.quizPage += 'quiz_random.html'
+        }
+        else if (node.game.roomType == 'exo_perfect') {
+            node.game.instructionsPage += 'instructions_exo_perfect.html';
+            node.game.quizPage += 'quiz_exo_perfect.html'
+        }
+        else {
+            node.game.instructionsPage += 'instructions_exo_lowhigh.html';
+            node.game.quizPage += 'quiz_exo_lowhigh.html';
+        }     
+    }
 
     // Hide the waiting for other players message.
     waitingForPlayers = W.getElementById('waitingForPlayers');
@@ -58,10 +95,9 @@ stager.setOnInit(function () {
     // - player.css
     W.setupFrame('PLAYER');
 
-    node.on('BID_DONE', function (bid, isTimeOut) {
+    node.on('BID_DONE', function(bid, isTimeOut) {
         node.game.timer.stop();
-        W.getElementById('submitOffer')
-            .disabled = 'disabled';
+        W.getElementById('submitOffer').disabled = 'disabled';
         node.set('bid', {
             demand: bid.demand,
             contribution: bid.contrib,
@@ -75,14 +111,14 @@ stager.setOnInit(function () {
         node.done();
     });
 
-    this.shouldCheckDemand = function () {
+    this.shouldCheckDemand = function() {
         return node.env('roomType') === "endo";
     };
 
     // Takes in input the results of _checkInputs_ and correct eventual
     // mistakes. If in the first round a random value is chosen, otherwise
     // the previous decision is repeated. It also updates the screen.
-    this.correctInputs = function (checkResults) {
+    this.correctInputs = function(checkResults) {
         var contrib, demand, previousChoice;
         var errorC, errorD;
 
@@ -96,27 +132,22 @@ stager.setOnInit(function () {
 
             if (checkResults.errContrib) {
 
-                if (node.game.getCurrentGameStage()
-                    .round === 1) {
+                if (node.game.getCurrentGameStage().round === 1) {
                     contrib = JSUS.randomInt(-1, 10);
                 }
                 else {
                     contrib = node.game.oldContrib;
                 }
                 errorC = document.createElement('p');
-                errorC.innerHTML = 'Your contribution was set to ' +
-                    contrib;
-                W.getElementById('divErrors')
-                    .appendChild(errorC);
-                W.getElementById('contribution')
-                    .value = contrib;
+                errorC.innerHTML = 'Your contribution was set to ' + contrib;
+                W.getElementById('divErrors').appendChild(errorC);
+                W.getElementById('contribution').value = contrib;
             }
 
             // In ENDO we check the demand too.
             if (checkResults.errDemand) {
 
-                if (node.game.getCurrentGameStage()
-                    .round === 1) {
+                if (node.game.getCurrentGameStage().round === 1) {
                     demand = JSUS.randomInt(-1, 10);
                 }
                 else {
@@ -124,10 +155,8 @@ stager.setOnInit(function () {
                 }
                 errorD = document.createElement('p');
                 errorD.innerHTML = 'Your demand was set to ' + demand;
-                W.getElementById('divErrors')
-                    .appendChild(errorD);
-                W.getElementById('demand')
-                    .value = demand;
+                W.getElementById('divErrors').appendChild(errorD);
+                W.getElementById('demand').value = demand;
             }
         }
 
@@ -140,7 +169,7 @@ stager.setOnInit(function () {
     // Retrieves and checks the current input for contribution, and for
     // demand (if requested). Returns an object with the results of the
     // validation. It also displays a message in case errors are found.
-    this.checkInputs = function () {
+    this.checkInputs = function() {
         var contrib, demand, values;
         var divErrors, errorC, errorD;
 
@@ -150,8 +179,7 @@ stager.setOnInit(function () {
         divErrors.innerHTML = '';
 
         // Always check the contribution.
-        contrib = W.getElementById('contribution')
-            .value;
+        contrib = W.getElementById('contribution').value;
 
         if (!node.game.isValidContribution(contrib)) {
             errorC = document.createElement('p');
@@ -163,8 +191,7 @@ stager.setOnInit(function () {
         // In ENDO we check the demand too.
         if (node.game.shouldCheckDemand()) {
 
-            demand = W.getElementById('demand')
-                .value;
+            demand = W.getElementById('demand').value;
 
             if (!node.game.isValidDemand(demand)) {
                 errorD = document.createElement('p');
@@ -176,13 +203,13 @@ stager.setOnInit(function () {
 
         return {
             success: !(errorC || errorD),
-            errContrib: !! errorC,
-            errDemand: !! errorD
+            errContrib: !!errorC,
+            errDemand: !!errorD
         };
     };
 
     // This function is called to create the bars.
-    this.updateResults = function (barsValues) {
+    this.updateResults = function(barsValues) {
         var group, player, i, j, div, subdiv, color, save;
         var barsValues, barsDiv, showDemand;
         var text, groupHeader, groupHeaderText, groupNames;
@@ -205,8 +232,7 @@ stager.setOnInit(function () {
 
         barsDiv.innerHTML = '';
 
-        bars = W.getFrameWindow()
-            .bars;
+        bars = W.getFrameWindow().bars;
 
         for (i = 0; i < barsValues[0].length; i++) {
             group = barsValues[0][i];
@@ -259,17 +285,17 @@ stager.setOnInit(function () {
             ' = ' + node.game.oldPayoff;
     };
 
-    this.isValidContribution = function (n) {
+    this.isValidContribution = function(n) {
         n = parseInt(n, 10);
         return !isNaN(n) && isFinite(n) && n >= 0 && n <= 10;
     };
 
-    this.isValidDemand = function (n) {
+    this.isValidDemand = function(n) {
         n = parseInt(n, 10);
         return !isNaN(n) && isFinite(n) && n >= 0 && n <= 10;
     };
 
-    this.fitPage2Treatment = function (treatment) {
+    this.fitPage2Treatment = function(treatment) {
         var iter, toHide;
         // Hides Demand if room type is not endo.
         W.getElementById('demandBox')
@@ -291,7 +317,7 @@ stager.setOnInit(function () {
         }
     };
 
-    this.displaySummaryPrevRound = function (treatment) {
+    this.displaySummaryPrevRound = function(treatment) {
         var save, groupReturn;
 
         // Shows previous round if round number is not 1.
@@ -327,7 +353,7 @@ stager.setOnInit(function () {
 
 });
 
-stager.setOnGameOver(function () {
+stager.setOnGameOver(function() {
     // Do something.
 });
 
@@ -337,31 +363,26 @@ stager.setOnGameOver(function () {
 function precache() {
     W.lockFrame('Loading...');
     W.preCache([
-        '/meritocracy/html/instructions.html',
-        '/meritocracy/html/quiz.html',
-        // '/meritocracy/html/bidder.html',  // these two are cached by following
-        // '/meritocracy/html/resp.html',    // loadFrame calls (for demonstration)
+        node.game.instructionsPage,
+        node.game.quizPage,
+        // node.game.bidderPage,  // these two are cached by following
+        // node.game.resultsPage,    // loadFrame calls (for demonstration)
         '/meritocracy/html/postgame.html',
         '/meritocracy/html/ended.html'
-    ], function () {
+    ], function() {
         // Pre-Caching done; proceed to the next stage.
         node.done();
     });
 }
 
 function instructions() {
-    var treatment = /low|high/g.test(node.game.roomType) ?
-        'lowhigh' : node.game.roomType;
-
-    W.loadFrame('/meritocracy/html/instructions_' + treatment + '.html',
-        function () {
-
+    W.loadFrame(node.game.instructionsPage, function() {
             var b = W.getElementById('read');
-            b.onclick = function () {
+            b.onclick = function() {
                 node.done();
             };
-            node.env('auto', function () {
-                node.timer.randomEmit('DONE', 2000);
+            node.env('auto', function() {
+                node.timer.randomEmit('DONE', 8000);
             });
         });
 
@@ -369,14 +390,9 @@ function instructions() {
 }
 
 function quiz() {
-    var quizpage;
-    quizpage = /low|high/g.test(node.game.roomType) ?
-        '/meritocracy/html/quiz.exo_high_low.html' :
-        '/meritocracy/html/quiz.' + node.game.roomType + '.html';
-
-    W.loadFrame(quizpage, function () {
-        node.env('auto', function () {
-            node.timer.randomEmit('DONE', 2000);
+    W.loadFrame(node.game.quizPage, function() {
+        node.env('auto', function() {
+            node.timer.randomEmit('DONE', 8000);
         });
     });
 
@@ -385,25 +401,23 @@ function quiz() {
 
 function showResults(bars) {
 
-    W.loadFrame('/meritocracy/html/results.html', function () {
-        node.on.data('results', function (msg) {
+    W.loadFrame(node.game.resultsPage, function() {
+        node.on.data('results', function(msg) {
             var treatment, b;
             console.log('Received results.');
 
             barsValues = msg.data;
-            node.game.fitPage2Treatment(treatment);
 
             treatment = node.env('roomType');
             if (treatment === 'endo') {
-                W.getElementById('yourOldDemand')
-                    .innerHTML =
+                W.getElementById('yourOldDemand').innerHTML =
                     node.game.oldDemand;
             }
 
             this.updateResults(barsValues);
 
             b = W.getElementById('submitOffer');
-            b.onclick = function () {
+            b.onclick = function() {
                 node.done();
             };
         });
@@ -437,7 +451,7 @@ function bid() {
     // the frame was open.
     //
     /////////////////////////////////////////////
-    W.loadFrame('/meritocracy/html/bidder.html', function () {
+    W.loadFrame(node.game.bidderPage, function() {
         var toHide, i;
         var b, options, other;
         var treatment;
@@ -465,8 +479,8 @@ function bid() {
         b = W.getElementById('submitOffer');
 
         // AUTOPLAY.
-        node.env('auto', function () {
-            node.timer.randomExec(function () {
+        node.env('auto', function() {
+            node.timer.randomExec(function() {
                 validation = node.game.checkInputs();
                 validInputs = node.game.correctInputs(validation);
                 node.emit('BID_DONE', validInputs, false);
@@ -474,7 +488,7 @@ function bid() {
         });
 
         // TIMEUP.
-        node.on('TIMEUP', function () {
+        node.on('TIMEUP', function() {
             var validation;
             console.log('TIMEUP !');
             validation = node.game.checkInputs();
@@ -482,7 +496,7 @@ function bid() {
             node.emit('BID_DONE', validInputs, true);
         });
 
-        b.onclick = function () {
+        b.onclick = function() {
             var validation;
             validation = node.game.checkInputs();
             if (!validation.success) return;
@@ -496,14 +510,14 @@ function bid() {
 }
 
 function postgame() {
-    W.loadFrame('/meritocracy/html/postgame.html', function () {
+    W.loadFrame('/meritocracy/html/postgame.html', function() {
 
-        node.env('auto', function () {
+        node.env('auto', function() {
             node.timer.randomEmit('DONE');
         });
 
         var b = W.getElementById('comment_done');
-        b.onclick = function () {
+        b.onclick = function() {
             var i,
                 T = W.getFrameDocument(),
                 gameName = T.getElementById('game-name')
@@ -600,8 +614,8 @@ function postgame() {
 }
 
 function endgame() {
-    W.loadFrame('/meritocracy/html/ended.html', function () {
-        node.on.data('WIN', function (msg) {
+    W.loadFrame('/meritocracy/html/ended.html', function() {
+        node.on.data('WIN', function(msg) {
             W.write('Your bonus in this game is: ' + msg.data || 0);
         });
     });

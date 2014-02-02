@@ -1,10 +1,7 @@
 /**
- * # Logic code for Ultimatum Game
- * Copyright(c) 2013 Stefano Balietti
+ * # Logic code for Meritocracy Game
+ * Copyright(c) 2014 Stefano Balietti
  * MIT Licensed
- *
- * Handles bidding, and responds between two players.
- * Extensively documented tutorial.
  *
  * Info:
  * Matching, and stepping can be done in different ways. It can be

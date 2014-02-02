@@ -1,16 +1,9 @@
-var QUIZ = function(answers) {
+function QUIZ(answers) {
     var node = parent.node,
         J = parent.JSUS,
         W = parent.W;
 
-    node.window.noEscape(window);
-
     var results = {};
-
-    node.env('auto', function() {
-        node.set('QUIZ', results);
-        node.timer.randomEmit('DONE', 2000);
-    });
 
     function checkAnswer(a) {
         if (!a || !answers) return;
@@ -26,17 +19,21 @@ var QUIZ = function(answers) {
             correct = checkAnswer(a);
             if (correct) {
                 W.highlight(a, 'ERR');
-                document.getElementById(a.id + '_result').innerHTML = 'Wrong, try again';
+                document.getElementById(a.id + '_result').
+                    innerHTML = 'Wrong, try again';
                 results[a.name].push(0);
-            } else {
+            } 
+            else {
                 W.highlight(a, 'OK');
-                document.getElementById(a.id + '_result').innerHTML = 'Correct!';
+                document.getElementById(a.id + '_result')
+                    .innerHTML = 'Correct!';
                 results[a.name].push(1);
                 counter++;
             }
         });
 
-        document.getElementById('answers_counter').innerHTML = counter + ' / ' + document.forms.length;
+        document.getElementById('answers_counter').innerHTML = counter + 
+            ' / ' + document.forms.length;
 
         if (counter === document.forms.length) {
             submitButton.disabled = true;
@@ -65,8 +62,8 @@ var QUIZ = function(answers) {
     // if the given value does not exist, all the radio buttons
     // are reset to unchecked
     function setCheckedValue(radioObj, newValue) {
-        if (!radioObj)
-            return;
+        if (!radioObj) return;
+
         var radioLength = radioObj.length;
         if (radioLength == undefined) {
             radioObj.checked = (radioObj.value == newValue.toString());

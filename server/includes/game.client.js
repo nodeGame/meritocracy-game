@@ -1,6 +1,6 @@
 /**
- * # Client code for Ultimatum Game
- * Copyright(c) 2013 Stefano Balietti
+ * # Client code for Meritocracy Game
+ * Copyright(c) 2014 Stefano Balietti
  * MIT Licensed
  *
  * Handles bidding, and responds between two players.
@@ -124,9 +124,9 @@ stager.setOnInit(function() {
 
         if (checkResults.success) {
             contrib = parseInt(W.getElementById('contribution')
-                .value, 10);
+                               .value, 10);
             demand = parseInt(W.getElementById('demand')
-                .value, 10);
+                              .value, 10);
         }
         else {
 
@@ -344,14 +344,14 @@ function precache() {
 
 function instructions() {
     W.loadFrame(node.game.instructionsPage, function() {
-            var b = W.getElementById('read');
-            b.onclick = function() {
-                node.done();
-            };
-            node.env('auto', function() {
-                node.timer.randomEmit('DONE', 8000);
-            });
+        var b = W.getElementById('read');
+        b.onclick = function() {
+            node.done();
+        };
+        node.env('auto', function() {
+            node.timer.randomEmit('DONE', 8000);
         });
+    });
 
     console.log('Instructions');
 }
@@ -374,8 +374,8 @@ function showResults(bars) {
             console.log('Received results.');
 
             barsValues = msg.data;
-
             treatment = node.env('roomType');
+
             if (treatment === 'endo') {
                 W.getElementById('yourOldDemand').innerHTML =
                     node.game.oldDemand;
@@ -484,20 +484,20 @@ function postgame() {
         var b = W.getElementById('comment_done');
         b.onclick = function() {
             var i,
-                T = W.getFrameDocument(),
-                gameName = T.getElementById('game-name')
-                    .value,
-                stratComment = T.getElementById('strategy-comment')
-                    .value,
-                socExp = T.getElementsByName('played-other-experiment'),
-                stratChoice = T.getElementsByName(
-                    'followed-strategy-choice'),
-                comments = T.getElementById('comment')
-                    .value;
+            T = W.getFrameDocument(),
+            gameName = T.getElementById('game-name')
+                .value,
+            stratComment = T.getElementById('strategy-comment')
+                .value,
+            socExp = T.getElementsByName('played-other-experiment'),
+            stratChoice = T.getElementsByName(
+                'followed-strategy-choice'),
+            comments = T.getElementById('comment')
+                .value;
 
             var errors = [],
-                stratCommentErr = false,
-                errDiv;
+            stratCommentErr = false,
+            errDiv;
 
             // Getting values of form.
             for (i = 0; i < socExp.length; i++) {
@@ -525,10 +525,10 @@ function postgame() {
             }
 
             if (['random',
-                'egoist',
-                'team',
-                'other'
-            ].indexOf(stratChoice) === -1) {
+                 'egoist',
+                 'team',
+                 'other'
+                ].indexOf(stratChoice) === -1) {
                 errors.push('3.');
             }
 
@@ -543,7 +543,7 @@ function postgame() {
                 errDiv = W.getElementById('divErrors');
                 errors = '<p>Please answer question' +
                     (errors.length === 1 ? ' ' + errors[0] :
-                    's ' + errors.join(' ')) + '</p>';
+                     's ' + errors.join(' ')) + '</p>';
 
                 if (stratCommentErr) {
                     errors += '<p>Answer 3. is too short.</p>';
@@ -596,7 +596,7 @@ function clearFrame() {
 function notEnoughPlayers() {
     node.game.pause();
     W.lockFrame('The other player disconnected. We are now waiting to see if ' +
-        ' he or she reconnects. If not the game will be terminated.');
+                ' he or she reconnects. If not the game will be terminated.');
 }
 
 // Add all the stages into the stager.
@@ -668,7 +668,7 @@ stager.addStage({
     //  - an object containing properties _milliseconds_, and _timeup_
     //     the latter being the name of the event to fire (default DONE)
     // - or a function returning the number of milliseconds.
-    timer: 60000,
+    timer: 600000,
     done: clearFrame
 });
 
@@ -728,7 +728,7 @@ stager.init()
     .repeat('meritocracy', settings.REPEAT)
     .next('questionnaire')
 // .next('endgame')
-.gameover();
+    .gameover();
 
 // We serialize the game sequence before sending it.
 game.plot = stager.getState();

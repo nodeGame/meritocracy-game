@@ -1,0 +1,44 @@
+/* Bidder page */
+
+.pushed-down {
+    margin: 20px auto;
+    max-width: 600px; 
+}
+
+.mini-pushed-down {
+    margin-top:10px;
+}
+
+.big-pushed-down {
+    margin-top:100px;
+}
+
+.inline {
+    display:inline;
+}
+
+#divErrors {
+    color:red;
+}
+
+#submitOffer {
+    margin-bottom:30px;
+}
+
+#previous-round-info {
+    display:none;
+}
+
+table#bid_table {
+    width: 100%;
+}
+
+table#bid_table td.left {
+    width: 60%;
+    padding-right: 10px;
+    vertical-align: middle;
+}
+
+input.inline {
+    text-align: center;
+}

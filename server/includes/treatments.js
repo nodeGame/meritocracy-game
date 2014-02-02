@@ -593,6 +593,8 @@ treatments.endo = {
         receivedData = node.game.memory.stage[previousStage];
         
         if (!receivedData) {
+            console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
+            return;
             debugger
         }
 

@@ -295,58 +295,25 @@ stager.setOnInit(function() {
         return !isNaN(n) && isFinite(n) && n >= 0 && n <= 10;
     };
 
-    this.fitPage2Treatment = function(treatment) {
-        var iter, toHide;
-        // Hides Demand if room type is not endo.
-        W.getElementById('demandBox')
-            .style.display =
-            treatment === 'endo' ? '' : 'none';
-
-        // Shows the correct helper text depending on game type.
-        if (treatment === 'blackbox') {
-            toHide = W.getFrameDocument()
-                .getElementsByClassName('other-game-type');
-        }
-        else {
-            toHide = W.getFrameDocument()
-                .getElementsByClassName('blackbox-game-type');
-        }
-
-        for (i = 0; i < toHide.length; i++) {
-            toHide[i].style.display = 'none';
-        }
-    };
-
     this.displaySummaryPrevRound = function(treatment) {
         var save, groupReturn;
 
         // Shows previous round if round number is not 1.
-        if (node.game.getCurrentGameStage()
-            .round !== 1) {
+        if (node.game.getCurrentGameStage().round !== 1) {
 
             save = node.game.INITIAL_COINS - node.game.oldContrib;
             groupReturn = node.game.oldPayoff - save;
 
-            W.getElementById('previous-round-info')
-                .style.display = 'block';
+            W.getElementById('previous-round-info').style.display = 'block';
             // Updates display for current round.
-            W.getElementById('yourPB')
-                .innerHTML = save;
-            W.getElementById('yourOldContrib')
-                .innerHTML = node.game.oldContrib;
-            W.getElementById('yourReturn')
-                .innerHTML = groupReturn;
-            W.getElementById('yourPayoff')
-                .innerHTML = node.game.oldPayoff;
+            W.getElementById('yourPB').innerHTML = save;
+            W.getElementById('yourOldContrib').innerHTML = node.game.oldContrib;
+            W.getElementById('yourReturn').innerHTML = groupReturn;
+            W.getElementById('yourPayoff').innerHTML = node.game.oldPayoff;
 
             if (treatment === 'endo') {
-                W.getElementById('yourOldDemand')
-                    .innerHTML =
+                W.getElementById('yourOldDemand').innerHTML =
                     node.game.oldDemand;
-            }
-            else {
-                W.getElementById('summaryPreviousDemand')
-                    .style.display = 'none';
             }
         }
     };
@@ -420,6 +387,8 @@ function showResults(bars) {
             b.onclick = function() {
                 node.done();
             };
+
+            node.timer.randomEmit('DONE', 6000);
         });
     });
 }
@@ -461,20 +430,16 @@ function bid() {
         node.game.displaySummaryPrevRound(treatment);
 
         // Re-enable input.
-        W.getElementById('submitOffer')
-            .disabled = '';
+        W.getElementById('submitOffer').disabled = '';
         // Clear previous errors.
-        W.getElementById('divErrors')
-            .innerHTML = '';
+        W.getElementById('divErrors').innerHTML = '';
 
         // Clear contribution and demand inputs.
-        W.getElementById('demand')
-            .value = '';
-        W.getElementById('contribution')
-            .value = '';
+        if (treatment === 'endo') {
+            W.getElementById('demand').value = '';   
+        }
 
-        // Customize the page for the different treatments.
-        node.game.fitPage2Treatment(treatment);
+        W.getElementById('contribution').value = '';
 
         b = W.getElementById('submitOffer');
 

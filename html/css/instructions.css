@@ -1,0 +1,19 @@
+/* Instructions CSS */
+
+#central-container {
+    margin:auto;
+    text-align:left;
+    max-width:600px;
+}
+td {
+    text-align:center;
+}
+body {
+    text-align:center;
+}
+table {
+    width:100%;
+    text-align:center;
+    margin:auto;
+    background-color:#E0E0E0;
+}

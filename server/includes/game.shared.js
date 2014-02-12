@@ -1,5 +1,5 @@
 /**
- * # Shared settings for meritocracy game.
+ * # Shared settings for Meritocracy game.
  * Copyright(c) 2014 Stefano Balietti
  * MIT Licensed
  *
@@ -28,7 +28,7 @@ module.exports = {
 
     // Which treatment to play.
     // Leave undefined for a randomly chosen treatment.
-    CHOSEN_TREATMENT: 'endo',
+    CHOSEN_TREATMENT: 'exo_perfect',
 
     // How many times the meritocracy stage is repeated. *
     REPEAT: 20,

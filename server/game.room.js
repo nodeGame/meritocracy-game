@@ -189,20 +189,7 @@ module.exports = function(node, channel, room) {
 
         console.log('********Waiting Room Created*****************');
 
-        // This callback is executed whenever a previously disconnected
-        // players reconnects.
-        node.on.preconnect(function (p) {
-            console.log('Oh...somebody reconnected in the waiting room!', p);
-            node.game.pl.add(p);
-        });
-
-        // This must be done manually for now (maybe will change in the future).
-        node.on.mreconnect(function (p) {
-            node.game.ml.add(p);
-        });
-
-        // This callback is executed when a player connects to the channel.
-        node.on.pconnect(function (p) {
+        function connectingPlayer(p) {
             var gameRoom, wRoom, tmpPlayerList, assignedRoom;
             var nPlayers, i, len;
             var runTimeConf;
@@ -293,7 +280,48 @@ module.exports = function(node, channel, room) {
                     });
                 });
             }
+        }
+
+
+        // This callback is executed whenever a previously disconnected
+        // players reconnects.
+        node.on.preconnect(function (p) {
+            console.log('Oh...somebody reconnected in the waiting room!', p);
+            // Notify other player he is back.
+            // TODO: add it automatically if we return TRUE? It must be done
+            // both in the alias and the real event handler
+            // TODO: Cannot use to: ALL, because this includes the reconnecting
+            // player.
+            node.game.pl.each(function(p) {
+                node.socket.send(node.msg.create({
+                    target: 'PCONNECT',
+                    data: p,
+                    to: p.id
+                }));
+            });
+            node.game.pl.add(p);
+            connectingPlayer(p);
         });
+
+        // This must be done manually for now (maybe will change in the future).
+        node.on.mreconnect(function (p) {
+            node.game.ml.add(p);
+        });
+
+        // This callback is executed when a player connects to the channel.
+        node.on.pconnect(connectingPlayer);
+
+        // This callback is executed when a player disconnects from the channel.
+        node.on.pdisconnect(function(p) {
+            
+            // Client really disconnected (not moved into another game room).
+            if (channel.registry.clients.disconnected.get(p.id)) {
+                // Free up the code.
+                dk.decrementUsage(p.id);
+            }
+            
+        });
+
     });
 
     // This function will be executed once node.game.gameover() is called.

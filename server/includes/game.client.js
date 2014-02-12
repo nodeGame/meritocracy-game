@@ -58,7 +58,7 @@ stager.setOnInit(function() {
         node.game.instructionsPage += 'instructions_endo.html';
         node.game.quizPage += 'quiz_endo.html';
     }
-    else if (node.game.roomType = 'blackbox') {
+    else if (node.game.roomType === 'blackbox') {
         node.game.bidderPage += 'bidder_blackbox.html';
         node.game.resultsPage += 'results_blackbox.html';
         node.game.instructionsPage += 'instructions_blackbox.html';
@@ -68,11 +68,11 @@ stager.setOnInit(function() {
         node.game.bidderPage += 'bidder.html';
         node.game.resultsPage += 'results.html';
         
-        if (node.game.roomType == 'random') {
+        if (node.game.roomType === 'random') {
             node.game.instructionsPage += 'instructions_random.html';
             node.game.quizPage += 'quiz_random.html'
         }
-        else if (node.game.roomType == 'exo_perfect') {
+        else if (node.game.roomType === 'exo_perfect') {
             node.game.instructionsPage += 'instructions_exo_perfect.html';
             node.game.quizPage += 'quiz_exo_perfect.html'
         }
@@ -123,17 +123,18 @@ stager.setOnInit(function() {
         var errorC, errorD;
 
         if (checkResults.success) {
-            contrib = parseInt(W.getElementById('contribution')
-                               .value, 10);
-            demand = parseInt(W.getElementById('demand')
-                              .value, 10);
+            contrib = parseInt(W.getElementById('contribution').value, 10);
+
+            if (node.game.shouldCheckDemand()) {
+                demand = parseInt(W.getElementById('demand').value, 10);
+            }
         }
         else {
 
             if (checkResults.errContrib) {
 
                 if (node.game.getCurrentGameStage().round === 1) {
-                    contrib = JSUS.randomInt(-1, 10);
+                    contrib = JSUS.randomInt(-1, 20);
                 }
                 else {
                     contrib = node.game.oldContrib;
@@ -148,7 +149,7 @@ stager.setOnInit(function() {
             if (checkResults.errDemand) {
 
                 if (node.game.getCurrentGameStage().round === 1) {
-                    demand = JSUS.randomInt(-1, 10);
+                    demand = JSUS.randomInt(-1, 20);
                 }
                 else {
                     demand = node.game.oldDemand;
@@ -184,7 +185,7 @@ stager.setOnInit(function() {
         if (!node.game.isValidContribution(contrib)) {
             errorC = document.createElement('p');
             errorC.innerHTML = 'Invalid contribution. ' +
-                'Please enter a number between 0 and 10.';
+                'Please enter a number between 0 and 20.';
             divErrors.appendChild(errorC);
         }
 
@@ -196,7 +197,7 @@ stager.setOnInit(function() {
             if (!node.game.isValidDemand(demand)) {
                 errorD = document.createElement('p');
                 errorD.innerHTML = 'Invalid demand. ' +
-                    'Please enter a number between 0 and 10.';
+                    'Please enter a number between 0 and 20.';
                 divErrors.appendChild(errorD);
             }
         }
@@ -262,7 +263,7 @@ stager.setOnInit(function() {
                 }
 
                 subdiv = document.createElement('div');
-                bars.createBar(subdiv, player[0] * 10, color[0], text);
+                bars.createBar(subdiv, player[0] * 20, color[0], text);
 
                 if (showDemand) {
                     subdiv.classList.add('playerContainer');
@@ -271,7 +272,7 @@ stager.setOnInit(function() {
                     if (barsValues[1][0] === i && barsValues[1][1] === j) {
                         text = 'YOU';
                     }
-                    bars.createBar(subdiv, player[1] * 10, color[1], text);
+                    bars.createBar(subdiv, player[1] * 20, color[1], text);
                 }
                 div.appendChild(subdiv);
             }
@@ -287,12 +288,12 @@ stager.setOnInit(function() {
 
     this.isValidContribution = function(n) {
         n = parseInt(n, 10);
-        return !isNaN(n) && isFinite(n) && n >= 0 && n <= 10;
+        return !isNaN(n) && isFinite(n) && n >= 0 && n <= 20;
     };
 
     this.isValidDemand = function(n) {
         n = parseInt(n, 10);
-        return !isNaN(n) && isFinite(n) && n >= 0 && n <= 10;
+        return !isNaN(n) && isFinite(n) && n >= 0 && n <= 20;
     };
 
     this.displaySummaryPrevRound = function(treatment) {
@@ -396,7 +397,9 @@ function showResults(bars) {
                 node.done();
             };
 
-            node.timer.randomEmit('DONE', 6000);
+            node.env('auto', function() {
+                node.timer.randomEmit('DONE', 6000);
+            });
         });
     });
 }
@@ -656,7 +659,7 @@ stager.addStage({
     // the number of players (including this client) falls the below
     // the chosen threshold. Related: `maxPlayers`, and `exactPlayers`.
     minPlayers: [nbRequiredPlayers, notEnoughPlayers],
-    syncOnLoaded: true,
+    // syncOnLoaded: true,
     done: clearFrame
 });
 
@@ -664,8 +667,8 @@ stager.addStage({
     id: 'instructions',
     cb: instructions,
     minPlayers: [nbRequiredPlayers, notEnoughPlayers],
-    syncOnLoaded: true,
-    timer: 600000,
+    // syncOnLoaded: true,
+    timer: 180000,
     done: clearFrame
 });
 
@@ -673,7 +676,7 @@ stager.addStage({
     id: 'quiz',
     cb: quiz,
     minPlayers: [nbRequiredPlayers, notEnoughPlayers],
-    syncOnLoaded: true,
+    // syncOnLoaded: true,
     // `timer` starts automatically the timer managed by the widget VisualTimer
     // if the widget is loaded. When the time is up it fires the DONE event.
     // It accepts as parameter:
@@ -681,7 +684,7 @@ stager.addStage({
     //  - an object containing properties _milliseconds_, and _timeup_
     //     the latter being the name of the event to fire (default DONE)
     // - or a function returning the number of milliseconds.
-    timer: 600000,
+    timer: 120000,
     done: clearFrame
 });
 
@@ -690,7 +693,10 @@ stager.addStep({
     cb: bid,
     done: clearFrame,
     timer: {
-        milliseconds: 10000,
+	milliseconds: function() {
+	    if (node.game.getCurrentGameStage().round < 3) return 30000;
+	    return 15000;
+	},
         timeup: 'TIMEUP'
     }
 });
@@ -698,20 +704,26 @@ stager.addStep({
 stager.addStep({
     id: 'results',
     cb: showResults,
-    timer: 100000,
+    timer: function() {
+        var round;
+        round = node.game.getCurrentGameStage().round;
+	if (round < 2) return 60000;
+	if (round < 3) return 50000;
+	return 30000;        
+    },
     done: clearFrame
 });
 
 stager.addStage({
     id: 'meritocracy',
     steps: ['bid', 'results'],
-    minPlayers: [nbRequiredPlayers, notEnoughPlayers],
     // `syncOnLoaded` forces the clients to wait for all the others to be
     // fully loaded before releasing the control of the screen to the players.
     // This options introduces a little overhead in communications and delay
     // in the execution of a stage. It is probably not necessary in local
     // networks, and it is FALSE by default.
-    syncOnLoaded: true,
+    // syncOnLoaded: true,
+    minPlayers: [nbRequiredPlayers, notEnoughPlayers]
 });
 
 stager.addStage({

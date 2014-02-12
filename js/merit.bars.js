@@ -1,10 +1,20 @@
-var bars = function () {
+/**
+ * # Bars Widget
+ * Copyright(c) 2014 Stefano Balietti
+ * MIT Licensed
+ *
+ * Displays horizontal bars parametrically.
+ *
+ * http://www.nodegame.org
+ * ---
+ */
+var bars = function() {
     'use strict';
 
     var shadeColor;
     var testThreshold = 2;
 
-    shadeColor = function (color, percent) {
+    shadeColor = function(color, percent) {
         var num = parseInt(color.slice(1), 16),
             amt = Math.round(2.55 * percent),
             R = (num >> 16) + amt,
@@ -24,7 +34,7 @@ var bars = function () {
          * @param {object} location id of the table
          * @param {2d array} values   [i][0] = ith contrib, [i][1] = ith demand
          */
-        init: function (location, values, letter) {
+        init: function(location, values, letter) {
             console.log(values, letter);
             var iter, value;
             var letters = ['.', '.a', '.b', '.c', '.d', '.e', '.f'];
@@ -87,8 +97,9 @@ var bars = function () {
          * @param  {string} color    color of the bar (Hex or string)
          * @param  {string} text     text to put inside the bar
          */
-        createBar: function (location, value, color, text) {
-            var margin, bar = document.createElement('div');
+        createBar: function(location, value, color, text) {
+            var margin, bar;
+            bar = document.createElement('div');
             if (!location || typeof value === 'undefined') {
                 return false;
             }

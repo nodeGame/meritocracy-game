@@ -1,6 +1,6 @@
 /**
- * # Requierements Room for Ultimatum Game
- * Copyright(c) 2013 Stefano Balietti
+ * # Requierements Room for Meritocracy Game
+ * Copyright(c) 2014 Stefano Balietti
  * MIT Licensed
  *
  * Handles incoming connections, validates authorization tokens

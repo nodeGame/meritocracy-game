@@ -9,7 +9,7 @@
 
 module.exports = {
 
-    // Group settings.
+    // Group settings. *
 
     // How many players have to connect before a random subset is drawn.
     POOL_SIZE: 2,
@@ -30,20 +30,20 @@ module.exports = {
     // Leave undefined for a randomly chosen treatment.
     CHOSEN_TREATMENT: 'endo',
 
-    // How many times the meritocracy stage is repeated.
+    // How many times the meritocracy stage is repeated. *
     REPEAT: 20,
     // Names of the groups.
     GROUP_NAMES: ['1', '2', '3', '4'],
-    // How many player in each group.
+    // How many player in each group. *
     SUBGROUP_SIZE: 4,
 
     // Noise variance. High and low "meritocracy".
     NOISE_HIGH: 2,
     NOISE_LOW: 4,
 
-    // Payment settings.
+    // Payment settings. *
     GROUP_ACCOUNT_DIVIDER: 2,
-    INITIAL_COINS: 10,
+    INITIAL_COINS: 20,
 
     // Divider ECU / DOLLARS *
     EXCHANGE_RATE: 2000,
@@ -52,8 +52,10 @@ module.exports = {
     DEBUG: true,
 
     // AUTO-PLAY.
-    AUTO: true,
+    AUTO: false,
 
     // AUTHORIZATION.
     AUTH: 'LOCAL' // MTURK, LOCAL, NO.
+
+    // * = if you change this you need to update instructions and quiz
 };

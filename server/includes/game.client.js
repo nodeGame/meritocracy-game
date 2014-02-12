@@ -263,7 +263,7 @@ stager.setOnInit(function() {
                 }
 
                 subdiv = document.createElement('div');
-                bars.createBar(subdiv, player[0] * 20, color[0], text);
+                bars.createBar(subdiv, player[0] * 10, color[0], text);
 
                 if (showDemand) {
                     subdiv.classList.add('playerContainer');
@@ -272,7 +272,7 @@ stager.setOnInit(function() {
                     if (barsValues[1][0] === i && barsValues[1][1] === j) {
                         text = 'YOU';
                     }
-                    bars.createBar(subdiv, player[1] * 20, color[1], text);
+                    bars.createBar(subdiv, player[1] * 10, color[1], text);
                 }
                 div.appendChild(subdiv);
             }
@@ -281,6 +281,7 @@ stager.setOnInit(function() {
 
         node.game.oldPayoff = +barsValues[2]; // final payoff
 
+        // How many coins player put in personal account.
         save = node.game.INITIAL_COINS - node.game.oldContrib;
         payoffSpan.innerHTML = save + ' + ' + (barsValues[2] - save) +
             ' = ' + node.game.oldPayoff;

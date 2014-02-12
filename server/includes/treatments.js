@@ -350,7 +350,7 @@ function finalizeRound(currentStage, bars,
             // Position in Rank (array of group id, position within group).
             positionInNoisyRank = [i, j];
             pId = contribObj.player;
-
+            debugger
             playerPayoff = getPayoff(bars, positionInNoisyRank);
 
             node.game.savePlayerValues(contribObj, playerPayoff,
@@ -384,7 +384,8 @@ treatments.exo_perfect = {
         currentStage = node.game.getCurrentGameStage();
         previousStage = node.game.plot.previous(currentStage);
 
-        receivedData = node.game.memory.stage[previousStage];
+        receivedData = node.game.memory.stage[previousStage]
+            .selexec('key', '=', 'bid');
         
         sortedContribs = receivedData
             .sort(sortContributions)
@@ -431,7 +432,8 @@ treatments.exo_high = {
         currentStage = node.game.getCurrentGameStage();
         previousStage = node.game.plot.previous(currentStage);
 
-        receivedData = node.game.memory.stage[previousStage];
+        receivedData = node.game.memory.stage[previousStage]
+            .selexec('key', '=', 'bid');
 
         sortedContribs = receivedData
             .sort(sortContributions)
@@ -487,7 +489,8 @@ treatments.exo_low = {
         currentStage = node.game.getCurrentGameStage();
         previousStage = node.game.plot.previous(currentStage);
 
-        receivedData = node.game.memory.stage[previousStage];
+        receivedData = node.game.memory.stage[previousStage]
+            .selexec('key', '=', 'bid');
 
         sortedContribs = receivedData
             .sort(sortContributions)
@@ -543,7 +546,8 @@ treatments.random = {
         currentStage = node.game.getCurrentGameStage();
         previousStage = node.game.plot.previous(currentStage);
 
-        receivedData = node.game.memory.stage[previousStage];
+        receivedData = node.game.memory.stage[previousStage]
+            .selexec('key', '=', 'bid');
 
         // Shuffle contributions randomly.
         sortedContribs = receivedData
@@ -590,8 +594,9 @@ treatments.endo = {
         currentStage = node.game.getCurrentGameStage();
         previousStage = node.game.plot.previous(currentStage);
 
-        receivedData = node.game.memory.stage[previousStage];
-        
+        receivedData = node.game.memory.stage[previousStage]
+            .selexec('key', '=', 'bid');
+
         if (!receivedData) {
             console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
             return;
@@ -689,8 +694,8 @@ function getGroupsPlayerBars(player, receivedData, p, groupValues) {
 
     player = [player.value.contribution, player.value.demand];
 
-    allPlayers = receivedData.selexec('group', '=', p.group)
-        .fetch();
+    allPlayers = receivedData.selexec('group', '=', p.group).fetch();
+    
     playersBars.push(player);
     for (player in allPlayers) {
         player = allPlayers[player];
@@ -730,8 +735,7 @@ function getGroupValues(receivedData) {
     for (name in groupNames) {
         if (groupNames.hasOwnProperty(name)) {
             name = groupNames[name];
-            group = receivedData.selexec('group', '=', name)
-                .fetch();
+            group = receivedData.selexec('group', '=', name).fetch();
             groupContrib = group.reduce(averageContribution, 0) / group.length;
             groupDemand = group.reduce(averageDemand, 0) / group.length;
             groupValues[name] = [groupContrib, groupDemand];

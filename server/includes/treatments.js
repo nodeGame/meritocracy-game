@@ -9,12 +9,14 @@
  * ---
  */
 
+
 var J = require('JSUS').JSUS;
 
 // Share through channel.require
 var node = module.parent.exports.node;
 var treatment = module.parent.exports.treatment;
 var settings = module.parent.exports.settings;
+var dk = module.parent.exports.dk;
 
 var ENDO = treatment === 'endo';
 
@@ -335,6 +337,7 @@ function finalizeRound(currentStage, bars,
 
     var i, len, j, lenJ, contribObj,
     pId, positionInNoisyRank, playerPayoff;
+    var code;
 
     // Save the results at the group level.
     node.game.saveRoundResults(ranking, groupStats,
@@ -350,9 +353,18 @@ function finalizeRound(currentStage, bars,
             // Position in Rank (array of group id, position within group).
             positionInNoisyRank = [i, j];
             pId = contribObj.player;
-            debugger
+            
             playerPayoff = getPayoff(bars, positionInNoisyRank);
-
+            
+            // Updating the player database with the current payoff.
+            code = dk.codes.id.get(pId);
+            if (!code) {
+                console.log('AAAH code not found: ', pId);                
+            }	   
+            code.win = !code.win ? playerPayoff : code.win + playerPayoff;
+	    console.log('Added to ' + pId + ' ' + playerPayoff + ' ECU');
+            // End Update.
+            
             node.game.savePlayerValues(contribObj, playerPayoff,
                                        positionInNoisyRank,
                                        ranking,

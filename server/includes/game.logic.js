@@ -34,6 +34,12 @@ var counter = 0;
 
 var settings = require(__dirname + '/game.shared.js');
 
+var EXCHANGE_RATE = settings.EXCHANGE_RATE;
+
+// Variable registered outside of the export function are shared among all
+// instances of game logics.
+var counter = settings.SESSION_ID;
+
 // Number of required players.
 var nbRequiredPlayers = settings.MIN_PLAYERS;
 // Group names.
@@ -45,12 +51,40 @@ var groupNames = settings.GROUP_NAMES;
 // - gameRoom: the GameRoom object in which this logic will be running. 
 module.exports = function(node, channel, gameRoom) {
 
+    var DUMP_DIR, DUMP_DIR_JSON, DUMP_DIR_CSV;
+    DUMP_DIR = path.resolve(__dirname, '..', 'data') + '/' + counter + '/';
+    DUMP_DIR_JSON = DUMP_DIR + 'json/';
+    DUMP_DIR_CSV = DUMP_DIR + 'csv/';
+
+    // Recursively create directories, sub-trees and all.
+    J.mkdirSyncRecursive(DUMP_DIR_JSON, 0777);
+    J.mkdirSyncRecursive(DUMP_DIR_CSV, 0777);
+
+    
+    // Reads in descil-mturk configuration.
+    var confPath = path.resolve(__dirname, '..', 'descil.conf.js');
+    var dk = require('descil-mturk')(confPath);
+
+    function codesNotFound() {
+        if (!dk.codes.size()) {
+            throw new Error('game.logic: no codes found.');
+        }
+    }
+
+    if (settings.AUTH === 'MTURK') {
+        dk.getCodes(codesNotFound);
+    }
+    else if (settings.AUTH === 'LOCAL') {
+        dk.readCodes(codesNotFound);
+    }
+
     var treatment = gameRoom.group;
 
     var treatments = channel.require(__dirname + '/treatments.js', {
         node: node,
         treatment: treatment,
-        groupNames: groupNames
+        groupNames: groupNames,
+        dk: dk
     });
 
     var ngdb = new Database(node);
@@ -60,16 +94,6 @@ module.exports = function(node, channel, gameRoom) {
     });
 
     mdb.connect(function() {});
-
-    // Reads in descil-mturk configuration.
-    var confPath = path.resolve(__dirname, '..', 'descil.conf.js');
-    var dk = require('descil-mturk')(confPath);
-
-    dk.readCodes(function() {
-        if (!dk.codes.size()) {
-            throw new Errors('game.logic: codes not found.');
-        }
-    });
 
     node.on.data('questionnaire', function(e) {
         var saveObject = {
@@ -114,6 +138,42 @@ module.exports = function(node, channel, gameRoom) {
 
         var disconnected;
         disconnected = {};
+
+        // "STEPPING" is the last event emitted before the stage is updated.
+        node.on('STEPPING', function() {
+            var currentStage, db, p, gain;
+
+            currentStage = node.game.getCurrentGameStage();
+
+            // We do not save stage 0.0.0. 
+            // Morever, If the last stage is equal to the current one, we are
+            // re-playing the same stage cause of a reconnection. In this
+            // case we do not update the database, or save files.
+            if (!GameStage.compare(currentStage, new GameStage())) {
+                return;
+            }
+            // Update last stage reference.
+            node.game.lastStage = currentStage;
+
+            db = node.game.memory.stage[currentStage];
+
+            if (db && db.size()) {
+                try {
+                    // Saving results to FS.
+                    node.fs.saveMemory('csv', DUMP_DIR + 'memory_' + currentStage +
+                                       '.csv', { flags: 'w' }, db);
+                    node.fs.saveMemory('json', DUMP_DIR + 'memory_' + currentStage +
+                                       '.nddb', null, db);        
+
+                    console.log('Round data saved ', currentStage);
+                }
+                catch(e) {
+                    console.log('OH! An error occurred while saving: ',
+                                currentStage);
+                }
+            }
+      
+        });
 
         node.game.savePlayerValues = function(p, payoff, positionInNoisyRank,
             ranking, noisyRanking,
@@ -314,30 +374,52 @@ module.exports = function(node, channel, gameRoom) {
 
     function endgame() {
         var code, exitcode, accesscode;
+        var bonusFile, bonus;
+
         console.log('endgame');
+        
+        bonusFile = DUMP_DIR + 'bonus.csv';
 
         console.log('FINAL PAYOFF PER PLAYER');
         console.log('***********************');
 
-        node.game.pl.each(function(p) {
+        bonus = node.game.pl.map(function(p) {
             // debugger
             code = dk.codes.id.get(p.id);
             if (!code) {
                 console.log('ERROR: no code in endgame:', p.id);
-                return;
+                return ['NA', 'NA'];
             }
 
             accesscode = code.AccessCode;
             exitcode = code.ExitCode;
-            code.win = (code.win || 0) / 1000;
+
+            code.win =  Number((code.win || 0) / EXCHANGE_RATE).toFixed(2);
+            code.win = parseFloat(code.win, 10);
+
             dk.checkOut(accesscode, exitcode, code.win);
-            node.say('WIN', p.id, code.win);
-            console.log(p.id, ': ' + code.win);
+
+	    node.say('WIN', p.id, {
+                win: code.win,
+                exitcode: code.ExitCode
+            });
+
+            console.log(p.id, ': ',  code.win, code.ExitCode);
+            return [p.id, code.ExitCode, code.win, node.game.gameTerminated];
         });
 
         console.log('***********************');
-
         console.log('Game ended');
+
+        try {
+            node.fs.writeCsv(bonusFile, bonus, {
+                headers: ["access", "exit", "bonus", "terminated"]
+            });
+        } 
+        catch(e) {
+            console.log('ERROR: could not save the bonus file: ', 
+                        DUMP_DIR + 'bonus.csv');
+        }
     }
 
     function notEnoughPlayers() {
@@ -421,7 +503,7 @@ module.exports = function(node, channel, gameRoom) {
         .next('quiz')
         .repeat('meritocracy', settings.REPEAT)
         .next('questionnaire')
-    // .next('endgame')
+        .next('endgame')
     .gameover();
 
     // Here we group together the definition of the game logic.

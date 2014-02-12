@@ -490,111 +490,26 @@ function postgame() {
     W.loadFrame('/meritocracy/html/postgame.html', function() {
 
         node.env('auto', function() {
-            node.timer.randomEmit('DONE');
-        });
-
-        var b = W.getElementById('comment_done');
-        b.onclick = function() {
-            var i,
-            T = W.getFrameDocument(),
-            gameName = T.getElementById('game-name')
-                .value,
-            stratComment = T.getElementById('strategy-comment')
-                .value,
-            socExp = T.getElementsByName('played-other-experiment'),
-            stratChoice = T.getElementsByName(
-                'followed-strategy-choice'),
-            comments = T.getElementById('comment')
-                .value;
-
-            var errors = [],
-            stratCommentErr = false,
-            errDiv;
-
-            // Getting values of form.
-            for (i = 0; i < socExp.length; i++) {
-                if (socExp[i].checked) {
-                    socExp = socExp[i].value;
-                    break;
-                }
-            }
-
-            for (i = 0; i < stratChoice.length; i++) {
-                if (stratChoice[i].checked) {
-                    stratChoice = stratChoice[i].value;
-                    break;
-                }
-            }
-
-            // Checking if values are correct.
-
-            if (gameName === '') {
-                errors.push('1.');
-            }
-
-            if (['0', '1'].indexOf(socExp.toString()) === -1) {
-                errors.push('2.');
-            }
-
-            if (['random',
-                 'egoist',
-                 'team',
-                 'other'
-                ].indexOf(stratChoice) === -1) {
-                errors.push('3.');
-            }
-
-            if (stratChoice === 'other') {
-                if (stratComment.length < 5) {
-                    errors.push('3.');
-                    stratCommentErr = true;
-                }
-            }
-
-            if (errors.length) {
-                errDiv = W.getElementById('divErrors');
-                errors = '<p>Please answer question' +
-                    (errors.length === 1 ? ' ' + errors[0] :
-                     's ' + errors.join(' ')) + '</p>';
-
-                if (stratCommentErr) {
-                    errors += '<p>Answer 3. is too short.</p>';
-                }
-
-                errDiv.innerHTML = errors;
-                return false;
-            }
-
-            console.log({
-                gameName: gameName,
-                socExp: socExp,
-                stratChoice: stratChoice,
-                comments: comments,
-                stratComment: stratComment
+	    node.timer.randomExec(function() {
+                node.game.timer.doTimeUp();
             });
-
-            // Sending values to server.
-            node.set('questionnaire', {
-                gameName: gameName,
-                socExp: socExp,
-                stratChoice: stratChoice,
-                comments: comments,
-                stratComment: stratComment
-            });
-
-            alert('Thank you very much. Game Ended.');
-            node.done();
-
-        };
+	});
+     
     });
     console.log('Postgame');
 }
 
 function endgame() {
     W.loadFrame('/meritocracy/html/ended.html', function() {
+	node.game.timer.setToZero();
         node.on.data('WIN', function(msg) {
-            W.write('Your bonus in this game is: ' + msg.data || 0);
-        });
+            var win, exitcode, codeErr;
+            codeErr = 'ERROR (code not found)';
+            win = msg.data && msg.data.win || 0;
+            exitcode = msg.data && msg.data.exitcode || codeErr;
+	    W.writeln('Your bonus in this game is: ' + win);
+            W.writeln('Your exitcode is: ' + exitcode);
+	});
     });
 
     console.log('Game ended');
@@ -741,7 +656,100 @@ stager.addStage({
 stager.addStage({
     id: 'questionnaire',
     cb: postgame,
-    timer: 60000
+    timer: 60000,
+    done: function() {
+        var i, socExpValue, stratChoiceValue;
+        T = W.getFrameDocument(),
+        gameName = T.getElementById('game-name').value,
+        stratComment = T.getElementById('strategy-comment').value,
+        socExp = T.getElementsByName('played-other-experiment'),
+        stratChoice = T.getElementsByName('followed-strategy-choice'),
+        comments = T.getElementById('comment').value;
+
+        var errors = [], 
+        stratCommentErr = false,
+        errDiv = null;
+
+        // Getting values of form.
+        for (i = 0; i < socExp.length; i++) {
+            if (socExp[i].checked) {
+                socExpValue = socExp[i].value;
+                break;
+            }
+        }
+
+        for (i = 0; i < stratChoice.length; i++) {
+            if (stratChoice[i].checked) {
+                stratChoiceValue = stratChoice[i].value;
+                break;
+            }
+        }
+
+        // Checking if values are correct.
+
+        if (gameName === '') {
+            errors.push('1.');
+        }
+
+        if ('undefined' === typeof socExpValue) {
+            errors.push('2.');
+        }
+
+        if (['random',
+             'egoist',
+             'team',
+             'other'
+            ].indexOf(stratChoice) === -1) {
+            errors.push('3.');
+        }
+
+        if (stratChoice === 'other') {
+            if (stratComment.length < 5) {
+                errors.push('3.');
+                stratCommentErr = true;
+            }
+        }
+
+        isTimeUp = node.game.timer.gameTimer.timeLeft <= 0;
+
+        if (errors.length && !isTimeUp) {
+            errDiv = W.getElementById('divErrors');
+            errors = '<p>Please answer question' +
+                (errors.length === 1 ? ' ' + errors[0] :
+                 's ' + errors.join(' ')) + '</p>';
+
+            if (stratCommentErr) {
+                errors += '<p>Answer 3. is too short.</p>';
+            }
+
+            errDiv.innerHTML = errors;
+            return false;
+        }
+
+        console.log({
+            gameName: gameName,
+            socExp: socExpValue,
+            stratChoice: stratChoiceValue,
+            comments: comments,
+            stratComment: stratComment
+        });
+
+        // Sending values to server.
+        node.set('questionnaire', {
+            gameName: gameName,
+            socExp: socExpValue,
+            stratChoice: stratChoiceValue,
+            comments: comments,
+            stratComment: stratComment            
+        });
+     
+        node.emit('INPUT_DISABLE');        
+        node.set('timestep', {
+            time: node.timer.getTimeSince('step'),
+            timeup: isTimeUp
+        });
+        return true;
+    }
 });
 
 
@@ -754,7 +762,7 @@ stager.init()
     .next('quiz')
     .repeat('meritocracy', settings.REPEAT)
     .next('questionnaire')
-// .next('endgame')
+    .next('endgame')
     .gameover();
 
 // We serialize the game sequence before sending it.

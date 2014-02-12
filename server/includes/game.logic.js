@@ -60,6 +60,8 @@ module.exports = function(node, channel, gameRoom) {
     J.mkdirSyncRecursive(DUMP_DIR_JSON, 0777);
     J.mkdirSyncRecursive(DUMP_DIR_CSV, 0777);
 
+    // Client game to send to reconnecting players.
+    var client = channel.require(__dirname + '/game.client', { ngc: ngc });
     
     // Reads in descil-mturk configuration.
     var confPath = path.resolve(__dirname, '..', 'descil.conf.js');

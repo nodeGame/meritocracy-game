@@ -97,27 +97,34 @@ var bars = function() {
          * @param  {string} color    color of the bar (Hex or string)
          * @param  {string} text     text to put inside the bar
          */
-        createBar: function(location, value, color, text) {
-            var margin, bar;
+        createBar: function(location, value, maxValue, color, text) {
+            var margin, bar, valuePerCent;
             bar = document.createElement('div');
             if (!location || typeof value === 'undefined') {
                 return false;
             }
-            if (value < 1) {
-                value = value * 100;
-            }
+// Commented out.
+//            if (value < 1) {
+//                value = value * 100;
+//            }
             if (typeof text === 'undefined') {
                 text = '';
             }
+            
+            valuePerCent = Number(value / maxValue).toFixed(2);
+            valuePerCent = parseFloat(valuePerCent, 10) * 100;
+
+            // debugger
             bar.innerHTML =
                 '<div class="progress-label" style="float:right;z-index:100;">' +
-                Math.round(value / 10) +
-                '</div><div class="progress-label-right" style="font-weight:bold;float:right;margin-right:2%;margin-bottom:5px;">' +
+                value + '</div>' +
+                '<div class="progress-label-right" style="font-weight:bold;float:right;margin-right:2%;margin-bottom:5px;">' +
                 text + '</div>';
-            jQuery(bar)
-                .progressbar({
-                    value: value || 1
-                });
+            
+            jQuery(bar).progressbar({
+                value: valuePerCent || 1
+            });
+            
             bar.innerHTML +=
                 '<div style="position:absolute;left:0%;display:inline-block;width:25%;border-right:solid gray 1px;z-index:2;">&nbsp;</div>' +
                 '<div style="position:absolute;left:25%;display:inline-block;width:25%;border-right:solid gray 1px;z-index:2;">&nbsp;</div>' +
@@ -125,7 +132,10 @@ var bars = function() {
             location.appendChild(bar);
 
             // Display optimizations
-            margin = value > 0 ? (100 - value + testThreshold) : 95;
+            
+            // margin = value > 0 ? (100 - value + testThreshold) : 95;
+            // margin = valuePerCent;
+            
             bar = jQuery(bar);
             if (color) {
                 bar.find('.ui-progressbar-value')
@@ -136,8 +146,8 @@ var bars = function() {
 
             bar.find('.ui-progressbar-value')
                 .css({
-                    margin: '0px',
-                    display: 'inline-block',
+                    margin: '0px'
+                    //display: 'inline-block',
                 });
             bar.css({
                 display: 'inline - block',

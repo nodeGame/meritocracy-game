@@ -1,5 +1,5 @@
 /**
- * # Requirements for Ultimatum Game
+ * # Requirements for Meritocracy Game
  * Copyright(c) 2014 Stefano Balietti
  * MIT Licensed
  *

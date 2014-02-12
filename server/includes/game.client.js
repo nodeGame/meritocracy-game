@@ -246,7 +246,7 @@ stager.setOnInit(function() {
                 groupHeaderText += 'compatible)';
             }
             groupHeader.innerHTML = groupHeaderText;
-
+            barsDiv.appendChild(div);
             div.appendChild(groupHeader);
             for (j = 0; j < group.length; j++) {
 
@@ -262,8 +262,10 @@ stager.setOnInit(function() {
                     text = '';
                 }
 
+                // This is the DIV actually containing the bar
                 subdiv = document.createElement('div');
-                bars.createBar(subdiv, player[0] * 10, color[0], text);
+                div.appendChild(subdiv);
+                bars.createBar(subdiv, player[0], 20, color[0], text);
 
                 if (showDemand) {
                     subdiv.classList.add('playerContainer');
@@ -272,11 +274,13 @@ stager.setOnInit(function() {
                     if (barsValues[1][0] === i && barsValues[1][1] === j) {
                         text = 'YOU';
                     }
-                    bars.createBar(subdiv, player[1] * 10, color[1], text);
+                    bars.createBar(subdiv, player[1], 20, color[1], text);
                 }
-                div.appendChild(subdiv);
+                // Was here
+                // div.appendChild(subdiv);
             }
-            barsDiv.appendChild(div);
+            // Was here
+            // barsDiv.appendChild(div);
         }
 
         node.game.oldPayoff = +barsValues[2]; // final payoff

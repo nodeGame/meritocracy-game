@@ -52,7 +52,7 @@ module.exports = {
     DEBUG: true,
 
     // AUTO-PLAY.
-    AUTO: true,
+    AUTO: false,
 
     // AUTHORIZATION.
     AUTH: 'LOCAL' // MTURK, LOCAL, NO.

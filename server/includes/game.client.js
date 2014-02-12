@@ -318,6 +318,11 @@ stager.setOnInit(function() {
         }
     };
 
+    // Remove the content of the previous frame before loading the next one.
+    node.on('STEPPING', function() {
+        W.clearFrame();
+    });
+
 });
 
 stager.setOnGameOver(function() {
@@ -328,7 +333,10 @@ stager.setOnGameOver(function() {
 
 
 function precache() {
-    W.lockFrame('Loading...');
+    W.lockScreen('Loading...');
+    node.done();
+    // Disabled for the moment. It does not reload the QUIZ script.
+return
     W.preCache([
         node.game.instructionsPage,
         node.game.quizPage,
@@ -590,13 +598,18 @@ function endgame() {
 
 function clearFrame() {
     node.emit('INPUT_DISABLE');
+    // We save also the time to complete the step.
+    node.set('timestep', {
+        time: node.timer.getTimeSince('step'),
+        timeup: node.game.timer.gameTimer.timeLeft <= 0
+    });
     return true;
 }
 
 function notEnoughPlayers() {
     node.game.pause();
-    W.lockFrame('The other player disconnected. We are now waiting to see if ' +
-                ' he or she reconnects. If not the game will be terminated.');
+    W.lockScreen('The other player disconnected. We are now waiting to see if ' +
+                 ' he or she reconnects. If not the game will be terminated.');
 }
 
 // Add all the stages into the stager.
@@ -685,7 +698,8 @@ stager.addStep({
 stager.addStep({
     id: 'results',
     cb: showResults,
-    timer: 100000
+    timer: 100000,
+    done: clearFrame
 });
 
 stager.addStage({

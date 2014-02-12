@@ -24,3 +24,10 @@ div#quiz {
 .quiz_result {
     font-weight: bold;
 }
+
+tr, th, td, table {
+    text-align:center;
+}
+#done_box {
+    text-align:center;
+}

@@ -1,6 +1,6 @@
 /**
  * # Requirements for Ultimatum Game
- * Copyright(c) 2013 Stefano Balietti
+ * Copyright(c) 2014 Stefano Balietti
  * MIT Licensed
  *
  * Incoming connections are validated:
@@ -14,86 +14,93 @@
  */
 function Requirements() {
 
-    var stager = new node.Stager();
     var J = JSUS;
 
-    var game = {};
+    var div, token;
 
-    // Functions.
+    var gameLink;
 
-    function myInit() {
-        console.log('INIT');
-        W.setup('SOLO_PLAYER');
+    div = W.getElementById('widgets_div');
+    token = J.getQueryString('id');
+
+    // Requirements Box.
+    window.req = node.widgets.append('Requirements', div, {
+        // Automatically sends a SAY message with the outcome of the
+        // tests, and the navigator.userAgent property.
+        sayResults: true,
+        // Mixin the properties of the object returned by the callback
+        // with the default content of the SAY message. It can also
+        // overwrite the defaults.
+        addToResults: function() {
+            return { token: token };
+        }
+    });
+    
+    req.onFail = function() {
+        var str, args;
+        console.log('failed');
+        str = '%spanYou are NOT allowed to take the HIT. If you ' +
+            'have already taken it, you must return it.%span';
+        args = {
+            '%span': {
+                'class': 'requirements-fail'
+            }
+        };
+        W.sprintf(str, args, div);
+
+        // You can leave a feedback using the form below.
+        // window.feedback = node.widgets.append('Feedback', div);
+    };
+
+    req.onSuccess = function() {
+        var str, args;
+        var button, link;
+        node.emit('HIDE', 'unsupported');
+        str = '%spanYou are allowed to take the HIT.%span';
+        args = {
+            '%span': {
+                'class': 'requirements-success'
+            }
+        };
+        W.sprintf(str, args, div);
+        node.store.cookie('token', token);
+
+        div.appendChild(document.createElement('br'));        
+        div.appendChild(document.createElement('br'));
+
+        link = document.createElement('a');
+        link.href = gameLink;
+        button = document.createElement('button');
+        button.innerHTML = 'Proceed to the game';
+        button.className = 'btn btn-lg btn-primary';
+        link.appendChild(button);
+        div.appendChild(link);
+    };
+
+    // Synchronous callback function for the Requirements widget.
+    // Returns an array containing a string for every error.
+    // Empty array on success.
+    function cookieSupport() {
+        var errors = [];
+        if ('undefined' === typeof node.store.cookie) {
+            errors.push('Cookie support must be enabled.');
+        }
+        return errors;
     }
 
-    function requirements() {
-
-	node.window.loadFrame('/ultimatum/html/room/testing.html', function() {
-            var div, token;
-            div = W.getElementById('widgets_div');
-            token = J.getQueryString('id');
-
-            // Requirements Box.
-            window.req = node.widgets.append('Requirements', div, {
-                // Automatically sends a SAY message with the outcome of the
-                // tests, and the navigator.userAgent property.
-                sayResults: true,
-                // Mixin the properties of the object returned by the callback
-                // with the default content of the SAY message. It can also
-                // overwrite the defaults.
-                addToResults: function() {
-                    return { token: token };
-                }
-            });
-            
-            req.onFail = function() {
-                var str, args;
-                console.log('failed');
-                str = '%spanYou are NOT allowed to take the HIT. If you ' +
-                    'have already taken it, you must return it. You can ' +
-                    'leave a feedback using the form below.%span';
-                args = {
-                    '%span': {
-                        'class': 'requirements-fail'
-                    }
-                };
-                W.sprintf(str, args, div);
-                window.feedback = node.widgets.append('Feedback', div);
-            };
-
-            req.onSuccess = function() {
-                var str, args;
-                node.emit('HIDE', 'unsupported');
-                str = '%spanYou are allowed to take the HIT.%span';
-                args = {
-                    '%span': {
-                        'class': 'requirements-success'
-                    }
-                };
-                W.sprintf(str, args, div);
-                node.store.cookie('token', token);
-            };
-
-            // Synchronous callback function for the Requirements widget.
-            // Returns an array containing a string for every error.
-            // Empty array on success.
-            function cookieSupport() {
-                var errors = [];
-                if ('undefined' === typeof node.store.cookie) {
-                    errors.push('Cookie support must be enabled.');
-                }
-                return errors;
-            }
-
-            // Asynchronous callback function for the Requirements widget.
-            // When the token has been validated on the server, it calls
-            // the _result_ callback with the results of the validation
-            // to be displayed on screen.
-            function checkToken(result) {
-               
+    // Asynchronous callback function for the Requirements widget.
+    // When the token has been validated on the server, it calls
+    // the _result_ callback with the results of the validation
+    // to be displayed on screen.
+    function checkToken(result) {
+        
+        node.connect("/requirements", function() {
+            // Timeout is necessary because SERVER needs to send the player id
+            setTimeout(function() {
                 node.get('MTID', function(authorized) {
                     var msg;
                     if (authorized.success) {
+                        gameLink = authorized.gameLink;
                         // No errors.
                         result([]);
                     }
@@ -102,40 +109,107 @@ function Requirements() {
                         result([msg]);
                     }
                 }, 'SERVER', token);
-            }
+            });
+        }, 500);
+    }
 
-            req.addRequirements(req.nodeGameRequirements,
-                                cookieSupport,
-                                checkToken);
+    function nodeGameSetup() {
+        var stager = new node.Stager();
+        var game = {};
+        var errors = [];
 
-            req.checkRequirements();
-	});
+        game.metadata = {
+            name: 'Requirements: nodeGameSetup',
+            description: 'Tests node.setup.',
+            version: '0.1'
+        };
 
-	node.log('Testing requirements.');
-    };
+        try {
+            stager.setOnInit(function() {
+                console.log('Init test.');
+                return true;
+            });
 
-    // Setting the game plot
+            stager.addStage({
+                id: 'requirements',
+                cb: function() {
+                    return true;
+                },
+                steprule: node.stepRules.WAIT
+            });
 
-    stager.setOnInit(myInit);
+            stager.init()
+                .next('requirements');
 
-    stager.addStage({
-        id: 'requirements',
-        cb: requirements,
-        steprule: node.stepRules.WAIT
-    });
+            // Setting the property in game.
 
-    stager.init()
-        .next('requirements');
+            game.plot = stager.getState();  
 
-    // Setting the property in game.
+            // Configuring nodegame.
+            node.setup('nodegame', {
+	        // HOST needs to be specified only 
+	        // if this file is located in another server
+	        // host: http://myserver.com,	  
+	        window: {
+	            promptOnleave: false,
+                    noEscape: true // Defaults TRUE
+	        },
+	        env: {
+	            auto: false,
+	        },
+	        events: {
+	            dumpEvents: false, // output to console all fired events
+                    history: false // keep a record of all fired events
+	        },
+	        socket: {
+	            type: 'SocketIo', // for remote connections
+	            reconnect: false
+	        },
+                game_metadata: game.metadata,
+                plot: game.plot,
+                verbosity: 10
+            });
+        }
+        catch(e) {
+            errors.push(e);
+        }
 
-    game.plot  = stager.getState();
+        return errors;            
+    }
 
-    game.metadata = {
-        name: 'Ultimaum Requirements',
-        description: 'Tests if the browser has the necessary requirement, the client is authorized, etc.',
-        version: '0.1'
-    };
+    // Skipped at the moment
+    function connectivityTest(result) {
+        var errors = [];
 
-    return game;
+        try {
+            node.connect("/requirements", function() {
+                result(errors);
+            });
+        }
+        catch(e) {
+            errors.push(e);
+            return errors;
+        }
+    }
+
+    // Add all the requirements functions.
+    req.addRequirements(
+        // Tests nodeGame dependencies.
+        req.nodeGameRequirements,
+        cookieSupport,
+        // loadFrameTest will temporarily change the main frame
+        // reference. Trying to access DOM elements during the test
+        // might cause errors.
+        req.loadFrameTest,
+        nodeGameSetup,
+        checkToken
+    );
+
+    req.checkRequirements();
+
+    node.log('Testing requirements.');
+}
+
+window.onload = function() {
+    Requirements();
 }

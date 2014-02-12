@@ -7,27 +7,34 @@
  * in each client, move them in a separate gaming room, and start the game.
  * ---
  */
-module.exports = function (node, channel, room) {
+module.exports = function(node, channel, room) {
 
     var path = require('path');
 
     var J = require('JSUS').JSUS;
+
+    // Load shared settings.
+    var settings = require(__dirname + '/includes/game.shared.js');
 
     // Reads in descil-mturk configuration.
     var confPath = path.resolve(__dirname, 'descil.conf.js');
 
     // Load the code database.
     var dk = require('descil-mturk')(confPath);
-    //    dk.getCodes(function() {
-    //        if (!dk.codes.size()) {
-    //            throw new Error('game.room: no codes found.');
-    //        }
-    //    });
-    dk.readCodes(function () {
+    function codesNotFound() {
         if (!dk.codes.size()) {
-            throw new Errors('requirements.room: no codes found.');
+            throw new Error('game.room: no codes found.');
         }
-    });
+        // Add a ref to the node obj.
+        node.dk = dk;
+    }
+
+    if (settings.AUTH === 'MTURK') {
+        dk.getCodes(codesNotFound);
+    }
+    else if (settings.AUTH === 'LOCAL') {
+        dk.readCodes(codesNotFound);
+    }
 
     // Loads the database layer. If you do not use an external database
     // you do not need these lines.
@@ -83,9 +90,6 @@ module.exports = function (node, channel, room) {
         return roomLogics[treatment];
     }
 
-    // Load shared settings.
-    var settings = require(__dirname + '/includes/game.shared.js');
-
     // You can share objects with the included file. Include them in the
     // object passed as second parameter.
     var client = channel.require(__dirname + '/includes/game.client', {
@@ -109,47 +113,68 @@ module.exports = function (node, channel, room) {
 
     // Creating an authorization function for the players.
     // This is executed before the client the PCONNECT listener.
-    // channel.player.authorization(function(header, cookies, room) {
-    //     var code;
-    //     console.log('game.room: checking auth.');
+    channel.player.authorization(function(header, cookies, room) {
 
-    //     // Weird thing.
-    //     if ('string' !== typeof cookies.player) {
-    //         console.log('no player: ', cookies.player)
-    //         return false;
-    //     }
+        var code, player, token;
+        playerId = cookies.player;
+        token = cookies.token;
 
-    //     // Weird thing.
-    //     if ('string' !== typeof cookies.token) {
-    //         console.log('no token: ', cookies.token)
-    //         return false;
-    //     }
+        console.log('game.room: checking auth.');
+        
+        // Weird thing.
+        if ('string' !== typeof playerId) {
+            console.log('no player: ', player)
+            return false;
+        }
 
-    //     code = dk.codeExists(cookies.token);
+        // Weird thing.
+        if ('string' !== typeof token) {
+            console.log('no token: ', token)
+            return false;
+        }
+        
+        code = dk.codeExists(token);
+        
+        // Code not existing.
+	if (!code) {
+            console.log('not existing token: ', token);
+            return false;
+        }
+        
+        // Code in use.
+        //  usage is for LOCAL check, IsUsed for MTURK
+	if (code.usage || code.IsUsed) {
+            if (code.disconnected) {
+                return true;
+            }
+            else {
+                console.log('token already in use: ', token);
+                return false;
+            }
+	}
 
-    //     // Code not existing.
-    //     if (!code) {
-    //         console.log('not existing token: ', cookies.token);
-    //         return false;
-    //     }
+        // Mark the code as in use.
+        dk.incrementUsage(token);
 
-    //     // Code in use.
-    //     if (code.usage) {
-    //         console.log('token already in use: ', cookies.token);
-    //         return false;
-    //     }
+        if (settings.AUTH === 'MTURK') {        
+            dk.checkIn(token);
+        }
 
-    //     // Mark the code as in use.
-    //     dk.incrementUsage(cookies.token);
+        // Client Authorized
+        return true;
 
-    //     // Client Authorized
-    //     return true;
-    // });
+    });
 
-
-    // channel.player.clientIdGenerator(function(headers, cookies, ids, info) {
-    //     return cookies.token;
-    // });
+    // Assigns Player Ids based on cookie token.
+    channel.player.clientIdGenerator(function(headers, cookies, validCookie, 
+                                              ids, info) {
+        
+        // Return the id only if token was validated.
+        // More checks could be done here to ensure that token is unique in ids.
+        if (cookies.token && validCookie) {
+            return cookies.token;
+        }
+    });
 
     // Creating an init function.
     // Event listeners registered here are valid for all the stages of the game.
@@ -180,6 +205,7 @@ module.exports = function (node, channel, room) {
         node.on.pconnect(function (p) {
             var gameRoom, wRoom, tmpPlayerList, assignedRoom;
             var nPlayers, i, len;
+            var runTimeConf;
             console.log('-----------Player connected ' + p.id);
 
             //            node.remoteAlert('Your code has been marked as in use. Do not ' +
@@ -243,8 +269,14 @@ module.exports = function (node, channel, room) {
                     });
                 });
 
+                runtimeConf =  {
+                    env: {
+                        roomType: assignedRoom.group
+                    }
+                };
+
                 // Start the logic.
-                gameRoom.startGame();
+                gameRoom.startGame(runtimeConf);
             }
 
             // TODO: node.game.pl.size() is unchanged.

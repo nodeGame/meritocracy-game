@@ -1,16 +1,9 @@
 <!doctype html>
 <title>Quiz</title>
-<link rel="stylesheet" type="text/css" href="css/quiz.css">
-<link rel="stylesheet" href="css/jqueryui.min.css" />
-<link rel="stylesheet" href="css/bootstrap.min.css" />
-<style type="text/css">
-  th, td {
-    text-align:center;
-  }
-  #done_box {
-    text-align:center;
-  }
-</style>
+<link rel="stylesheet" type="text/css" href="/meritocracy/html/css/quiz.css">
+<link rel="stylesheet" href="/meritocracy/html/css/jqueryui.min.css" />
+<link rel="stylesheet" href="/meritocracy/html/css/bootstrap.min.css" />
+
 <body>
 
   <div id="container_quiz">
@@ -86,7 +79,7 @@
 </body>
 <script src="/meritocracy/js/quiz.js"></script>
 <script type="text/javascript">
-    QUIZ({
+    QUIZ = QUIZ({
         coinsEveryRound: 10,
         lowestPayement: 105,
         leastGuarantee: 1,

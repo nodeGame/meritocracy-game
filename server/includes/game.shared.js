@@ -18,6 +18,9 @@ module.exports = {
     // Minimum number of players that must be always connected.
     MIN_PLAYERS: 2,
 
+    // Session Counter start from.
+    SESSION_ID: 100,
+
     // Game settings.
     TREATMENTS: ['blackbox', 'endo', 'random',
         'exo_low', 'exo_high', 'exo_perfect'
@@ -42,10 +45,15 @@ module.exports = {
     GROUP_ACCOUNT_DIVIDER: 2,
     INITIAL_COINS: 10,
 
+    // Divider ECU / DOLLARS *
+    EXCHANGE_RATE: 2000,
+
     // DEBUG.
     DEBUG: true,
 
     // AUTO-PLAY.
-    AUTO: false
+    AUTO: true,
 
+    // AUTHORIZATION.
+    AUTH: 'LOCAL' // MTURK, LOCAL, NO.
 };

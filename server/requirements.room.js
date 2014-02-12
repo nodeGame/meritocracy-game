@@ -87,7 +87,8 @@ module.exports = function(node, channel, room) {
 	    
             return {
                 success: true,
-                msg: 'Code validated.'
+                msg: 'Code validated.',
+                gameLink: '/meritocracy/'
             };
         });
 

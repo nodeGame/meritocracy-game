@@ -159,29 +159,113 @@ module.exports = function(node, channel, gameRoom) {
             });
         };
 
-        node.game.memory.on('insert', function(data) {
-            data.group = node.game.pl.selexec('id', '=', data.player).first().group;
+// THIS WAS HERE BEFORE: delete if not needed.
+//         node.game.memory.on('insert', function(data) {
+//             data.group = node.game.pl.selexec('id', '=', data.player).first().group;
+//         });
+
+        // Add session name to data in DB.
+        node.game.memory.on('insert', function(o) {
+            o.session = node.nodename;
         });
+
+        // Register player disconnection, and wait for him...
+        node.on.pdisconnect(function(p) {
+            
+            delete node.game.memory.stage[node.game.getCurrentGameStage()];
+
+            dk.updateCode(p.id, {
+                disconnected: true,
+                stage: p.stage
+            });
+        });
+
 
         // Reconnections must be handled by the game developer.
         node.on.preconnect(function(p) {
+             var code;
             console.log('Oh...somebody reconnected!', p);
-            if (disconnected[p.id]) {
-                // Delete countdown to terminate the game.
-                clearTimeout(this.countdown);
-                // Notify other player he is back.
+            code = dk.codeExists(p.id);
+
+            if (!code) {
+                console.log('game.logic: reconnecting player not found in ' +
+                            'code db: ' + p.id);
+                return;
+            }
+            if (!code.disconnected) {
+                console.log('game.logic: reconnecting player that was not ' +
+                            'marked disconnected: ' + p.id);
+                return;
+            }
+            
+            // Mark code as connected.
+            code.disconnected = false;
+
+            // Delete countdown to terminate the game.
+            clearTimeout(this.countdown);
+
+            // Clear any message in the buffer from.
+            node.remoteCommand('erase_buffer', 'ALL');
+
+            // Notify other player he is back.
+            // TODO: add it automatically if we return TRUE? It must be done
+            // both in the alias and the real event handler
+            node.game.pl.each(function(player) {                
                 node.socket.send(node.msg.create({
                     target: 'PCONNECT',
                     data: p,
-                    to: 'ALL'
+                    to: player.id
                 }));
-                delete disconnected[p.id];
-            }
-            else {
-                // Player was not authorized, redirect to a warning page.
-                node.redirect('/meritocracy/unauth.htm', p.id);
-            }
+            });
+            
+            // Send currently connected players to reconnecting.
+            node.socket.send(node.msg.create({
+                target: 'PLIST',
+                data: node.game.pl.db,
+                to: p.id
+            }));
 
+            // We could slice the game plot, and send just what we need
+            // however here we resend all the stages, and move their game plot.
+            console.log('** Player reconnected: ' + p.id + ' **');
+	    // Setting metadata, settings, and plot.
+            node.remoteSetup('game_metadata',  p.id, client.metadata);
+	    node.remoteSetup('game_settings', p.id, client.settings);
+	    node.remoteSetup('plot', p.id, client.plot);
+            node.remoteSetup('env', p.id, client.env);
+            node.remoteSetup('env', p.id, {
+                treatment: node.env('roomType')
+            });
+
+            // Start the game on the reconnecting client.
+            node.remoteCommand('start', p.id);
+            // Pause the game on the reconnecting client, will be resumed later.
+            // node.remoteCommand('pause', p.id);
+
+            // It is not added automatically.
+            // TODO: add it automatically if we return TRUE? It must be done
+            // both in the alias and the real event handler
+            node.game.pl.add(p);
+
+            // Will send all the players to current stage
+            // (also those who were there already).
+            node.game.gotoStep(node.player.stage);
+            
+            setTimeout(function() {
+                // Pause the game on the reconnecting client, will be resumed later.
+                // node.remoteCommand('pause', p.id);
+                // Unpause ALL players
+                // TODO: add it automatically if we return TRUE? It must be done
+                // both in the alias and the real event handler
+                node.game.pl.each(function(player) {
+                    if (player.id !== p.id) {
+                        node.remoteCommand('resume', player.id);
+                    }
+                });
+                // The logic is also reset to the same game stage.
+            }, 100);
+            // Unpause ALL players
+            // node.remoteCommand('resume', 'ALL');
         });
 
         // Register player disconnection, and wait for him...

@@ -61,7 +61,7 @@ function waiting2start() {
     node.on.data('countdownStop', function(msg) {
         var fail;
         window.countdown.timerDiv.className = 'strike';
-        node.timer.destroyTimer(window.countdown.gameTimer);
+        window.countdown.destroy();
         fail = msg.data;
         if (fail) {
             span_msg.innerHTML = 'One player disconnected and countdown was ' +

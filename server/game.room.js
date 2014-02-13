@@ -214,7 +214,7 @@ module.exports = function(node, channel, room) {
         }
 
         // Stops the countdown (if that is the case) and notify all players.
-        function stopCountdown() {
+        function stopCountdown(success) {
             // If COUNTDOWN option is on check whether we should start it.
             if ('undefined' !== typeof COUNTDOWN_AT_POOL_SIZE) {               
                 if (countdown && 
@@ -223,7 +223,7 @@ module.exports = function(node, channel, room) {
                     node.timer.destroyTimer(countdown);
                     countdown = null;
                     // Send countdown to client.
-                    node.say('countdownStop', 'ALL');
+                    node.say('countdownStop', 'ALL', !success);
                 }                
             }           
         }
@@ -298,11 +298,11 @@ module.exports = function(node, channel, room) {
             // both in the alias and the real event handler
             // TODO: Cannot use to: ALL, because this includes the reconnecting
             // player.
-            node.game.pl.each(function(p) {
+            node.game.pl.each(function(player) {
                 node.socket.send(node.msg.create({
                     target: 'PCONNECT',
                     data: p,
-                    to: p.id
+                    to: player.id
                 }));
             });
             node.game.pl.add(p);
@@ -337,7 +337,7 @@ module.exports = function(node, channel, room) {
             var runtimeConf;
 
             // Also check if it should be stopped.
-            stopCountdown();
+            stopCountdown(true);
 
             // PlayerList object of waiting players.
             wRoom = room.clients.player;

@@ -2,3 +2,9 @@
     margin: 5px;
     font-size: 20px;
 }
+
+#span_msg {
+    margin-top: 5px;
+    display: block;
+    color: red;
+}

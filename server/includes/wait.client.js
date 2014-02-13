@@ -1,13 +1,11 @@
 /**
- * # Antechamber for Ultimatum Game
- * Copyright(c) 2013 Stefano Balietti
+ * # Waiting room client side for Meritocracy Game
+ * Copyright(c) 2014 Stefano Balietti
  * MIT Licensed
  *
  * Displays a simple waiting page for clients about to start a game.
- *
  * ---
  */
-
 var ngc = module.parent.exports.ngc;
 var Stager = ngc.Stager;
 var stepRules = ngc.stepRules;
@@ -56,10 +54,19 @@ function waiting2start() {
         };
         window.countdown = node.widgets.add('VisualTimer', root, options);
         window.countdown.start();
+        
+        span_msg.innerHTML = 'Countdown started!';
     });
 
     node.on.data('countdownStop', function(msg) {
-        node.timer.destroyTimer(window.countdown);        
+        var fail;
+        window.countdown.timerDiv.className = 'strike';
+        node.timer.destroyTimer(window.countdown.gameTimer);
+        fail = msg.data;
+        if (fail) {
+            span_msg.innerHTML = 'One player disconnected and countdown was ' +
+                'canceled';
+        }
     });
 
 

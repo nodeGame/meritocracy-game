@@ -17,7 +17,7 @@ module.exports = {
     // When enough players are connected starts  countdown to launch the game.
     // Countdown is canceled if POOL_SIZE goes again under the threshold.
     // Set to undefined to disable.
-    COUNTDOWN_AT_POOL_SIZE: 1,
+    COUNTDOWN_AT_POOL_SIZE: 2,
 
     // How many players have to connect before a random subset is drawn.
     POOL_SIZE: 4,

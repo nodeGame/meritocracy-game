@@ -40,8 +40,6 @@ var EXCHANGE_RATE = settings.EXCHANGE_RATE;
 // instances of game logics.
 var counter = settings.SESSION_ID;
 
-// Number of required players.
-var nbRequiredPlayers = settings.MIN_PLAYERS;
 // Group names.
 var groupNames = settings.GROUP_NAMES;
 
@@ -59,6 +57,11 @@ module.exports = function(node, channel, gameRoom) {
     // Recursively create directories, sub-trees and all.
     J.mkdirSyncRecursive(DUMP_DIR_JSON, 0777);
     J.mkdirSyncRecursive(DUMP_DIR_CSV, 0777);
+
+    console.log(gameRoom.runtimeConf);
+    console.log('=====================');
+
+    var nbRequiredPlayers = gameRoom.runtimeConf.MIN_PLAYERS;
 
     // Client game to send to reconnecting players.
     var client = channel.require(__dirname + '/game.client', { ngc: ngc });
@@ -86,7 +89,8 @@ module.exports = function(node, channel, gameRoom) {
         node: node,
         treatment: treatment,
         groupNames: groupNames,
-        dk: dk
+        dk: dk,
+        SUBGROUP_SIZE: gameRoom.runtimeConf.SUB_GROUP_SIZE
     });
 
     var ngdb = new Database(node);
@@ -138,8 +142,7 @@ module.exports = function(node, channel, gameRoom) {
     stager.setOnInit(function() {
         console.log('********************** meritocracy room ' + counter+++' **********************');
 
-        var disconnected;
-        disconnected = {};
+        // Number of required players.
 
         // "STEPPING" is the last event emitted before the stage is updated.
         node.on('STEPPING', function() {
@@ -328,14 +331,6 @@ module.exports = function(node, channel, gameRoom) {
             }, 100);
             // Unpause ALL players
             // node.remoteCommand('resume', 'ALL');
-        });
-
-        // Register player disconnection, and wait for him...
-        node.on.pdisconnect(function(p) {
-            disconnected[p.id] = {
-                id: p.id,
-                stage: p.stage
-            };
         });
 
         console.log('init');

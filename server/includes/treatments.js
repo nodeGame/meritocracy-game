@@ -9,7 +9,6 @@
  * ---
  */
 
-
 var J = require('JSUS').JSUS;
 
 // Share through channel.require
@@ -17,6 +16,7 @@ var node = module.parent.exports.node;
 var treatment = module.parent.exports.treatment;
 var settings = module.parent.exports.settings;
 var dk = module.parent.exports.dk;
+var SUBGROUP_SIZE = module.parent.exports.SUBGROUP_SIZE;
 
 var ENDO = treatment === 'endo';
 
@@ -26,8 +26,6 @@ module.exports = treatments;
 // Noise variance. High and low stands for "meritocracy", not for noise.
 var NOISE_HIGH = settings.NOISE_HIGH;
 var NOISE_LOW = settings.NOISE_LOW;
-
-var SUBGROUP_SIZE = settings.SUBGROUP_SIZE;
 
 var GROUP_ACCOUNT_DIVIDER = settings.GROUP_ACCOUNT_DIVIDER;
 

@@ -12,7 +12,7 @@ module.exports = {
     // Group settings. *
 
     // When the MIN_POOL_SIZE level is reached a countdown is started.
-    COUNTDOWN_MILLISECONDS: 300000,
+    COUNTDOWN_MILLISECONDS: 20000,
 
     // When enough players are connected starts  countdown to launch the game.
     // Countdown is canceled if POOL_SIZE goes again under the threshold.

@@ -188,24 +188,73 @@ module.exports = function(node, channel, room) {
         // Countdown
         var countdown;
 
-        function createCountDown() {
-            // Need to specify update, otherwise update = milliseconds.
-            countdown = node.timer.createTimer({
-                milliseconds: COUNTDOWN_MILLISECONDS,
-                update: 1000,
-                timeup: 'DISPATCH'
-            });
-            // Start it with a delay.
-            setTimeout(function() {
-                countdown.start();
-            }, 500);
+        // Starts the countdown on (if that is the case) and notify the players.
+        // If countdown is already started, just send the time left to the
+        // new client (pId).
+        function startCountdown(nPlayers, pId) {
+            // If COUNTDOWN option is on check whether we should start it.
+            if ('undefined' !== typeof COUNTDOWN_AT_POOL_SIZE &&
+                nPlayers >= COUNTDOWN_AT_POOL_SIZE) {                    
+                if (!countdown) {
+                    // Need to specify update, otherwise update = milliseconds.
+                    countdown = node.timer.createTimer({
+                        milliseconds: COUNTDOWN_MILLISECONDS,
+                        update: 1000,
+                        timeup: 'DISPATCH'
+                    });
+                    // Send countdown to client for the first time to ALL.
+                    node.say('countdown', 'ALL',  countdown.timeLeft);
+                    countdown.start();
+                }
+                else {
+                    // Countdown already existing. Send it to the new client.
+                    node.say('countdown', pId, countdown.timeLeft);
+                }                
+            }            
         }
 
-        function stopCountDown() {
-            countdown.stop();
-            countdown = null;
-            // Send countdown to client.
-            node.say('countdownStop', 'ALL');
+        // Stops the countdown (if that is the case) and notify all players.
+        function stopCountdown() {
+            // If COUNTDOWN option is on check whether we should start it.
+            if ('undefined' !== typeof COUNTDOWN_AT_POOL_SIZE) {               
+                if (countdown && 
+                    room.clients.player.size() < COUNTDOWN_AT_POOL_SIZE) {
+                    // Timer must be destroyed to clear event listeners.
+                    node.timer.destroyTimer(countdown);
+                    countdown = null;
+                    // Send countdown to client.
+                    node.say('countdownStop', 'ALL');
+                }                
+            }           
+        }
+
+        function adjustGameSettings(nPlayers) {
+            return {
+                MIN_PLAYERS: 2,
+                SUBGROUP_SIZE: 2,
+                GROUP_SIZE: 2
+            };
+            
+            var mySettings;
+            mySettings = {
+                MIN_PLAYERS: settings.MIN_PLAYERS,
+                SUBGROUP_SIZE: settings.SUBGROUP_SIZE,
+                GROUP_SIZE: settings.GROUP_SIZE
+            };
+            if (nPlayers !== 16) {
+                if (nPlayers === 15) {
+                    mySettings.SUBGROUP_SIZE = 5;
+                    mySettings.GROUP_SIZE = 15;
+                }
+                else if (nPlayers >= 12) {
+                    mySettings.GROUP_SIZE = 12;
+                }
+                else if (nPlayers >= 9) {
+                    mySettings.GROUP_SIZE = 9;
+                    mySettings.SUBGROUP_SIZE = 3;
+                }
+            }
+            return mySettings;            
         }
 
         // references...
@@ -215,18 +264,10 @@ module.exports = function(node, channel, room) {
         console.log('********Waiting Room Created*****************');
 
         function connectingPlayer(p) {
-            var gameRoom, wRoom, tmpPlayerList, assignedRoom;
-            var nPlayers, i, len;
-            var runTimeConf;
+            var nPlayers;
             console.log('-----------Player connected ' + p.id);
 
-            //            node.remoteAlert('Your code has been marked as in use. Do not ' +
-            //                'leave this page, otherwise you will not be ' +
-            //                'able to join the experiment again.', p.id);
-
-            // PlayerList object of waiting players.
-            wRoom = room.clients.player;
-            nPlayers = wRoom.size();
+            nPlayers = room.clients.player.size();
 
             // Send the client the waiting stage.
             node.remoteSetup('game_metadata', p.id, clientWait.metadata);
@@ -240,83 +281,10 @@ module.exports = function(node, channel, room) {
 
             // Wait to have enough clients connected.
             if (nPlayers < POOL_SIZE) {
-
-                // If COUNTDOWN option is on check whether we should start it.
-                if ('undefined' !== typeof COUNTDOWN_AT_POOL_SIZE &&
-                    nPlayers >= COUNTDOWN_AT_POOL_SIZE) {
-                    debugger
-                    if (!countdown) {
-                        createCountDown();
-                    }
-   
-                    // Send countdown to client.
-                    node.say('countdown', p.id, countdown.timeLeft);                
-                }
-                // Do not go further.
-                return;
+                startCountdown(nPlayers, p.id);
             }
-
-            console.log('-----------We have enough players: ' + wRoom.size());
-
-            i = -1, len = Math.floor(nPlayers / GROUP_SIZE);
-            for (; ++i < len;) {
-
-                // Doing the random matching.
-                tmpPlayerList = wRoom.shuffle().limit(GROUP_SIZE);
-
-                //Assigning a game room to this list of players
-                assignedRoom = decideRoom(settings.CHOSEN_TREATMENT);
-
-                // Creating a sub gaming room.
-                // The object must contains the following information:
-                // - clients: a list of players (array or PlayerList)
-                // - logicPath: the path to the file containing the logic (string)
-                // - channel: a reference to the channel of execution (ServerChannel)
-                // - group: a name to group together multiple game rooms (string)
-                gameRoom = channel.createGameRoom({
-                    group: assignedRoom.group,
-                    clients: tmpPlayerList,
-                    channel: channel,
-                    logicPath: assignedRoom.logicPath
-                });
-
-                // Setting metadata, settings, and plot.
-                tmpPlayerList.each(function (p) {
-                    // Clearing the waiting stage.
-                    node.remoteCommand('stop', p.id);
-                    // Setting the actual game.
-                    node.remoteSetup('game_metadata', p.id, client.metadata);
-                    node.remoteSetup('game_settings', p.id, client.settings);
-                    node.remoteSetup('plot', p.id, client.plot);
-                    node.remoteSetup('env', p.id, client.env);
-                    node.remoteSetup('env', p.id, {
-                        roomType: assignedRoom.group
-                    });
-                });
-
-                runtimeConf =  {
-                    env: {
-                        roomType: assignedRoom.group
-                    }
-                };
-
-                // Start the logic.
-                gameRoom.startGame(runtimeConf);
-            }
-
-            // TODO: node.game.pl.size() is unchanged.
-            // We need to check with wRoom.size()
-            nPlayers = room.clients.player.size();
-            if (nPlayers) {
-                // If there are some players left out of the matching, notify
-                // them that they have to wait more.
-                wRoom.each(function (p) {
-                    node.say('waitingRoom', p.id, {
-                        poolSize: POOL_SIZE,
-                        nPlayers: nPlayers,
-                        retry: true
-                    });
-                });
+            else {
+                node.emit('DISPATCH');
             }
         }
 
@@ -357,14 +325,85 @@ module.exports = function(node, channel, room) {
                 dk.decrementUsage(p.id);
             }
 
-            // If COUNTDOWN option is on check whether we should start it.
-            if ('undefined' !== typeof COUNTDOWN_AT_POOL_SIZE) {               
-                if (countdown && 
-                    room.clients.player.size() < COUNTDOWN_AT_POOL_SIZE) {
-                    stopCountdown();
-                }                
-            }
+            // Also check if it should be stopped.
+            stopCountdown();
             
+        });
+
+
+        node.on('DISPATCH', function() {
+            var gameRoom, wRoom, tmpPlayerList, assignedRoom;
+            var nPlayers, i, len;
+            var runtimeConf;
+
+            // Also check if it should be stopped.
+            stopCountdown();
+
+            // PlayerList object of waiting players.
+            wRoom = room.clients.player;
+            nPlayers = wRoom.size();
+
+            console.log('-----------We have enough players: ' + nPlayers);
+
+            runtimeConf = adjustGameSettings(nPlayers);
+
+            i = -1, len = Math.floor(nPlayers / runtimeConf.GROUP_SIZE);
+            for (; ++i < len;) {
+
+                // Doing the random matching.
+                tmpPlayerList = wRoom.shuffle().limit(runtimeConf.GROUP_SIZE);
+
+                //Assigning a game room to this list of players
+                assignedRoom = decideRoom(settings.CHOSEN_TREATMENT);
+                runtimeConf.roomType = assignedRoom.group;
+
+                // Creating a sub gaming room.
+                // The object must contains the following information:
+                // - clients: a list of players (array or PlayerList)
+                // - logicPath: the path to the file containing the logic (string)
+                // - channel: a reference to the channel of execution (ServerChannel)
+                // - group: a name to group together multiple game rooms (string)
+                gameRoom = channel.createGameRoom({
+                    group: assignedRoom.group,
+                    clients: tmpPlayerList,
+                    channel: channel,
+                    logicPath: assignedRoom.logicPath,
+                    runtimeConf: runtimeConf
+                });
+
+                // Setting metadata, settings, and plot.
+                tmpPlayerList.each(function (p) {
+                    // Clearing the waiting stage.
+                    node.remoteCommand('stop', p.id);
+                    // Setting the actual game.
+                    node.remoteSetup('game_metadata', p.id, client.metadata);
+                    node.remoteSetup('game_settings', p.id, client.settings);
+                    node.remoteSetup('plot', p.id, client.plot);
+                    node.remoteSetup('env', p.id, client.env);
+                    node.remoteSetup('env', p.id, {
+                        roomType: assignedRoom.group
+                    });
+                });
+
+
+                // Start the logic.
+                gameRoom.startGame();
+            }
+
+            // TODO: node.game.pl.size() is unchanged.
+            // We need to check with wRoom.size()
+            nPlayers = room.clients.player.size();
+            if (nPlayers) {
+                // If there are some players left out of the matching, notify
+                // them that they have to wait more.
+                wRoom.each(function(p) {
+                    node.say('waitingRoom', p.id, {
+                        poolSize: POOL_SIZE,
+                        nPlayers: nPlayers,
+                        retry: true
+                    });
+                });
+            }
         });
 
     });

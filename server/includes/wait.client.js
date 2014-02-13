@@ -59,7 +59,7 @@ function waiting2start() {
     });
 
     node.on.data('countdownStop', function(msg) {
-        window.countdown.stop();        
+        node.timer.destroyTimer(window.countdown);        
     });
 
 

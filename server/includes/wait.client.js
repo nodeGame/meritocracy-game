@@ -44,6 +44,24 @@ function waiting2start() {
                 'waiting, the next batch should start shortly.';
         }
     }
+        
+    node.on.data('countdown', function(msg) {
+        var root, options, timeLeft, options;
+        root = document.getElementById('countdown_p');
+        timeLeft = msg.data;
+        options = {
+            fieldset: null,
+            milliseconds: timeLeft,
+            timeup: 'TIMEUP'
+        };
+        window.countdown = node.widgets.add('VisualTimer', root, options);
+        window.countdown.start();
+    });
+
+    node.on.data('countdownStop', function(msg) {
+        window.countdown.stop();        
+    });
+
 
     node.on.data('waitingRoom', function(msg) {
         updateConnected(msg.data);

@@ -23,7 +23,7 @@ window.onload = function () {
 	    reconnect: false
 	}
     });
-    
+
     // Connecting to waiting room.
     node.connect("/meritocracy");
 }

@@ -178,10 +178,35 @@ module.exports = function(node, channel, room) {
 
     // Creating an init function.
     // Event listeners registered here are valid for all the stages of the game.
-    stager.setOnInit(function () {
+    stager.setOnInit(function() {
         var counter = 0;
+        var COUNTDOWN_MILLISECONDS = settings.COUNTDOWN_MILLISECONDS;
+        var COUNTDOWN_AT_POOL_SIZE = settings.COUNTDOWN_AT_POOL_SIZE;
         var POOL_SIZE = settings.POOL_SIZE;
         var GROUP_SIZE = settings.GROUP_SIZE;
+
+        // Countdown
+        var countdown;
+
+        function createCountDown() {
+            // Need to specify update, otherwise update = milliseconds.
+            countdown = node.timer.createTimer({
+                milliseconds: COUNTDOWN_MILLISECONDS,
+                update: 1000,
+                timeup: 'DISPATCH'
+            });
+            // Start it with a delay.
+            setTimeout(function() {
+                countdown.start();
+            }, 500);
+        }
+
+        function stopCountDown() {
+            countdown.stop();
+            countdown = null;
+            // Send countdown to client.
+            node.say('countdownStop', 'ALL');
+        }
 
         // references...
         this.room = room;
@@ -215,6 +240,19 @@ module.exports = function(node, channel, room) {
 
             // Wait to have enough clients connected.
             if (nPlayers < POOL_SIZE) {
+
+                // If COUNTDOWN option is on check whether we should start it.
+                if ('undefined' !== typeof COUNTDOWN_AT_POOL_SIZE &&
+                    nPlayers >= COUNTDOWN_AT_POOL_SIZE) {
+                    debugger
+                    if (!countdown) {
+                        createCountDown();
+                    }
+   
+                    // Send countdown to client.
+                    node.say('countdown', p.id, countdown.timeLeft);                
+                }
+                // Do not go further.
                 return;
             }
 
@@ -313,11 +351,18 @@ module.exports = function(node, channel, room) {
 
         // This callback is executed when a player disconnects from the channel.
         node.on.pdisconnect(function(p) {
-            
             // Client really disconnected (not moved into another game room).
             if (channel.registry.clients.disconnected.get(p.id)) {
                 // Free up the code.
                 dk.decrementUsage(p.id);
+            }
+
+            // If COUNTDOWN option is on check whether we should start it.
+            if ('undefined' !== typeof COUNTDOWN_AT_POOL_SIZE) {               
+                if (countdown && 
+                    room.clients.player.size() < COUNTDOWN_AT_POOL_SIZE) {
+                    stopCountdown();
+                }                
             }
             
         });

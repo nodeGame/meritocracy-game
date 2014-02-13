@@ -90,7 +90,7 @@ module.exports = function(node, channel, gameRoom) {
         treatment: treatment,
         groupNames: groupNames,
         dk: dk,
-        SUBGROUP_SIZE: gameRoom.runtimeConf.SUB_GROUP_SIZE
+        SUBGROUP_SIZE: gameRoom.runtimeConf.SUBGROUP_SIZE
     });
 
     var ngdb = new Database(node);

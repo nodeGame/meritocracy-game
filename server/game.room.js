@@ -1,9 +1,9 @@
 /**
- * # Waiting Room for Ultimatum Game
- * Copyright(c) 2013 Stefano Balietti
+ * # Waiting Room for Meritocracy Game
+ * Copyright(c) 2014 Stefano Balietti
  * MIT Licensed
  *
- * Handles incoming connections, matches them, sets the Ultimatum game
+ * Handles incoming connections, matches them, sets the Meritocracy game
  * in each client, move them in a separate gaming room, and start the game.
  * ---
  */
@@ -276,7 +276,8 @@ module.exports = function(node, channel, room) {
 
             node.say('waitingRoom', 'ALL', {
                 poolSize: POOL_SIZE,
-                nPlayers: nPlayers
+                nPlayers: nPlayers,
+                atLeastPlayers: COUNTDOWN_AT_POOL_SIZE
             });
 
             // Wait to have enough clients connected.
@@ -305,6 +306,13 @@ module.exports = function(node, channel, room) {
                     to: player.id
                 }));
             });
+
+            node.socket.send(node.msg.create({
+                target: 'PLIST',
+                data: node.game.pl.db,
+                to: p.id
+            }));
+            
             node.game.pl.add(p);
             connectingPlayer(p);
         });
@@ -324,10 +332,9 @@ module.exports = function(node, channel, room) {
                 // Free up the code.
                 dk.decrementUsage(p.id);
             }
-
+            
             // Also check if it should be stopped.
             stopCountdown();
-            
         });
 
 

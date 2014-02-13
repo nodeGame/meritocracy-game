@@ -23,6 +23,7 @@ function waiting2start() {
     span_connected = document.getElementById('span_connected');
     span_dots = document.getElementById('span_dots');
     span_msg = document.getElementById('span_msg');
+    span_atleast = document.getElementById('span_atleast');
     
     // Refreshing the dots...
     setInterval(function() {
@@ -35,7 +36,8 @@ function waiting2start() {
     }, 1000);
 
     function updateConnected(data) {
-    	span_connected.innerHTML = data.nPlayers + ' / ' + data.poolSize;  
+    	span_connected.innerHTML = data.nPlayers + ' / ' + data.poolSize;
+        span_atleast.innerHTML = data.atLeastPlayers;
         if (data.retry) {
             span_msg.innerHTML = 'A batch of games has just started. ' +
                 'Unfortunately, you have not been selected. Please, keep ' +
@@ -65,12 +67,19 @@ function waiting2start() {
         fail = msg.data;
         if (fail) {
             span_msg.innerHTML = 'One player disconnected and countdown was ' +
-                'canceled';
+                'canceled.';
         }
     });
 
 
+    node.on('UPDATED_PLIST', function() {
+        span_connected.innerHTML = (node.game.pl.size() + 1 )+ ' / '  + 
+            node.game.poolSize;
+    });
+
     node.on.data('waitingRoom', function(msg) {
+        node.game.poolSize = msg.data.poolSize;
+        node.game.atLeastPlayers = msg.data.atLeastPlayers;
         updateConnected(msg.data);
     });
 }

@@ -1,5 +1,6 @@
 {
   "name": "meritocracy",
+  "alias": "experiment",
   "description": "Plays a meritocracy game with nodegame",
   "version": "0.0.1",
   "author": {

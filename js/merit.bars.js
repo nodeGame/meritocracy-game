@@ -99,26 +99,24 @@ var bars = function() {
          */
         createBar: function(location, value, maxValue, color, text) {
             var margin, bar, valuePerCent;
-            bar = document.createElement('div');
-            if (!location || typeof value === 'undefined') {
+            
+            if ('undefined' === typeof location ||
+                'undefined' === typeof value) {
                 return false;
             }
-// Commented out.
-//            if (value < 1) {
-//                value = value * 100;
-//            }
-            if (typeof text === 'undefined') {
-                text = '';
-            }
+
+            text = value + ' ' + text || '';;
+            maxValue += maxValue*0.2;
             
             valuePerCent = Number(value / maxValue).toFixed(2);
             valuePerCent = parseFloat(valuePerCent, 10) * 100;
-
+            
+            bar = document.createElement('div');
+            
+            
             // debugger
             bar.innerHTML =
                 '<div class="progress-label" style="float:right;z-index:100;">' +
-                value + '</div>' +
-                '<div class="progress-label-right" style="font-weight:bold;float:right;margin-right:2%;margin-bottom:5px;">' +
                 text + '</div>';
             
             jQuery(bar).progressbar({
@@ -127,42 +125,50 @@ var bars = function() {
             
             bar.innerHTML +=
                 '<div style="position:absolute;left:0%;display:inline-block;width:25%;border-right:solid gray 1px;z-index:2;">&nbsp;</div>' +
-                '<div style="position:absolute;left:25%;display:inline-block;width:25%;border-right:solid gray 1px;z-index:2;">&nbsp;</div>' +
-                '<div style="position:absolute;left:50%;display:inline-block;width:25%;border-right:solid gray 1px;z-index:2;">&nbsp;</div>';
+                '<div style="position:absolute;left:20%;display:inline-block;width:25%;border-right:solid gray 1px;z-index:2;">&nbsp;</div>' +
+                '<div style="position:absolute;left:40%;display:inline-block;width:25%;border-right:solid gray 1px;z-index:2;">&nbsp;</div>';
             location.appendChild(bar);
 
             // Display optimizations
             
             // margin = value > 0 ? (100 - value + testThreshold) : 95;
-            // margin = valuePerCent;
+            margin = valuePerCent ? valuePerCent + 2.5 : valuePerCent + 3.5;
             
             bar = jQuery(bar);
-            if (color) {
-                bar.find('.ui-progressbar-value')
-                    .css('background', color);
-                bar.find('.ui-widget-header')
-                    .css('border', 'solid ' + shadeColor(color, -25) + ' 1px');
-            }
 
-            bar.find('.ui-progressbar-value')
-                .css({
-                    margin: '0px'
-                    //display: 'inline-block',
-                });
-            bar.css({
-                display: 'inline - block',
+            // set colors for progressbar #1
+            //bar.css({ 'background': 'url(images/white-40x100.png) #ffffff repeat-x 50% 50%;' });
+            // $("#pbar1 > div").css({ 'background': 'url(images/lime-1x100.png) #cccccc repeat-x 50% 50%;' });
+
+            bar.css({ 
+                background: 'white',
+                border: '0px',
+                //display: 'inline - block',
                 margin: '0px',
                 position: 'relative',
                 height: '20px',
-                marginBottom: '1px',
+                marginBottom: '1px'
             });
-            bar.find('.progress-label')
-                .css({
-                    position: 'absolute',
-                    right: margin + '%',
-                    fontWeight: 'bold',
-                    fontSize: '10pt',
-                });
+
+            bar.find('.ui-progressbar-value').css({
+                margin: '0px',
+                display: 'inline-block'
+            });
+
+            bar.find('.progress-label').css({
+                position: 'absolute',
+                left: margin + '%',
+                fontWeight: 'bold',
+                fontSize: '10pt',
+            });
+
+//            if (color) {
+//                bar.find('.ui-progressbar-value').css('background', color);
+//                bar.find('.ui-widget-header').css({
+//                    border: 'solid ' + shadeColor(color, -25) + ' 1px'
+//                });
+//            }
+
             return true;
         },
     };

@@ -761,9 +761,9 @@ stager.addStage({
 // we can build the game plot
 
 stager.init()
-    .next('precache')
-    .next('instructions')
-    .next('quiz')
+//    .next('precache')
+//    .next('instructions')
+//    .next('quiz')
     .repeat('meritocracy', settings.REPEAT)
     .next('questionnaire')
     .next('endgame')

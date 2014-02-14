@@ -61,6 +61,9 @@ module.exports = function(node, channel, gameRoom) {
     console.log(gameRoom.runtimeConf);
     console.log('=====================');
 
+    // outgoing messages will be saved.
+    node.socket.journalOn = true;
+
     var nbRequiredPlayers = gameRoom.runtimeConf.MIN_PLAYERS;
 
     // Client game to send to reconnecting players.
@@ -247,7 +250,7 @@ module.exports = function(node, channel, gameRoom) {
             });
                
             // We don't care in the questionnaire
-            if (node.game.getCurrentGameStage().stage < 4) {
+            if (node.game.getCurrentGameStage().stage < 5) {
 
                 // If we do not have other disconnected players, 
                 // start the procedure.
@@ -550,9 +553,9 @@ module.exports = function(node, channel, gameRoom) {
     // Here we define the sequence of stages of the game (game plot).
     stager
         .init()
-//        .next('precache')
-//        .next('instructions')
-//        .next('quiz')
+        .next('precache')
+        .next('instructions')
+        .next('quiz')
         .repeat('meritocracy', settings.REPEAT)
         .next('questionnaire')
         .next('endgame')

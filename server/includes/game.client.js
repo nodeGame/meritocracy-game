@@ -506,7 +506,7 @@ function postgame() {
 
         node.env('auto', function() {
 	    node.timer.randomExec(function() {
-                node.game.timer.doTimeUp();
+                // node.game.timer.doTimeUp();
             });
 	});
      
@@ -665,7 +665,7 @@ stager.addStage({
 stager.addStage({
     id: 'questionnaire',
     cb: postgame,
-    timer: 60000,
+    timer: 120000,
     done: function() {
         var i, socExpValue, stratChoiceValue;
         T = W.getFrameDocument(),
@@ -703,12 +703,8 @@ stager.addStage({
         if ('undefined' === typeof socExpValue) {
             errors.push('2.');
         }
-
-        if (['random',
-             'egoist',
-             'team',
-             'other'
-            ].indexOf(stratChoice) === -1) {
+        
+        if ('undefined' === typeof stratChoiceValue) {
             errors.push('3.');
         }
 
@@ -766,9 +762,9 @@ stager.addStage({
 // we can build the game plot
 
 stager.init()
-//    .next('precache')
-//    .next('instructions')
-//    .next('quiz')
+    .next('precache')
+    .next('instructions')
+    .next('quiz')
     .repeat('meritocracy', settings.REPEAT)
     .next('questionnaire')
     .next('endgame')

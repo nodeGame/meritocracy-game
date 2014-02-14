@@ -123,11 +123,12 @@ var bars = function() {
                 value: valuePerCent || 1
             });
             
-            bar.innerHTML +=
-                '<div style="position:absolute;left:0%;display:inline-block;width:25%;border-right:solid gray 1px;z-index:2;">&nbsp;</div>' +
-                '<div style="position:absolute;left:20%;display:inline-block;width:25%;border-right:solid gray 1px;z-index:2;">&nbsp;</div>' +
-                '<div style="position:absolute;left:40%;display:inline-block;width:25%;border-right:solid gray 1px;z-index:2;">&nbsp;</div>';
-            location.appendChild(bar);
+//           bar.innerHTML +=
+//               '<div style="position:absolute;left:0%;display:inline-block;width:25%;border-right:solid gray 1px;z-index:2;">&nbsp;</div>' +
+//               '<div style="position:absolute;left:20%;display:inline-block;width:25%;border-right:solid gray 1px;z-index:2;">&nbsp;</div>' +
+//               '<div style="position:absolute;left:40%;display:inline-block;width:25%;border-right:solid gray 1px;z-index:2;">&nbsp;</div>';
+
+           location.appendChild(bar);
 
             // Display optimizations
             
@@ -162,12 +163,14 @@ var bars = function() {
                 fontSize: '10pt',
             });
 
-//            if (color) {
-//                bar.find('.ui-progressbar-value').css('background', color);
-//                bar.find('.ui-widget-header').css({
-//                    border: 'solid ' + shadeColor(color, -25) + ' 1px'
-//                });
-//            }
+            // Understand how it works color variable here.
+            if (!color) {
+                color = '#FF7700';
+                bar.find('.ui-progressbar-value').css('background', color);
+                bar.find('.ui-widget-header').css({
+                    border: 'solid ' + shadeColor(color, -25) + ' 1px'
+                });
+            }
 
             return true;
         },

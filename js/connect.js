@@ -15,7 +15,7 @@ window.onload = function () {
             debug: false
         },
         events: {
-	    dumpEvents: false, // output to console all fired events
+	    dumpEvents: true, // output to console all fired events
             history: false // keep a record of all fired events
         },
         socket: {

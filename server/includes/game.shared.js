@@ -17,14 +17,14 @@ module.exports = {
     // When enough players are connected starts  countdown to launch the game.
     // Countdown is canceled if POOL_SIZE goes again under the threshold.
     // Set to undefined to disable.
-    COUNTDOWN_AT_POOL_SIZE: 2,
+    COUNTDOWN_AT_POOL_SIZE: undefined,
 
     // How many players have to connect before a random subset is drawn.
-    POOL_SIZE: 4,
+    POOL_SIZE: 16,
     // How many players in each group ( must be <= POOL_SIZE).
-    GROUP_SIZE: 4,
+    GROUP_SIZE: 16,
     // Minimum number of players that must be always connected.
-    MIN_PLAYERS: 2,
+    MIN_PLAYERS: 16,
 
     // Session Counter start from.
     SESSION_ID: 100,
@@ -63,7 +63,7 @@ module.exports = {
     AUTO: false,
 
     // AUTHORIZATION.
-    AUTH: 'LOCAL' // MTURK, LOCAL, NO.
+    AUTH: 'NO' // MTURK, LOCAL, NO.
 
     // * = if you change this you need to update instructions and quiz
 };

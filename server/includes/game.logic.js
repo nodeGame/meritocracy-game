@@ -79,7 +79,7 @@ module.exports = function(node, channel, gameRoom) {
     if (settings.AUTH === 'MTURK') {
         dk.getCodes(codesNotFound);
     }
-    else if (settings.AUTH === 'LOCAL') {
+    else {
         dk.readCodes(codesNotFound);
     }
 
@@ -142,7 +142,10 @@ module.exports = function(node, channel, gameRoom) {
     stager.setOnInit(function() {
         console.log('********************** meritocracy room ' + counter+++' **********************');
 
-        // Number of required players.
+
+        
+        // Players that disconnected temporarily.
+        node.game.disconnected = {};
 
         // "STEPPING" is the last event emitted before the stage is updated.
         node.on('STEPPING', function() {
@@ -236,19 +239,49 @@ module.exports = function(node, channel, gameRoom) {
 
         // Register player disconnection, and wait for him...
         node.on.pdisconnect(function(p) {
-            
-            delete node.game.memory.stage[node.game.getCurrentGameStage()];
+            console.log('Warning: one player disconnected! ', p.id);
 
             dk.updateCode(p.id, {
                 disconnected: true,
                 stage: p.stage
             });
+               
+            // We don't care in the questionnaire
+            if (node.game.getCurrentGameStage().stage < 4) {
+
+                // If we do not have other disconnected players, 
+                // start the procedure.
+                if (!J.size(node.game.disconnected)) {
+                    node.say('notEnoughPlayers', 'ALL');        
+                    
+                    this.countdown = setTimeout(function() {
+                        var i;
+                        console.log('Countdown fired. Player/s did not reconnect.');
+                        lostPlayers = 0;
+                        for (i in node.game.disconnected) {
+                            if (node.game.disconnected.hasOwnProperty(i)) {
+                                dk.updateCode(i, {
+                                    kickedOut: true
+                                });
+                            }
+                        }
+                        // Clear list of temporarily disconnected players.
+                        node.game.disconnected = {};
+
+                        node.remoteCommand('resume', 'ALL');
+                    }, 30000);
+                }
+            }
+
+            // delete node.game.memory.stage[node.game.getCurrentGameStage()];
+            node.game.disconnected[p.id] = '';
         });
 
 
         // Reconnections must be handled by the game developer.
         node.on.preconnect(function(p) {
-             var code;
+            var code, curStage, state, i, len;
+
             console.log('Oh...somebody reconnected!', p);
             code = dk.codeExists(p.id);
 
@@ -262,15 +295,30 @@ module.exports = function(node, channel, gameRoom) {
                             'marked disconnected: ' + p.id);
                 return;
             }
-            
+
+            if (code.kickedOut) {
+                node.redirect('html/disconnected.htm', code);
+                console.log('game.logic: kicked out player tried to ' + 
+                            'reconnect: ' + p.id);
+                return;
+            }
+
+            curStage = node.game.getCurrentGameStage();
+
+            delete node.game.disconnected[p.id];
+
+            // If all disconnected players reconnected...
+            if (!J.size(node.game.disconnected)) {
+                // Delete countdown game.
+                clearTimeout(this.countdown);
+            }
+
             // Mark code as connected.
             code.disconnected = false;
 
-            // Delete countdown to terminate the game.
-            clearTimeout(this.countdown);
-
+            
             // Clear any message in the buffer from.
-            node.remoteCommand('erase_buffer', 'ALL');
+            // node.remoteCommand('erase_buffer', 'ALL');
 
             // Notify other player he is back.
             // TODO: add it automatically if we return TRUE? It must be done
@@ -302,23 +350,43 @@ module.exports = function(node, channel, gameRoom) {
                 treatment: node.env('roomType')
             });
 
-            // Start the game on the reconnecting client.
-            node.remoteCommand('start', p.id);
-            // Pause the game on the reconnecting client, will be resumed later.
-            // node.remoteCommand('pause', p.id);
 
             // It is not added automatically.
             // TODO: add it automatically if we return TRUE? It must be done
             // both in the alias and the real event handler
             node.game.pl.add(p);
 
-            // Will send all the players to current stage
-            // (also those who were there already).
-            node.game.gotoStep(node.player.stage);
+            // Do something.
+            // Resend state to connected player.
+            // node.remoteCommand('goto_step', p.id, curStage);
             
-            setTimeout(function() {
-                // Pause the game on the reconnecting client, will be resumed later.
-                // node.remoteCommand('pause', p.id);
+            // Start the game on the reconnecting client.
+            node.remoteCommand('start', p.id, {
+                startStage: node.game.plot.previous(curStage)
+            });
+
+            debugger
+            state = node.socket.journal.stage[curStage];
+            
+            if (state && state.size()) {
+                state = state.selexec('to', '=', p.id).fetch();
+
+                if (state) {
+                    i = -1, len = state.length;
+                    for ( ; ++i < len ; ) {
+                        node.socket.send(state[i]);
+                    }
+                }
+            }
+
+            // If all disconnected players reconnected...
+            if (!J.size(node.game.disconnected)) {
+
+                // Will send all the players to current stage
+                // (also those who were there already).
+                // node.game.gotoStep(node.player.stage);
+            
+
                 // Unpause ALL players
                 // TODO: add it automatically if we return TRUE? It must be done
                 // both in the alias and the real event handler
@@ -326,14 +394,13 @@ module.exports = function(node, channel, gameRoom) {
                     if (player.id !== p.id) {
                         node.remoteCommand('resume', player.id);
                     }
-                });
-                // The logic is also reset to the same game stage.
-            }, 100);
-            // Unpause ALL players
-            // node.remoteCommand('resume', 'ALL');
+                });                
+            }
+            else {
+                node.say('notEnoughPlayers', p.id);
+            }
+            console.log('init');
         });
-
-        console.log('init');
     });
 
     // Event handler registered in the init function are always valid.
@@ -419,18 +486,6 @@ module.exports = function(node, channel, gameRoom) {
         }
     }
 
-    function notEnoughPlayers() {
-        console.log('Warning: not enough players!!');
-
-        this.countdown = setTimeout(function() {
-            console.log('Countdown fired. Going to Step: questionnaire.');
-            node.remoteCommand('resume', 'ALL');
-            // if syncStepping = false
-            //node.remoteCommand('goto_step', 5);
-            node.game.gotoStep(new GameStage('5'));
-        }, 30000);
-    }
-
     // Set default step rule.
     stager.setDefaultStepRule(stepRules.OTHERS_SYNC_STEP);
 
@@ -439,19 +494,19 @@ module.exports = function(node, channel, gameRoom) {
     stager.addStage({
         id: 'precache',
         cb: precache,
-        minPlayers: [nbRequiredPlayers, notEnoughPlayers]
+        // minPlayers: [nbRequiredPlayers, notEnoughPlayers]
     });
 
     stager.addStage({
         id: 'instructions',
         cb: instructions,
-        minPlayers: [nbRequiredPlayers, notEnoughPlayers]
+        // minPlayers: [nbRequiredPlayers, notEnoughPlayers]
     });
 
     stager.addStage({
         id: 'quiz',
         cb: quiz,
-        minPlayers: [nbRequiredPlayers, notEnoughPlayers]
+        // minPlayers: [nbRequiredPlayers, notEnoughPlayers]
     });
 
     stager.addStep({
@@ -460,7 +515,7 @@ module.exports = function(node, channel, gameRoom) {
             console.log('bid');
             return true;
         },
-        minPlayers: [nbRequiredPlayers, notEnoughPlayers]
+        // minPlayers: [nbRequiredPlayers, notEnoughPlayers]
     });
 
     stager.addStep({
@@ -471,13 +526,13 @@ module.exports = function(node, channel, gameRoom) {
             treatments[treatment].sendResults();
             return true;
         },
-        minPlayers: [nbRequiredPlayers, notEnoughPlayers]
+        // minPlayers: [nbRequiredPlayers, notEnoughPlayers]
     });
 
     stager.addStage({
         id: 'meritocracy',
         steps: ['bid', 'results'],
-        minPlayers: [nbRequiredPlayers, notEnoughPlayers]
+        // minPlayers: [nbRequiredPlayers, notEnoughPlayers]
     });
 
     stager.addStage({

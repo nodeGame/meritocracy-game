@@ -32,9 +32,13 @@ module.exports = function(node, channel, room) {
     if (settings.AUTH === 'MTURK') {
         dk.getCodes(codesNotFound);
     }
-    else if (settings.AUTH === 'LOCAL') {
+    else {
         dk.readCodes(codesNotFound);
     }
+
+    // If NO authorization is found, local codes will be used,
+    // and assigned automatically.
+    var noAuthCounter = -1;
 
     // Loads the database layer. If you do not use an external database
     // you do not need these lines.
@@ -114,8 +118,12 @@ module.exports = function(node, channel, room) {
     // Creating an authorization function for the players.
     // This is executed before the client the PCONNECT listener.
     channel.player.authorization(function(header, cookies, room) {
-
         var code, player, token;
+
+        if (settings.AUTH === 'NO') {
+            return true;
+        }
+
         playerId = cookies.player;
         token = cookies.token;
 
@@ -165,10 +173,17 @@ module.exports = function(node, channel, room) {
 
     });
 
-    // Assigns Player Ids based on cookie token.
+    // Assigns Player Ids based on cookie token. Must return a string.
     channel.player.clientIdGenerator(function(headers, cookies, validCookie, 
                                               ids, info) {
         
+        var code;
+        if (settings.AUTH === 'NO') {
+            code = dk.codes.db[++noAuthCounter].AccessCode;
+            dk.incrementUsage(code);
+            return code;
+        }
+
         // Return the id only if token was validated.
         // More checks could be done here to ensure that token is unique in ids.
         if (cookies.token && validCookie) {
@@ -228,13 +243,7 @@ module.exports = function(node, channel, room) {
             }           
         }
 
-        function adjustGameSettings(nPlayers) {
-            return {
-                MIN_PLAYERS: 2,
-                SUBGROUP_SIZE: 2,
-                GROUP_SIZE: 2
-            };
-            
+        function adjustGameSettings(nPlayers) {            
             var mySettings;
             mySettings = {
                 MIN_PLAYERS: settings.MIN_PLAYERS,

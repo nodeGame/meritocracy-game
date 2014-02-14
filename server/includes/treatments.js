@@ -11,6 +11,8 @@
 
 var J = require('JSUS').JSUS;
 
+var ngc = require('nodegame-client');
+
 // Share through channel.require
 var node = module.parent.exports.node;
 var treatment = module.parent.exports.treatment;
@@ -376,6 +378,11 @@ function finalizeRound(currentStage, bars,
     }
 }
 
+// // Removes duplicates in case of reconnections.
+// function merge(arr) {    
+//    for(var o = {}, i; i=arr.shift(); o[i.player] = i.count + (o[i.player] || 0));
+//    for(i in o) arr.push({name:i, count:o[i]});
+// }
 
 // STARTING THE TREATMENTS.
 
@@ -397,6 +404,30 @@ treatments.exo_perfect = {
         receivedData = node.game.memory.stage[previousStage]
             .selexec('key', '=', 'bid');
         
+        // If a player submitted twice with reconnections.
+
+        var i, len, o = {}, c, newSize = 0;
+        i = -1, len = receivedData.db.length;
+        for ( ; ++i < len ; ) {
+            c = receivedData.db[i];
+            if (!o[c.player]) {
+                ++newSize;
+            }
+            o[c.player] = c;
+        }
+        if (newSize !== receivedData.length) {
+            var newDb = [];
+            for ( i in o ) {
+                if (o.hasOwnProperty(i)) {
+                    newDb.push(o[i]);
+                }
+            }
+            receivedData = new ngc.GameDB();
+            receivedData.importDB(newDb);
+        }
+
+        // If a player submitted twice with reconnections.
+
         sortedContribs = receivedData
             .sort(sortContributions)
             .fetch();

@@ -133,7 +133,7 @@ stager.setOnInit(function() {
 
             if (checkResults.errContrib) {
 
-                if (node.game.getCurrentGameStage().round === 1) {
+                if (!node.game.oldContrib) {
                     contrib = JSUS.randomInt(-1, 20);
                 }
                 else {
@@ -148,7 +148,7 @@ stager.setOnInit(function() {
             // In ENDO we check the demand too.
             if (checkResults.errDemand) {
 
-                if (node.game.getCurrentGameStage().round === 1) {
+                if (!node.game.oldDemand) {
                     demand = JSUS.randomInt(-1, 20);
                 }
                 else {
@@ -255,7 +255,7 @@ stager.setOnInit(function() {
                 // It is me?
                 if (barsValues[1][0] === i && barsValues[1][1] === j) {
                     color = [undefined, '#9932CC'];
-                    text = 'YOU';
+                    text = 'YOU <-----';
                 }
                 else {
                     color = ['#DEB887', '#A52A2A'];
@@ -272,7 +272,7 @@ stager.setOnInit(function() {
                     text = '';
                     // It is me?
                     if (barsValues[1][0] === i && barsValues[1][1] === j) {
-                        text = 'YOU';
+                        text = 'YOU <-----';
                     }
                     bars.createBar(subdiv, player[1], 20, color[1], text);
                 }
@@ -305,7 +305,7 @@ stager.setOnInit(function() {
         var save, groupReturn;
 
         // Shows previous round if round number is not 1.
-        if (node.game.getCurrentGameStage().round !== 1) {
+        if (node.game.oldContrib) {
 
             save = node.game.INITIAL_COINS - node.game.oldContrib;
             groupReturn = node.game.oldPayoff - save;
@@ -327,6 +327,17 @@ stager.setOnInit(function() {
     // Remove the content of the previous frame before loading the next one.
     node.on('STEPPING', function() {
         W.clearFrame();
+    });
+
+    
+    node.on.data('notEnoughPlayers', function(msg) {
+        // Not yet 100% safe. Some players could forge the from field.
+        if (msg.from !== '[ADMIN_SERVER]') return;
+
+        node.game.pause();
+        W.lockScreen('One player disconnected. We are now waiting to see if ' +
+                     'he or she reconnects. If not, the game will continue ' +
+                     'with fewer players.');
     });
 
 });
@@ -529,12 +540,6 @@ function clearFrame() {
     return true;
 }
 
-function notEnoughPlayers() {
-    node.game.pause();
-    W.lockScreen('The other player disconnected. We are now waiting to see if ' +
-                 ' he or she reconnects. If not the game will be terminated.');
-}
-
 // Add all the stages into the stager.
 
 //////////////////////////////////////////////
@@ -578,7 +583,7 @@ stager.addStage({
     // `minPlayers` triggers the execution of a callback in the case
     // the number of players (including this client) falls the below
     // the chosen threshold. Related: `maxPlayers`, and `exactPlayers`.
-    minPlayers: [nbRequiredPlayers, notEnoughPlayers],
+    // minPlayers: [nbRequiredPlayers, notEnoughPlayers],
     // syncOnLoaded: true,
     done: clearFrame
 });
@@ -586,7 +591,7 @@ stager.addStage({
 stager.addStage({
     id: 'instructions',
     cb: instructions,
-    minPlayers: [nbRequiredPlayers, notEnoughPlayers],
+    // minPlayers: [nbRequiredPlayers, notEnoughPlayers],
     // syncOnLoaded: true,
     timer: 180000,
     done: clearFrame
@@ -595,7 +600,7 @@ stager.addStage({
 stager.addStage({
     id: 'quiz',
     cb: quiz,
-    minPlayers: [nbRequiredPlayers, notEnoughPlayers],
+    // minPlayers: [nbRequiredPlayers, notEnoughPlayers],
     // syncOnLoaded: true,
     // `timer` starts automatically the timer managed by the widget VisualTimer
     // if the widget is loaded. When the time is up it fires the DONE event.
@@ -643,7 +648,7 @@ stager.addStage({
     // in the execution of a stage. It is probably not necessary in local
     // networks, and it is FALSE by default.
     // syncOnLoaded: true,
-    minPlayers: [nbRequiredPlayers, notEnoughPlayers]
+    // minPlayers: [nbRequiredPlayers, notEnoughPlayers]
 });
 
 stager.addStage({

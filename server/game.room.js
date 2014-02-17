@@ -232,7 +232,12 @@ module.exports = function(node, channel, room) {
                     // Send countdown to client.
                     node.say('countdownStop', 'ALL', !success);
                 }                
-            }           
+            }
+            node.say('waitingRoom', 'ALL', {
+                poolSize: POOL_SIZE,
+                nPlayers: nPlayers,
+                atLeastPlayers: COUNTDOWN_AT_POOL_SIZE
+            });
         }
 
         function adjustGameSettings(nPlayers) {            

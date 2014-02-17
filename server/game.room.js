@@ -223,7 +223,7 @@ module.exports = function(node, channel, room) {
         // Stops the countdown (if that is the case) and notify all players.
         function stopCountdown(success) {
             // If COUNTDOWN option is on check whether we should start it.
-            if ('undefined' !== typeof COUNTDOWN_AT_POOL_SIZE) {               
+            if ('undefined' !== typeof COUNTDOWN_AT_POOL_SIZE) {            
                 if (countdown && 
                     room.clients.player.size() < COUNTDOWN_AT_POOL_SIZE) {
                     // Timer must be destroyed to clear event listeners.
@@ -233,11 +233,6 @@ module.exports = function(node, channel, room) {
                     node.say('countdownStop', 'ALL', !success);
                 }                
             }
-            node.say('waitingRoom', 'ALL', {
-                poolSize: POOL_SIZE,
-                nPlayers: nPlayers,
-                atLeastPlayers: COUNTDOWN_AT_POOL_SIZE
-            });
         }
 
         function adjustGameSettings(nPlayers) {            
@@ -337,15 +332,15 @@ module.exports = function(node, channel, room) {
         node.on.pconnect(connectingPlayer);
 
         // This callback is executed when a player disconnects from the channel.
-        node.on.pdisconnect(function(p) {
+        node.on.pdisconnect(function(p) {            
+            // Also check if it should be stopped.
+            stopCountdown();
+
             // Client really disconnected (not moved into another game room).
             if (channel.registry.clients.disconnected.get(p.id)) {
                 // Free up the code.
                 dk.decrementUsage(p.id);
-            }
-            
-            // Also check if it should be stopped.
-            stopCountdown();
+            }            
         });
 
 
@@ -362,7 +357,7 @@ module.exports = function(node, channel, room) {
             nPlayers = wRoom.size();
 
             console.log('-----------We have enough players: ' + nPlayers);
-
+            debugger
             runtimeConf = adjustGameSettings(nPlayers);
 
             i = -1, len = Math.floor(nPlayers / runtimeConf.GROUP_SIZE);

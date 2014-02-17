@@ -6,7 +6,6 @@
  * http://www.nodegame.org
  * ---
  */
-
 module.exports = {
 
     // Group settings. *
@@ -17,14 +16,14 @@ module.exports = {
     // When enough players are connected starts  countdown to launch the game.
     // Countdown is canceled if POOL_SIZE goes again under the threshold.
     // Set to undefined to disable.
-    COUNTDOWN_AT_POOL_SIZE: 9,
+    COUNTDOWN_AT_POOL_SIZE: 4,
 
     // How many players have to connect before a random subset is drawn.
-    POOL_SIZE: 16,
+    POOL_SIZE: 3,
     // How many players in each group ( must be <= POOL_SIZE).
-    GROUP_SIZE: 16,
+    GROUP_SIZE: 3,
     // Minimum number of players that must be always connected.
-    MIN_PLAYERS: 16,
+    MIN_PLAYERS: 3,
 
     // Session Counter start from.
     SESSION_ID: 100,
@@ -57,13 +56,13 @@ module.exports = {
     EXCHANGE_RATE: 2000,
 
     // DEBUG.
-    DEBUG: true,
+    DEBUG: false,
 
     // AUTO-PLAY.
     AUTO: false,
 
     // AUTHORIZATION.
-    AUTH: 'NO' // MTURK, LOCAL, NO.
+    AUTH: 'LOCAL' // MTURK, LOCAL, NO.
 
     // * = if you change this you need to update instructions and quiz
 };

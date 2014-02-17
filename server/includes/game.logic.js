@@ -368,7 +368,6 @@ module.exports = function(node, channel, gameRoom) {
                 startStage: node.game.plot.previous(curStage)
             });
 
-            debugger
             state = node.socket.journal.stage[curStage];
             
             if (state && state.size()) {

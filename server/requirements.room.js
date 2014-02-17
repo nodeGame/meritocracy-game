@@ -11,6 +11,9 @@ module.exports = function(node, channel, room) {
 
     var path = require('path');
     
+    // Load shared settings.
+    var settings = require(__dirname + '/includes/game.shared.js');
+
     // Reads in descil-mturk configuration.
     var confPath = path.resolve(__dirname, 'descil.conf.js');
     var dk = require('descil-mturk')(confPath);
@@ -137,9 +140,11 @@ module.exports = function(node, channel, room) {
     };
     
     // Throws errors if true.
-    game.debug = true;
+    game.debug = settings.DEBUG;
 
     game.plot = stager.getState();
+
+    game.nodename = 'rq';
 
     return game;
 };

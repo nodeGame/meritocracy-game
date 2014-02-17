@@ -161,13 +161,6 @@ module.exports = function(node, channel, room) {
             }
 	}
 
-        // Mark the code as in use.
-        dk.incrementUsage(token);
-
-        if (settings.AUTH === 'MTURK') {        
-            dk.checkIn(token);
-        }
-
         // Client Authorized
         return true;
 
@@ -176,7 +169,6 @@ module.exports = function(node, channel, room) {
     // Assigns Player Ids based on cookie token. Must return a string.
     channel.player.clientIdGenerator(function(headers, cookies, validCookie, 
                                               ids, info) {
-        
         var code;
         if (settings.AUTH === 'NO') {
             code = dk.codes.db[++noAuthCounter].AccessCode;
@@ -275,6 +267,11 @@ module.exports = function(node, channel, room) {
         function connectingPlayer(p) {
             var nPlayers;
             console.log('-----------Player connected ' + p.id);
+
+            
+            if (settings.AUTH === 'MTURK') {
+                dk.checkIn(p.id);
+            }
 
             nPlayers = room.clients.player.size();
 

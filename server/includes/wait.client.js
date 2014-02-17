@@ -82,6 +82,14 @@ function waiting2start() {
         node.game.atLeastPlayers = msg.data.atLeastPlayers;
         updateConnected(msg.data);
     });
+
+    node.on('SOCKET_DISCONNECT', function() {
+        alert('Connection with the server was terminated. If you think ' +
+              'this is an error, please try to refresh the page. You can ' +
+              'also look for a HIT called ETH Descil Trouble Ticket for ' +
+              'nodeGame and file an error report. Thank you for your ' +
+              'collaboration.');
+    });
 }
 
 // Setting the game plot

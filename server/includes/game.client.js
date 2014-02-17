@@ -340,6 +340,14 @@ stager.setOnInit(function() {
                      'with fewer players.');
     });
 
+    node.on('SOCKET_DISCONNECT', function() {
+        alert('Connection with the server was terminated. If you think ' +
+              'this is an error, please try to refresh the page. You can ' +
+              'also look for a HIT called ETH Descil Trouble Ticket for ' +
+              'nodeGame and file an error report. Thank you for your ' +
+              'collaboration.');
+    });
+
 });
 
 stager.setOnGameOver(function() {

@@ -16,12 +16,24 @@ function Requirements() {
 
     var J = JSUS;
 
-    var div, token;
+    var div, token, errToken;
 
     var gameLink;
 
     div = W.getElementById('widgets_div');
     token = J.getQueryString('id');
+
+    if ('string' !== typeof token || token === '') {
+        alert('Ooops. You are missing the access code. This is likely to be ' +
+              'due to a technical error on our server.\n\nPlease return the ' +
+              'HIT immediately, and look for a HIT called "ETH Descil Trouble ' +
+              'Ticket for NodeGame". Please report your worker id, your ' +
+              'browser, and the steps you have followed to accept this HIT. ' +
+              'You will receive a compensation of 0.25 USD for your trouble.' +
+              '\n\nThank you very much for your collaboration.');
+        return;
+    }
+
 
     // Requirements Box.
     window.req = node.widgets.append('Requirements', div, {

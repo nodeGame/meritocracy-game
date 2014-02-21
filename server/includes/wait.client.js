@@ -23,7 +23,7 @@ function waiting2start() {
     span_connected = document.getElementById('span_connected');
     span_dots = document.getElementById('span_dots');
     span_msg = document.getElementById('span_msg');
-    span_atleast = document.getElementById('span_atleast');
+    // span_atleast = document.getElementById('span_atleast');
     
     // Refreshing the dots...
     setInterval(function() {
@@ -37,7 +37,7 @@ function waiting2start() {
 
     function updateConnected(data) {
     	span_connected.innerHTML = data.nPlayers + ' / ' + data.poolSize;
-        span_atleast.innerHTML = data.atLeastPlayers;
+        // span_atleast.innerHTML = data.atLeastPlayers;
         if (data.retry) {
             span_msg.innerHTML = 'A batch of games has just started. ' +
                 'Unfortunately, you have not been selected. Please, keep ' +
@@ -79,7 +79,7 @@ function waiting2start() {
 
     node.on.data('waitingRoom', function(msg) {
         node.game.poolSize = msg.data.poolSize;
-        node.game.atLeastPlayers = msg.data.atLeastPlayers;
+        // node.game.atLeastPlayers = msg.data.atLeastPlayers;
         updateConnected(msg.data);
     });
 
@@ -90,6 +90,7 @@ function waiting2start() {
               'nodeGame and file an error report. Thank you for your ' +
               'collaboration.');
     });
+
 }
 
 // Setting the game plot

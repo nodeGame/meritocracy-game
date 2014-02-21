@@ -113,7 +113,7 @@ module.exports = function(node, channel, gameRoom) {
         var saveObject = {
             session: node.nodename,
             condition: treatment,
-            stage: currentStage,
+            stage: msg.stage,
             player: msg.from,
             created: e.created,
             gameName: msg.data.gameName,

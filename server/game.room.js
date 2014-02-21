@@ -279,6 +279,9 @@ module.exports = function(node, channel, room) {
 
             nPlayers = room.clients.player.size();
 
+            console.log('CONNECTED PLAYERS: ', nPlayers);
+            console.log('------------------------------');
+
             // Send the client the waiting stage.
             node.remoteSetup('game_metadata', p.id, clientWait.metadata);
             node.remoteSetup('plot', p.id, clientWait.plot);

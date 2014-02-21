@@ -356,7 +356,6 @@ stager.setOnGameOver(function() {
 
 ///// STAGES and STEPS
 
-
 function precache() {
     W.lockScreen('Loading...');
     node.done();
@@ -716,7 +715,7 @@ stager.addStage({
             errors.push('3.');
         }
 
-        if (stratChoice === 'other') {
+        if (stratChoiceValue === 'other') {
             if (stratComment.length < 5) {
                 errors.push('3.');
                 stratCommentErr = true;

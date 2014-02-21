@@ -5,3 +5,6 @@ _*
 .\#*
 
 server/data
+
+*.mp3
+*.ogg

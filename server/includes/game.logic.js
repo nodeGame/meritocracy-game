@@ -88,6 +88,11 @@ module.exports = function(node, channel, gameRoom) {
 
     var treatment = gameRoom.group;
 
+    // Not so nice. We need to delete the cache, because treatments is
+    // using an old node object otherwise.
+    // TODO: find a better way.
+    // See http://stackoverflow.com/questions/9210542/node-js-require-cache-possible-to-invalidate
+    delete require.cache[require.resolve(__dirname + '/treatments.js')]
     var treatments = channel.require(__dirname + '/treatments.js', {
         node: node,
         treatment: treatment,
@@ -104,17 +109,42 @@ module.exports = function(node, channel, gameRoom) {
 
     mdb.connect(function() {});
 
-    node.on.data('questionnaire', function(e) {
+    node.on.data('questionnaire', function(msg) {
         var saveObject = {
-            from: e.from,
+            session: node.nodename,
+            condition: treatment,
+            stage: currentStage,
+            player: msg.from,
             created: e.created,
-            id: e.id,
-            session: e.session,
-            additionalComments: e.data.comments,
-            participationSocExp: e.data.socExp,
-            suggestedGameName: e.data.gameName,
-            strategyChoice: e.data.stratChoice,
-            strategyComments: e.data.strategyComments,
+            gameName: msg.data.gameName,
+            additionalComments: msg.data.comments,
+            alreadyParticipated: msg.data.socExp,
+            strategyChoice: msg.data.stratChoice,
+            strategyComments: msg.data.stratComment
+        };
+        mdb.store(saveObject);
+    });
+
+    node.on.data('QUIZ', function(msg) {
+        var saveObject = {
+            session: node.nodename,
+            condition: treatment,
+            stage: msg.stage,
+            player: msg.from,
+            created: msg.created,
+            quiz: msg.data
+        };
+        mdb.store(saveObject);
+    });
+
+    node.on.data('timestep', function(msg) {
+        var saveObject = {
+            session: node.nodename,
+            condition: treatment,
+            stage: msg.stage,
+            player: msg.from,
+            timeElapsed: msg.data.time,
+            timeup: msg.data.timeup
         };
         mdb.store(saveObject);
     });
@@ -156,34 +186,35 @@ module.exports = function(node, channel, gameRoom) {
 
             currentStage = node.game.getCurrentGameStage();
 
-            // We do not save stage 0.0.0. 
-            // Morever, If the last stage is equal to the current one, we are
-            // re-playing the same stage cause of a reconnection. In this
-            // case we do not update the database, or save files.
-            if (!GameStage.compare(currentStage, new GameStage())) {
-                return;
-            }
-            // Update last stage reference.
-            node.game.lastStage = currentStage;
-
-            db = node.game.memory.stage[currentStage];
-
-            if (db && db.size()) {
-                try {
-                    // Saving results to FS.
-                    node.fs.saveMemory('csv', DUMP_DIR + 'memory_' + currentStage +
-                                       '.csv', { flags: 'w' }, db);
-                    node.fs.saveMemory('json', DUMP_DIR + 'memory_' + currentStage +
-                                       '.nddb', null, db);        
-
-                    console.log('Round data saved ', currentStage);
-                }
-                catch(e) {
-                    console.log('OH! An error occurred while saving: ',
-                                currentStage);
-                }
-            }
-      
+//            // We do not save stage 0.0.0. 
+//            // Morever, If the last stage is equal to the current one, we are
+//            // re-playing the same stage cause of a reconnection. In this
+//            // case we do not update the database, or save files.
+//            if (!GameStage.compare(currentStage, new GameStage())) {
+//                return;
+//            }
+//            // Update last stage reference.
+//            node.game.lastStage = currentStage;
+// 
+//            db = node.game.memory.stage[currentStage];
+// 
+//            if (db && db.size()) {
+//                try {
+//                    // Saving results to FS.
+//                    node.fs.saveMemory('csv', DUMP_DIR + 'memory_' + currentStage +
+//                                       '.csv', { flags: 'w' }, db);
+//                    node.fs.saveMemory('json', DUMP_DIR + 'memory_' + currentStage +
+//                                       '.nddb', null, db);        
+// 
+//                    console.log('Round data saved ', currentStage);
+//                }
+//                catch(e) {
+//                    console.log('OH! An error occurred while saving: ',
+//                                currentStage);
+//                }
+//            }
+            
+            console.log(node.nodename, ' - Round:  ', currentStage);
         });
 
         node.game.savePlayerValues = function(p, payoff, positionInNoisyRank,
@@ -199,7 +230,7 @@ module.exports = function(node, channel, gameRoom) {
             finalGroupStats = groupStats[groupNames[positionInNoisyRank[0]]];
 
             mdb.store({
-                session: gameRoom.name,
+                session: node.nodename,
                 condition: treatment,
                 stage: currentStage,
                 player: p.player,
@@ -221,7 +252,7 @@ module.exports = function(node, channel, gameRoom) {
         node.game.saveRoundResults = function(ranking, groupStats,
             noisyRanking, noisyGroupStats) {
             mdb.store({
-                session: gameRoom.name,
+                session: node.nodename,
                 condition: treatment,
                 ranking: ranking,
                 noisyRanking: noisyRanking,

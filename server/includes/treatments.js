@@ -13,6 +13,7 @@ var J = require('JSUS').JSUS;
 
 var ngc = require('nodegame-client');
 
+
 // Share through channel.require
 var node = module.parent.exports.node;
 var treatment = module.parent.exports.treatment;
@@ -344,10 +345,17 @@ function finalizeRound(currentStage, bars,
     node.game.saveRoundResults(ranking, groupStats,
                                noisyRanking, noisyGroupStats);
 
+    console.log(noisyGroups.length);
+    console.log('!!!!!');
+
     // Save the results for each player, and notify him.
     i = -1, len = noisyGroups.length;
     for (; ++i < len;) {
         j = -1, lenJ = noisyGroups[i].length;
+        
+        console.log(noisyGroups[i].length);
+        console.log('======');
+        
         for (; ++j < lenJ;) {
             contribObj = noisyGroups[i][j];
 
@@ -533,6 +541,10 @@ treatments.exo_low = {
 
         receivedData = node.game.memory.stage[previousStage]
             .selexec('key', '=', 'bid');
+        
+        if (!receivedData.db.length) {
+            debugger;
+        }
 
         sortedContribs = receivedData
             .sort(sortContributions)
@@ -563,6 +575,11 @@ treatments.exo_low = {
         noisyGroups = matching.groups;
         // Compute average contrib and demand in each group.
         noisyGroupStats = computeGroupStats(noisyGroups);
+
+        
+        if (!noisyGroups.length) {
+            debugger;
+        }
 
         // Bars for display in clients.
         bars = matching.bars;

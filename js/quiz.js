@@ -38,7 +38,7 @@ function QUIZ(answers) {
 
         if (counter === document.forms.length) {
             submitButton.disabled = true;
-            node.set('QUIZ', results);
+            // node.set('QUIZ', results);
             node.timer.randomEmit('DONE', 3000);
         }
 

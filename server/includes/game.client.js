@@ -618,7 +618,8 @@ stager.addStage({
     //     the latter being the name of the event to fire (default DONE)
     // - or a function returning the number of milliseconds.
     timer: 120000,
-    done: function() {        
+    done: function() {
+        console.log('EXECUTING DONE HANDLER!!');
         node.set('QUIZ', node.game.quizResults);
         node.emit('INPUT_DISABLE');
         // We save also the time to complete the step.

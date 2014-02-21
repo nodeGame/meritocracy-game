@@ -240,7 +240,7 @@ module.exports = function(node, channel, room) {
             mySettings = {
                 MIN_PLAYERS: settings.MIN_PLAYERS,
                 SUBGROUP_SIZE: settings.SUBGROUP_SIZE,
-                GROUP_SIZE: settings.GROUP_SIZE
+                GROUP_SIZE: nPlayers >= 16 ? settings.GROUP_SIZE : nPlayers
             };
 
             // Settings are kept default.
@@ -364,6 +364,7 @@ module.exports = function(node, channel, room) {
 
             runtimeConf = adjustGameSettings(nPlayers);
 
+            
             i = -1, len = Math.floor(nPlayers / runtimeConf.GROUP_SIZE);
             for (; ++i < len;) {
 

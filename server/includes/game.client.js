@@ -360,7 +360,8 @@ function precache() {
     W.lockScreen('Loading...');
     node.done();
     // Disabled for the moment. It does not reload the QUIZ script.
-return
+    return;
+
     W.preCache([
         node.game.instructionsPage,
         node.game.quizPage,
@@ -617,7 +618,16 @@ stager.addStage({
     //     the latter being the name of the event to fire (default DONE)
     // - or a function returning the number of milliseconds.
     timer: 120000,
-    done: clearFrame
+    done: function() {        
+        node.set('QUIZ', node.game.quizResults);
+        node.emit('INPUT_DISABLE');
+        // We save also the time to complete the step.
+        node.set('timestep', {
+            time: node.timer.getTimeSince('step'),
+            timeup: node.game.timer.gameTimer.timeLeft <= 0
+        });
+        return true;
+    }
 });
 
 stager.addStep({

@@ -4,6 +4,7 @@ function QUIZ(answers) {
         W = parent.W;
 
     var results = {};
+    node.game.quizResults = results;
 
     function checkAnswer(a) {
         if (!a || !answers) return;

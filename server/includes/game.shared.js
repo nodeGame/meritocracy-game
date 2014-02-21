@@ -35,7 +35,7 @@ module.exports = {
 
     // Which treatment to play.
     // Leave undefined for a randomly chosen treatment.
-    CHOSEN_TREATMENT: 'exo_perfect',
+    CHOSEN_TREATMENT: 'exo_low',
 
     // How many times the meritocracy stage is repeated. *
     REPEAT: 20,
@@ -44,22 +44,22 @@ module.exports = {
     // How many player in each group. *
     SUBGROUP_SIZE: 4,
 
-    // Noise variance. High and low "meritocracy".
-    NOISE_HIGH: 2,
-    NOISE_LOW: 4,
+    // Noise standard deviation. High and low "meritocracy".
+    NOISE_HIGH: 1.4142,
+    NOISE_LOW: 2,
 
     // Payment settings. *
     GROUP_ACCOUNT_DIVIDER: 2,
     INITIAL_COINS: 20,
 
     // Divider ECU / DOLLARS *
-    EXCHANGE_RATE: 2000,
+    EXCHANGE_RATE: 266,
 
     // DEBUG.
     DEBUG: false,
 
     // AUTO-PLAY.
-    AUTO: false,
+    AUTO: true,
 
     // AUTHORIZATION.
     AUTH: 'NO' // MTURK, LOCAL, NO.

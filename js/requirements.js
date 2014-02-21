@@ -29,7 +29,8 @@ function Requirements() {
               'HIT immediately, and look for a HIT called "ETH Descil Trouble ' +
               'Ticket for NodeGame". Please report your worker id, your ' +
               'browser, and the steps you have followed to accept this HIT. ' +
-              'You will receive a compensation of 0.25 USD for your trouble.' +
+              'You will receive a compensation of 0.25 USD for your trouble. ' +
+              'Compensantion can be claimed only once.' +
               '\n\nThank you very much for your collaboration.');
         return;
     }

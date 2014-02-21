@@ -242,6 +242,10 @@ module.exports = function(node, channel, room) {
                 SUBGROUP_SIZE: settings.SUBGROUP_SIZE,
                 GROUP_SIZE: settings.GROUP_SIZE
             };
+
+            // Settings are kept default.
+            return mySettings;
+
             if (nPlayers !== 16) {
                 if (nPlayers === 15) {
                     mySettings.SUBGROUP_SIZE = 5;
@@ -357,7 +361,7 @@ module.exports = function(node, channel, room) {
             nPlayers = wRoom.size();
 
             console.log('-----------We have enough players: ' + nPlayers);
-            debugger
+
             runtimeConf = adjustGameSettings(nPlayers);
 
             i = -1, len = Math.floor(nPlayers / runtimeConf.GROUP_SIZE);

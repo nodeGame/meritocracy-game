@@ -314,9 +314,10 @@ function createNoise(receivedData, variance) {
     var i, len;
     i = -1, len = receivedData.db.length;
     for (; ++i < len;) {
-        contrib = receivedData.db[i].contribution;
-        receivedData.db[i].noisyContribution = contrib +
+        contrib = receivedData.db[i].value.contribution;
+        receivedData.db[i].value.noisyContribution = contrib +
             J.nextNormal(0, variance);
+        console.log(contrib, receivedData.db[i].value.noisyContribution);
     }
     return receivedData;
 }
@@ -491,7 +492,7 @@ treatments.exo_high = {
         groupStats = computeGroupStats(groups);
 
         // Add Noise.
-        receivedData = createNoise(receivedData, NOISE_LOW);
+        receivedData = createNoise(receivedData, NOISE_HIGH);
 
         sortedContribs = receivedData
             .sort(sortNoisyContributions)
@@ -548,7 +549,7 @@ treatments.exo_low = {
         groupStats = computeGroupStats(groups);
 
         // Add Noise.
-        receivedData = createNoise(receivedData, NOISE_HIGH);
+        receivedData = createNoise(receivedData, NOISE_LOW);
 
         sortedContribs = receivedData
             .sort(sortNoisyContributions)

@@ -16,7 +16,7 @@
 
         <p><strong>Step 1: Preliminary ordering.</strong><br /> First, a preliminary list is created on which contributions are ranked from 1 to 16 from highest contribution to lowest contribution. In case two or more players contributed equally in the same round, their relative position in the ranking will be decided randomly.</p>
 
-        <p><strong>Step 2: Noisy ordering.</strong><br /> From your and every other player's actual contribution, we obtain a unique noisy contribution by adding an i.i.d. (independent and identically distributed) Normal variable with mean zero and variance 2. The noisy contributions are ranked from 1 to 16 from highest contribution to lowest contribution on the final list.</p>
+        <p><strong>Step 2: Noisy ordering.</strong><br /> From your and every other player's actual contribution, we obtain a unique noisy contribution by adding an i.i.d. (independent and identically distributed) Normal variable with mean zero and variance <span id="variance">2</span>. The noisy contributions are ranked from 1 to 16 from highest contribution to lowest contribution on the final list.</p>
 
         <p><strong>Step 3: Group matching.</strong><br /> Based on the final list, the first 4 people on that list form Group 1, the next 4 people in the list form Group 2, the third 4 people in the list form Group 3, and the last 4 people form Group 4.</p>
 
@@ -46,10 +46,19 @@
             <tr><th>Any amount</th><th>Half of that amount</th></tr>
           </tfoot>
         </table>
-        <p><strong>Total return.</strong><br />You will be paid according to the final amount of coins earned over the whole experiment. 800 coins are equal to 1 USD.</p>
+        <p>
+          <strong>Total return.</strong><br />You will be paid according to the final amount of coins earned over the whole experiment. 20 coins are equal to 0.075 USD, and the maximum amount you can win is 800 coins, equivalent to 3 USD.
+        </p>
       </div>
     </div>
     <p>If you understood the instructions correctly press the button to proceed to the game. </p>
   </div>
   <input type="button" id="read" value="Proceed to the game" class="btn btn-lg btn-primary" align="center" />
 </body>
+<script type="text/javascript">
+  var variance;
+  if (parent.node.env('roomType') === 'exo_low') {
+    variance = document.getElementById('variance');
+    variance.innerHTML = 4;
+  }
+</script>

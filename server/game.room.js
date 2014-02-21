@@ -40,6 +40,9 @@ module.exports = function(node, channel, room) {
     // and assigned automatically.
     var noAuthCounter = -1;
 
+    // Used to rotate treatments.
+    var treatmentCounter = -1;
+
     // Loads the database layer. If you do not use an external database
     // you do not need these lines.
     var Database = require('nodegame-db').Database;
@@ -85,10 +88,23 @@ module.exports = function(node, channel, room) {
     };
 
     // Assigns a treatment condition to a group.
-    function decideRoom(treatment) {        
+    function decideRoom(treatment) {
+        ++treatmentCounter;
         if ('undefined' === typeof treatment) {            
             treatment = J.randomInt(0,settings.TREATMENTS.length);
             treatment = settings.TREATMENTS[treatment];
+        }
+        else {
+            if (treatmentCounter === 0) {
+                treatment = 'exo_perfect';
+            }
+            else if (treatmentCounter === 1) {
+                treatment = 'exo_high';
+            }
+            else {
+                treatment = 'exo_low';
+            }
+            
         }
         // Implement logic here.
         return roomLogics[treatment];

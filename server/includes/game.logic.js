@@ -115,7 +115,7 @@ module.exports = function(node, channel, gameRoom) {
             condition: treatment,
             stage: msg.stage,
             player: msg.from,
-            created: e.created,
+            created: msg.created,
             gameName: msg.data.gameName,
             additionalComments: msg.data.comments,
             alreadyParticipated: msg.data.socExp,

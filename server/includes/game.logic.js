@@ -50,28 +50,136 @@ var groupNames = settings.GROUP_NAMES;
 module.exports = function(node, channel, gameRoom) {
 
     var DUMP_DIR, DUMP_DIR_JSON, DUMP_DIR_CSV;
-    DUMP_DIR = path.resolve(__dirname, '..', 'data') + '/' + counter + '/';
-    DUMP_DIR_JSON = DUMP_DIR + 'json/';
-    DUMP_DIR_CSV = DUMP_DIR + 'csv/';
+    var ngdb, mdb;
+    
+    var treatments, treatment;
+    var dk, confPath;
 
-    // Recursively create directories, sub-trees and all.
-    J.mkdirSyncRecursive(DUMP_DIR_JSON, 0777);
-    J.mkdirSyncRecursive(DUMP_DIR_CSV, 0777);
-
+    var client;
+    
+    var nbRequiredPlayers;
+    
     console.log(gameRoom.runtimeConf);
     console.log('=====================');
 
-    // outgoing messages will be saved.
+    // Preparing storage: FILE or MONGODB.
+    if (settings.DB === 'FILE') {
+        DUMP_DIR = path.resolve(__dirname, '..', 'data') + '/' + counter + '/';
+        DUMP_DIR_JSON = DUMP_DIR + 'json/';
+        DUMP_DIR_CSV = DUMP_DIR + 'csv/';
+
+        // Recursively create directories, sub-trees and all.
+        J.mkdirSyncRecursive(DUMP_DIR_JSON, 0777);
+        J.mkdirSyncRecursive(DUMP_DIR_CSV, 0777);
+    }
+    else {
+        
+        ngdb = new Database(node);
+        mdb = ngdb.getLayer('MongoDB', {
+            dbName: 'meritocracy_db',
+            collectionName: 'user_data'
+        });
+
+        mdb.connect(function() {});
+
+        node.on.data('questionnaire', function(msg) {
+            var saveObject = {
+                session: node.nodename,
+                condition: treatment,
+                stage: msg.stage,
+                player: msg.from,
+                created: msg.created,
+                gameName: msg.data.gameName,
+                additionalComments: msg.data.comments,
+                alreadyParticipated: msg.data.socExp,
+                strategyChoice: msg.data.stratChoice,
+                strategyComments: msg.data.stratComment
+            };
+            mdb.store(saveObject);
+        });
+
+        node.on.data('QUIZ', function(msg) {
+            var saveObject = {
+                session: node.nodename,
+                condition: treatment,
+                stage: msg.stage,
+                player: msg.from,
+                created: msg.created,
+                quiz: msg.data
+            };
+            mdb.store(saveObject);
+        });
+
+        node.on.data('timestep', function(msg) {
+            var saveObject = {
+                session: node.nodename,
+                condition: treatment,
+                stage: msg.stage,
+                player: msg.from,
+                timeElapsed: msg.data.time,
+                timeup: msg.data.timeup
+            };
+            mdb.store(saveObject);
+        });
+
+        node.game.savePlayerValues = function(p, payoff, positionInNoisyRank,
+                                              ranking, noisyRanking,
+                                              groupStats,
+                                              currentStage) {
+
+            var noisyContribution, finalGroupStats;
+
+            noisyContribution = 'undefined' === typeof p.noisyContribution ?
+                'NA' : p.noiseContribution;
+
+            finalGroupStats = groupStats[groupNames[positionInNoisyRank[0]]];
+
+            mdb.store({
+                session: node.nodename,
+                condition: treatment,
+                stage: currentStage,
+                player: p.player,
+                group: p.group,
+                contribution: p.value.contribution,
+                demand: null === p.value.demand ? "NA" : p.value.demand,
+                noisyContribution: noisyContribution,
+                payoff: payoff,
+                groupAvgContr: finalGroupStats.avgContr,
+                groupStdContr: finalGroupStats.stdContr,
+                groupAvgDemand: finalGroupStats.avgDemand,
+                groupStdDemand: finalGroupStats.stdDemand,
+                rankBeforeNoise: ranking.indexOf(p.id) + 1,
+                rankAfterNoise: noisyRanking.indexOf(p.id) + 1,
+                timeup: p.value.isTimeOut
+            });
+        };
+
+        node.game.saveRoundResults = function(ranking, groupStats,
+                                              noisyRanking, noisyGroupStats) {
+            mdb.store({
+                session: node.nodename,
+                condition: treatment,
+                ranking: ranking,
+                noisyRanking: noisyRanking,
+                groupAverages: groupStats,
+                noisyGroupAverages: noisyGroupStats
+            });
+        };
+    }
+
+    
+    // Outgoing messages will be saved.
     node.socket.journalOn = true;
 
-    var nbRequiredPlayers = gameRoom.runtimeConf.MIN_PLAYERS;
+    // Players required to be connected at the same (NOT USED).
+    nbRequiredPlayers = gameRoom.runtimeConf.MIN_PLAYERS;
 
     // Client game to send to reconnecting players.
-    var client = channel.require(__dirname + '/game.client', { ngc: ngc });
+    client = channel.require(__dirname + '/game.client', { ngc: ngc });
     
     // Reads in descil-mturk configuration.
-    var confPath = path.resolve(__dirname, '..', 'descil.conf.js');
-    var dk = require('descil-mturk')(confPath);
+    confPath = path.resolve(__dirname, '..', 'descil.conf.js');
+    dk = require('descil-mturk')(confPath);
 
     function codesNotFound() {
         if (!dk.codes.size()) {
@@ -86,14 +194,14 @@ module.exports = function(node, channel, gameRoom) {
         dk.readCodes(codesNotFound);
     }
 
-    var treatment = gameRoom.group;
+    treatment = gameRoom.group;
 
     // Not so nice. We need to delete the cache, because treatments is
     // using an old node object otherwise.
     // TODO: find a better way.
     // See http://stackoverflow.com/questions/9210542/node-js-require-cache-possible-to-invalidate
     delete require.cache[require.resolve(__dirname + '/treatments.js')]
-    var treatments = channel.require(__dirname + '/treatments.js', {
+    treatments = channel.require(__dirname + '/treatments.js', {
         node: node,
         treatment: treatment,
         groupNames: groupNames,
@@ -101,53 +209,6 @@ module.exports = function(node, channel, gameRoom) {
         SUBGROUP_SIZE: gameRoom.runtimeConf.SUBGROUP_SIZE
     });
 
-    var ngdb = new Database(node);
-    var mdb = ngdb.getLayer('MongoDB', {
-        dbName: 'meritocracy_db',
-        collectionName: 'user_data'
-    });
-
-    mdb.connect(function() {});
-
-    node.on.data('questionnaire', function(msg) {
-        var saveObject = {
-            session: node.nodename,
-            condition: treatment,
-            stage: msg.stage,
-            player: msg.from,
-            created: msg.created,
-            gameName: msg.data.gameName,
-            additionalComments: msg.data.comments,
-            alreadyParticipated: msg.data.socExp,
-            strategyChoice: msg.data.stratChoice,
-            strategyComments: msg.data.stratComment
-        };
-        mdb.store(saveObject);
-    });
-
-    node.on.data('QUIZ', function(msg) {
-        var saveObject = {
-            session: node.nodename,
-            condition: treatment,
-            stage: msg.stage,
-            player: msg.from,
-            created: msg.created,
-            quiz: msg.data
-        };
-        mdb.store(saveObject);
-    });
-
-    node.on.data('timestep', function(msg) {
-        var saveObject = {
-            session: node.nodename,
-            condition: treatment,
-            stage: msg.stage,
-            player: msg.from,
-            timeElapsed: msg.data.time,
-            timeup: msg.data.timeup
-        };
-        mdb.store(saveObject);
-    });
 
     function doMatch() {
         var g, bidder, respondent, data_b, data_r;
@@ -186,80 +247,38 @@ module.exports = function(node, channel, gameRoom) {
 
             currentStage = node.game.getCurrentGameStage();
 
-//            // We do not save stage 0.0.0. 
-//            // Morever, If the last stage is equal to the current one, we are
-//            // re-playing the same stage cause of a reconnection. In this
-//            // case we do not update the database, or save files.
-//            if (!GameStage.compare(currentStage, new GameStage())) {
-//                return;
-//            }
-//            // Update last stage reference.
-//            node.game.lastStage = currentStage;
-// 
-//            db = node.game.memory.stage[currentStage];
-// 
-//            if (db && db.size()) {
-//                try {
-//                    // Saving results to FS.
-//                    node.fs.saveMemory('csv', DUMP_DIR + 'memory_' + currentStage +
-//                                       '.csv', { flags: 'w' }, db);
-//                    node.fs.saveMemory('json', DUMP_DIR + 'memory_' + currentStage +
-//                                       '.nddb', null, db);        
-// 
-//                    console.log('Round data saved ', currentStage);
-//                }
-//                catch(e) {
-//                    console.log('OH! An error occurred while saving: ',
-//                                currentStage);
-//                }
-//            }
+            if (settings.DB === 'FILE') {
+                // We do not save stage 0.0.0. 
+                // Morever, If the last stage is equal to the current one, we are
+                // re-playing the same stage cause of a reconnection. In this
+                // case we do not update the database, or save files.
+                if (!GameStage.compare(currentStage, new GameStage())) {
+                    return;
+                }
+                // Update last stage reference.
+                node.game.lastStage = currentStage;
+                
+                db = node.game.memory.stage[currentStage];
+                
+                if (db && db.size()) {
+                    try {
+                        // Saving results to FS.
+                        node.fs.saveMemory('csv', DUMP_DIR + 'memory_' + currentStage +
+                                           '.csv', { flags: 'w' }, db);
+                        node.fs.saveMemory('json', DUMP_DIR + 'memory_' + currentStage +
+                                           '.nddb', null, db);        
+                        
+                        console.log('Round data saved ', currentStage);
+                    }
+                    catch(e) {
+                        console.log('OH! An error occurred while saving: ',
+                                    currentStage);
+                    }
+                }
+            }
             
             console.log(node.nodename, ' - Round:  ', currentStage);
         });
-
-        node.game.savePlayerValues = function(p, payoff, positionInNoisyRank,
-            ranking, noisyRanking,
-            groupStats,
-            currentStage) {
-
-            var noisyContribution, finalGroupStats;
-
-            noisyContribution = 'undefined' === typeof p.noisyContribution ?
-                'NA' : p.noiseContribution;
-
-            finalGroupStats = groupStats[groupNames[positionInNoisyRank[0]]];
-
-            mdb.store({
-                session: node.nodename,
-                condition: treatment,
-                stage: currentStage,
-                player: p.player,
-                group: p.group,
-                contribution: p.value.contribution,
-                demand: null === p.value.demand ? "NA" : p.value.demand,
-                noisyContribution: noisyContribution,
-                payoff: payoff,
-                groupAvgContr: finalGroupStats.avgContr,
-                groupStdContr: finalGroupStats.stdContr,
-                groupAvgDemand: finalGroupStats.avgDemand,
-                groupStdDemand: finalGroupStats.stdDemand,
-                rankBeforeNoise: ranking.indexOf(p.id) + 1,
-                rankAfterNoise: noisyRanking.indexOf(p.id) + 1,
-                timeup: p.value.isTimeOut
-            });
-        };
-
-        node.game.saveRoundResults = function(ranking, groupStats,
-            noisyRanking, noisyGroupStats) {
-            mdb.store({
-                session: node.nodename,
-                condition: treatment,
-                ranking: ranking,
-                noisyRanking: noisyRanking,
-                groupAverages: groupStats,
-                noisyGroupAverages: noisyGroupStats
-            });
-        };
 
 // THIS WAS HERE BEFORE: delete if not needed.
 //         node.game.memory.on('insert', function(data) {

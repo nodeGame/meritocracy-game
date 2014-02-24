@@ -337,13 +337,15 @@ function finalizeRound(currentStage, bars,
                        groupStats, groups, ranking, noisyGroupStats,
                        noisyGroups, noisyRanking, compatibility) {
 
-    var i, len, j, lenJ, contribObj,
-    pId, positionInNoisyRank, playerPayoff;
+    var i, len, j, lenJ, contribObj;
+    var pId, positionInNoisyRank, playerPayoff;
     var code;
 
-    // Save the results at the group level.
-    node.game.saveRoundResults(ranking, groupStats,
-                               noisyRanking, noisyGroupStats);
+    if (settings.DB === 'MONGODB') {
+        // Save the results at the group level.
+        node.game.saveRoundResults(ranking, groupStats,
+                                   noisyRanking, noisyGroupStats);
+    }
 
     console.log(noisyGroups.length);
     console.log('!!!!!');
@@ -374,12 +376,14 @@ function finalizeRound(currentStage, bars,
 	    console.log('Added to ' + pId + ' ' + playerPayoff + ' ECU');
             // End Update.
             
-            node.game.savePlayerValues(contribObj, playerPayoff,
-                                       positionInNoisyRank,
-                                       ranking,
-                                       noisyRanking,
-                                       groupStats,
-                                       currentStage);
+            if (settings.DB === 'MONGODB') {
+                node.game.savePlayerValues(contribObj, playerPayoff,
+                                           positionInNoisyRank,
+                                           ranking,
+                                           noisyRanking,
+                                           groupStats,
+                                           currentStage);
+            }
 
             emitPlayersResults(pId, bars, positionInNoisyRank,
                                playerPayoff, compatibility);

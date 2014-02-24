@@ -19,11 +19,11 @@ module.exports = {
     COUNTDOWN_AT_POOL_SIZE: undefined,
 
     // How many players have to connect before a random subset is drawn.
-    POOL_SIZE: 16,
+    POOL_SIZE: 4,
     // How many players in each group ( must be <= POOL_SIZE).
-    GROUP_SIZE: 16,
+    GROUP_SIZE:4,
     // Minimum number of players that must be always connected.
-    MIN_PLAYERS: 16,
+    MIN_PLAYERS: 4,
 
     // Session Counter start from.
     SESSION_ID: 100,
@@ -59,7 +59,10 @@ module.exports = {
     DEBUG: false,
 
     // AUTO-PLAY.
-    AUTO: false,
+    AUTO: true,
+
+    // DATABASE.
+    DB: 'FILE', // FILE, MONGODB
 
     // AUTHORIZATION.
     AUTH: 'NO' // MTURK, LOCAL, NO.

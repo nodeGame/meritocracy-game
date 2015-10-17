@@ -1,16 +1,7 @@
 /**
  * # Logic code for Meritocracy Game
- * Copyright(c) 2014 Stefano Balietti
+ * Copyright(c) 2015 Stefano Balietti
  * MIT Licensed
- *
- * Info:
- * Matching, and stepping can be done in different ways. It can be
- * centralized, and the logic tells the clients when to step, or
- * clients can synchronize themselves and step automatically.
- *
- * In this game, the logic is synchronized with the clients. The logic
- * will send automatically game-commands to start and step
- * through the game plot whenever it enters a new game step.
  *
  * http://www.nodegame.org
  * ---
@@ -26,28 +17,19 @@ var stepRules = ngc.stepRules;
 var GameStage = ngc.GameStage;
 var J = ngc.JSUS;
 
-var stager = new Stager();
 
-// Variable registered outside of the export function are shared among all
-// instances of game logics.
-var counter = 0;
+module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
-var settings = require(__dirname + '/game.shared.js');
 
-var EXCHANGE_RATE = settings.EXCHANGE_RATE;
+    var EXCHANGE_RATE = settings.EXCHANGE_RATE;
 
-// Variable registered outside of the export function are shared among all
-// instances of game logics.
-var counter = settings.SESSION_ID;
+    // Variable registered outside of the export function are shared among all
+    // instances of game logics.
+    var counter = settings.SESSION_ID;
 
-// Group names.
-var groupNames = settings.GROUP_NAMES;
+    // Group names.
+    var groupNames = settings.GROUP_NAMES;
 
-// Here we export the logic function. Receives three parameters:
-// - node: the NodeGameClient object.
-// - channel: the ServerChannel object in which this logic will be running.
-// - gameRoom: the GameRoom object in which this logic will be running. 
-module.exports = function(node, channel, gameRoom) {
 
     var DUMP_DIR, DUMP_DIR_JSON, DUMP_DIR_CSV;
     var ngdb, mdb;
@@ -208,29 +190,6 @@ module.exports = function(node, channel, gameRoom) {
         dk: dk,
         SUBGROUP_SIZE: gameRoom.runtimeConf.SUBGROUP_SIZE
     });
-
-
-    function doMatch() {
-        var g, bidder, respondent, data_b, data_r;
-
-        g = node.game.pl.shuffle();
-        bidder = g.first();
-        respondent = g.last();
-
-        data_b = {
-            role: 'bidder',
-            other: respondent.id
-        };
-        data_r = {
-            role: 'respondent',
-            other: bidder.id
-        };
-        // Send a message to each player with their role
-        // and the id of the other player.
-        node.say('BIDDER', bidder.id, data_b);
-        node.say('RESPONDENT', respondent.id, data_r);
-        console.log('Matching completed.');
-    }
 
     // Event handler registered in the init function are always valid.
     stager.setOnInit(function() {
@@ -465,28 +424,27 @@ module.exports = function(node, channel, gameRoom) {
     // Game Types Objects definition
 
     // Functions
-    function precache() {
-        console.log('Pre-Cache');
-    }
-
-    function instructions() {
-        // debugger
-        console.log('Instructions');
-    }
-
-    function quiz() {
-        console.log('Quiz');
-    }
-
-    function meritocracy() {
-        // debugger
-        console.log('Ultimatum');
-        doMatch();
-    }
-
-    function questionnaire() {
-        console.log('questionnaire');
-    }
+//     function precache() {
+//         console.log('Pre-Cache');
+//     }
+// 
+//     function instructions() {
+//         // debugger
+//         console.log('Instructions');
+//     }
+// 
+//     function quiz() {
+//         console.log('Quiz');
+//     }
+//    function questionnaire() {
+//        console.log('questionnaire');
+//    }
+// 
+//     function meritocracy() {
+//         // debugger
+//         console.log('Merit Matching.');
+//         doMatch();
+//     }
 
     function endgame() {
         var code, exitcode, accesscode;
@@ -541,102 +499,88 @@ module.exports = function(node, channel, gameRoom) {
     // Set default step rule.
     stager.setDefaultStepRule(stepRules.OTHERS_SYNC_STEP);
 
-    // Adding the stages. We can later on define the rules and order that
-    // will determine their execution.
-    stager.addStage({
-        id: 'precache',
-        cb: precache,
-        // minPlayers: [nbRequiredPlayers, notEnoughPlayers]
-    });
+//     // Adding the stages. We can later on define the rules and order that
+//     // will determine their execution.
+//     stager.addStage({
+//         id: 'precache',
+//         cb: precache,
+//         // minPlayers: [nbRequiredPlayers, notEnoughPlayers]
+//     });
+// 
+//     stager.addStage({
+//         id: 'instructions',
+//         cb: instructions,
+//         // minPlayers: [nbRequiredPlayers, notEnoughPlayers]
+//     });
+// 
+//     stager.addStage({
+//         id: 'quiz',
+//         cb: quiz,
+//         // minPlayers: [nbRequiredPlayers, notEnoughPlayers]
+//     });
+// 
+//     stager.addStep({
+//         id: 'bid',
+//         cb: function() {
+//             console.log('bid');
+//             return true;
+//         },
+//         // minPlayers: [nbRequiredPlayers, notEnoughPlayers]
+//     });
+// 
+//     stager.addStep({
+//         id: 'results',
+//         cb: function() {
+//             // Computes the values for all players and all groups,
+//             // sends them to the clients, and save results into database.
+//             treatments[treatment].sendResults();
+//             return true;
+//         },
+//         // minPlayers: [nbRequiredPlayers, notEnoughPlayers]
+//     });
+// 
+//     stager.addStage({
+//         id: 'meritocracy',
+//         steps: ['bid', 'results'],
+//         // minPlayers: [nbRequiredPlayers, notEnoughPlayers]
+//     });
+// 
+//     stager.addStage({
+//         id: 'questionnaire',
+//         cb: questionnaire
+//     });
+// 
+//     stager.addStage({
+//         id: 'endgame',
+//         cb: endgame
+//     });
+// 
+//     // Building the game plot.
+// 
+//     // Here we define the sequence of stages of the game (game plot).
+//     stager
+//         .init()
+//         .next('precache')
+//         .next('instructions')
+//         .next('quiz')
+//         .repeat('meritocracy', settings.REPEAT)
+//         .next('questionnaire')
+//         .next('endgame')
+//     .gameover();
 
-    stager.addStage({
-        id: 'instructions',
-        cb: instructions,
-        // minPlayers: [nbRequiredPlayers, notEnoughPlayers]
-    });
 
-    stager.addStage({
-        id: 'quiz',
-        cb: quiz,
-        // minPlayers: [nbRequiredPlayers, notEnoughPlayers]
-    });
-
-    stager.addStep({
-        id: 'bid',
-        cb: function() {
-            console.log('bid');
-            return true;
-        },
-        // minPlayers: [nbRequiredPlayers, notEnoughPlayers]
-    });
-
-    stager.addStep({
-        id: 'results',
+    stager.extendStep('results', {
         cb: function() {
             // Computes the values for all players and all groups,
             // sends them to the clients, and save results into database.
             treatments[treatment].sendResults();
             return true;
-        },
-        // minPlayers: [nbRequiredPlayers, notEnoughPlayers]
+        }
     });
 
-    stager.addStage({
-        id: 'meritocracy',
-        steps: ['bid', 'results'],
-        // minPlayers: [nbRequiredPlayers, notEnoughPlayers]
-    });
-
-    stager.addStage({
-        id: 'questionnaire',
-        cb: questionnaire
-    });
-
-    stager.addStage({
-        id: 'endgame',
-        cb: endgame
-    });
-
-    // Building the game plot.
-
-    // Here we define the sequence of stages of the game (game plot).
-    stager
-        .init()
-        .next('precache')
-        .next('instructions')
-        .next('quiz')
-        .repeat('meritocracy', settings.REPEAT)
-        .next('questionnaire')
-        .next('endgame')
-    .gameover();
-
-    // Here we group together the definition of the game logic.
     return {
         nodename: 'lgc' + counter,
-        game_metadata: {
-            name: 'meritocracy',
-            version: '0.0.1'
-        },
-        game_settings: {
-            // Will not publish any update of stage / stageLevel, etc.
-            publishLevel: 0,
-            // Will send a start / step command to ALL the clients when
-            // the logic will start / step through the game.
-            // This option requires that the game plots of the clients
-            // and logic are symmetric or anyway compatible.
-            syncStepping: true
-        },
-        // Extracts, and compacts the game plot that we defined above.
-        plot: stager.getState(),
-        // If debug is false (default false), exception will be caught and
-        // and printed to screen, and the game will continue.
-        debug: settings.DEBUG,
-        // Controls the amount of information printed to screen.
-        verbosity: 0,
-        // nodeGame enviroment variables.
-        env: {
-            auto: settings.AUTO
-        }
+        plot: stager.getState()
     };
 
 };

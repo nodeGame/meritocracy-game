@@ -4,7 +4,7 @@ _*
 \#*
 .\#*
 
-server/data
+data/*
 
 *.mp3
 *.ogg

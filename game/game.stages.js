@@ -38,7 +38,7 @@ module.exports = function(stager, settings) {
         steps: ['decision', 'results']
     });
 
-    stager.init()
+    stager
         .next('instructions')
         .next('quiz')
         .repeat('game', settings.REPEAT)

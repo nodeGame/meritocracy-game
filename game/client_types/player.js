@@ -1,25 +1,17 @@
 /**
- * # Client code for Meritocracy Game
- * Copyright(c) 2014 Stefano Balietti
+ * # Player code for Meritocracy Game
+ * Copyright(c) 2015 Stefano Balietti
  * MIT Licensed
- *
- * Handles bidding, and responds between two players.
- * Extensively documented tutorial.
  *
  * http://www.nodegame.org
  * ---
  */
 
-var ngc = module.parent.exports.ngc;
-var Stager = ngc.Stager;
-var stepRules = ngc.stepRules;
-var constants = ngc.constants;
-
 module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
     var game = {};
 
-    //Number Of required players to play the game:
+    // Number Of required players to play the game.
     var nbRequiredPlayers = settings.MIN_PLAYERS;
 
     // INIT and GAMEOVER
@@ -55,7 +47,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             node.game.bidderPage += 'bidder_blackbox.html';
             node.game.resultsPage += 'results_blackbox.html';
             node.game.instructionsPage += 'instructions_blackbox.html';
-            node.game.quizPage += 'quiz_blackbox.html'
+            node.game.quizPage += 'quiz_blackbox.html';
         }
         else {
             node.game.bidderPage += 'bidder.html';
@@ -63,11 +55,11 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             
             if (node.game.roomType === 'random') {
                 node.game.instructionsPage += 'instructions_random.html';
-                node.game.quizPage += 'quiz_random.html'
+                node.game.quizPage += 'quiz_random.html';
             }
             else if (node.game.roomType === 'exo_perfect') {
                 node.game.instructionsPage += 'instructions_exo_perfect.html';
-                node.game.quizPage += 'quiz_exo_perfect.html'
+                node.game.quizPage += 'quiz_exo_perfect.html';
             }
             else {
                 node.game.instructionsPage += 'instructions_exo_lowhigh.html';
@@ -205,7 +197,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         // This function is called to create the bars.
         this.updateResults = function(barsValues) {
             var group, player, i, j, div, subdiv, color, save;
-            var barsValues, barsDiv, showDemand;
+            var barsDiv, showDemand;
             var text, groupHeader, groupHeaderText, groupNames;
 
             // Notice: _barsValues_ array:
@@ -341,10 +333,6 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                   'collaboration.');
         });
 
-    });
-
-    stager.setOnGameOver(function() {
-        // Do something.
     });
 
     ///// STAGES and STEPS
@@ -506,10 +494,10 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         W.loadFrame('html/postgame.html', function() {
 
             node.env('auto', function() {
-	        node.timer.randomExec(function() {
+                node.timer.randomExec(function() {
                     // node.game.timer.doTimeUp();
                 });
-	    });
+            });
             
         });
         console.log('Postgame');
@@ -517,15 +505,15 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
     function endgame() {
         W.loadFrame('html/ended.html', function() {
-	    node.game.timer.setToZero();
+            node.game.timer.setToZero();
             node.on.data('WIN', function(msg) {
                 var win, exitcode, codeErr;
                 codeErr = 'ERROR (code not found)';
                 win = msg.data && msg.data.win || 0;
                 exitcode = msg.data && msg.data.exitcode || codeErr;
-	        W.writeln('Your bonus in this game is: ' + win);
+                W.writeln('Your bonus in this game is: ' + win);
                 W.writeln('Your exitcode is: ' + exitcode);
-	    });
+            });
         });
 
         console.log('Game ended');
@@ -543,37 +531,8 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
     // Add all the stages into the stager.
 
-    //////////////////////////////////////////////
-    // nodeGame hint:
-    //
-    // A minimal stage must contain two properties:
-    //
-    // - id: a unique name for the stage
-    // - cb: a callback function to execute once
-    //     the stage is loaded.
-    //
-    // When adding a stage / step into the stager
-    // there are many additional options to
-    // configure it.
-    //
-    // Properties defined at higher levels are
-    // inherited by each nested step, that in turn
-    // can overwrite them.
-    //
-    // For example if a step is missing a property,
-    // it will be looked into the enclosing stage.
-    // If it is not defined in the stage,
-    // the value set with _setDefaultProperties()_
-    // will be used. If still not found, it will
-    // fallback to nodeGame defaults.
-    //
-    // The most important properties are used
-    // and explained below.
-    //
-    /////////////////////////////////////////////
 
-    stager.addStep({
-        id: 'precache',
+    stager.extendStep('precache', {
         cb: precache,
         // `minPlayers` triggers the execution of a callback in the case
         // the number of players (including this client) falls the below
@@ -618,10 +577,10 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         cb: bid,
         done: clearFrame,
         timer: {
-	    milliseconds: function() {
-	        if (node.game.getCurrentGameStage().round < 3) return 30000;
-	        return 15000;
-	    },
+            milliseconds: function() {
+                if (node.game.getCurrentGameStage().round < 3) return 30000;
+                return 15000;
+            },
             timeup: 'TIMEUP'
         }
     });
@@ -631,9 +590,9 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         timer: function() {
             var round;
             round = node.game.getCurrentGameStage().round;
-	    if (round < 2) return 60000;
-	    if (round < 3) return 50000;
-	    return 30000;        
+            if (round < 2) return 60000;
+            if (round < 3) return 50000;
+            return 30000;        
         },
         done: clearFrame
     });
@@ -651,8 +610,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         done: clearFrame
     });
 
-    stager.addStage({
-        id: 'questionnaire',
+    stager.extendStep('questionnaire', {
         cb: postgame,
         timer: 120000,
         done: function() {
@@ -755,7 +713,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         auto: settings.AUTO,
         INITIAL_COINS: settings.INITIAL_COINS
     };
-   
+    
     return game;
 
-});
+};

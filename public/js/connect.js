@@ -20,10 +20,10 @@ window.onload = function () {
         },
         socket: {
 	    type: 'SocketIo', // for remote connections
-	    reconnect: false
+	    reconnection: false
 	}
     });
 
     // Connecting to waiting room.
     node.connect("/meritocracy");
-}
+};

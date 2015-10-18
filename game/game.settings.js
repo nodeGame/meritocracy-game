@@ -88,7 +88,7 @@ module.exports = {
     DB: 'FILE', // FILE, MONGODB
 
     // AUTHORIZATION.
-    AUTH: 'NO' // MTURK, LOCAL, NO.
+    AUTH: 'NO', // MTURK, LOCAL, NO.
 
     // end to remove.
 

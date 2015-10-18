@@ -1,8 +1,8 @@
 {
   "name": "meritocracy",
   "alias": "experiment",
-  "description": "Plays a meritocracy game with nodegame",
-  "version": "0.0.1",
+  "description": "Public-good game with meritocratic matching in nodegame",
+  "version": "0.2.0",
   "author": {
     "name": "Stefano Balietti",
     "email": "sbalietti@ethz.ch",
@@ -20,16 +20,6 @@
 ,
   "engines": {
     "node": "*",
-    "nodegame": "1.0.0"
+    "nodegame": ">= 0.9.1"
   }
-,
-	"nodegame": {
-	   "logic": "./server/logic.js",
-	   "dependencies": {
-	     "not_used": "for now"
-	   },
-	   "widgets": {
-	     "moneytalk": "0.1.0"
-	   }
-	}
 }

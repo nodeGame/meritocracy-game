@@ -234,22 +234,26 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                 for (j = 0; j < group.length; j++) {
 
                     player = group[j];
+                    console.log('TEXT: ', text);
+                     // It is me?
+                     if (barsValues[1][0] === i && barsValues[1][1] === j) {
+                         color = [undefined, '#9932CC'];
+                         text = ' YOU <img src="imgs/arrow.jpg" style="height:15px;"/>';                       
+                     }
+                     else {
+                         color = ['#DEB887', '#A52A2A'];
+                         text = '';
+                     }
+                    console.log('TEXT-2: ', text);
 
-                    // It is me?
-                    if (barsValues[1][0] === i && barsValues[1][1] === j) {
-                        color = [undefined, '#9932CC'];
-                        text = 'YOU <-----';
-                    }
-                    else {
-                        color = ['#DEB887', '#A52A2A'];
-                        text = '';
-                    }
+
 
                     // This is the DIV actually containing the bar
                     subdiv = document.createElement('div');
                     div.appendChild(subdiv);
                     bars.createBar(subdiv, player[0], 20, color[0], text);
 
+                    // TODO: adapt 'YOU'.
                     if (showDemand) {
                         subdiv.classList.add('playerContainer');
                         text = '';

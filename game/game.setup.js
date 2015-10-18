@@ -27,7 +27,7 @@ module.exports = function(settings, stages) {
 
     setup.window = {
         promptOnleave: !setup.debug
-    }
+    };
 
     return setup;
 };

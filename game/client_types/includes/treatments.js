@@ -102,7 +102,7 @@ function getPayoff(bars, position) {
  */
 function doGroupMatching(sortedContribs) {
     var i, len, groups, entry, ranking, bars;
-    var gId, gName;
+    var gId;
     len = sortedContribs.length;
     groups = [];
     ranking = [];
@@ -311,7 +311,7 @@ function computeGroupStats(groups) {
  * @return {NDDB}              Received data, with noise field
  */
 function createNoise(receivedData, variance) {
-    var contrib, iter;
+    var contrib;
     var i, len;
     i = -1, len = receivedData.db.length;
     for (; ++i < len;) {
@@ -373,9 +373,9 @@ function finalizeRound(currentStage, bars,
 
             if (!code) {
                 console.log('AAAH code not found: ', pId);                
-            }	   
+            }      
             code.win = !code.win ? playerPayoff : code.win + playerPayoff;
-	    console.log('Added to ' + pId + ' ' + playerPayoff + ' ECU');
+            console.log('Added to ' + pId + ' ' + playerPayoff + ' ECU');
             // End Update.
             
             if (settings.DB === 'MONGODB') {
@@ -654,7 +654,7 @@ treatments.endo = {
         matching,
         ranking, groups, groupStats,
         noisyRanking, noisyGroups, noisyGroupStats,
-        bars;
+        bars, compatibility;
 
         currentStage = node.game.getCurrentGameStage();
         previousStage = node.game.plot.previous(currentStage);
@@ -688,143 +688,15 @@ treatments.endo = {
         // Bars for display in clients.
         bars = matching.bars;
 
-        compatibility = matching.compatibility
+        compatibility = matching.compatibility;
 
         // Save to db, and sends results to players.
         finalizeRound(currentStage, bars,
                       groupStats, groups, ranking,
                       noisyGroupStats, noisyGroups, noisyRanking,
                       compatibility);
-    },
+    }
 };
 
 // BLACKBOX.
 treatments.blackbox = treatments.exo_perfect;
-
-
-// NOT USED AT THE MOMENT
-
-
-function shuffleArray(o) {
-    for (var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--
-                                                                             i], o[i] = o[j], o[j] = x);
-    return o;
-};
-
-/**
- * Returns position of player in ranking
- * @param  {array} ranking contains players' ids
- * @param  {object} p       player object
- * @return {array}         first group, then position in group
- */
-function getPosition(ranking, p) {
-    var position = [];
-    position[0] = Math.floor(ranking.indexOf(p.id) / 4);
-    position[1] = ranking.indexOf(p.id) % 4;
-    return position;
-}
-
-/**
- * Assigns a group to each player
- * @param {array} ranking  Array of players' ids
- */
-function groupMatching(ranking) {
-    var iter,
-    group,
-    person;
-    for (iter = 0; iter < ranking.length; iter++) {
-        group = Math.floor(iter / 4);
-        group = groupNames[group];
-        person = node.game.pl.id.update(ranking[iter], {
-            group: group
-        });
-    }
-}
-
-/**
- * Returns group averages and values for players in same group.
- * @param  {object} player       player from receivedData
- * @param  {NDDB} receivedData Data received from client
- * @param  {object} p            player object
- * @param  {array} groupValues  averages of each group
- * @return {object}              contains groupBars and playerBars
- */
-function getGroupsPlayerBars(player, receivedData, p, groupValues) {
-    var playersBars = [],
-    groupsBars = [],
-    allPlayers,
-    group,
-    otherGroups;
-
-    player = [player.contribution, player.demand];
-
-    allPlayers = receivedData.selexec('group', '=', p.group).fetch();
-    
-    playersBars.push(player);
-    for (player in allPlayers) {
-        player = allPlayers[player];
-        if (player.player !== p.id) {
-            playersBars.push([player.contribution, player.demand]);
-        }
-    }
-
-    group = groupValues[p.group];
-    groupsBars.push(group);
-    otherGroups = groupNames;
-    for (group in otherGroups) {
-        group = otherGroups[group];
-        if (p.group !== group) {
-            groupsBars.push(groupValues[group]);
-        }
-    }
-    return {
-        players: playersBars,
-        groups: groupsBars,
-    };
-}
-
-/**
- * Computes average contribution and demand for each group
- *
- * @param  {NDDB} receivedData Data received from clients
- * @return {array} Contains average values for each group.
- */
-function getGroupValues(receivedData) {
-    var groupValues = {},
-    group,
-    name,
-    groupContrib,
-    groupDemand;
-
-    for (name in groupNames) {
-        if (groupNames.hasOwnProperty(name)) {
-            name = groupNames[name];
-            group = receivedData.selexec('group', '=', name).fetch();
-            groupContrib = group.reduce(averageContribution, 0) / group.length;
-            groupDemand = group.reduce(averageDemand, 0) / group.length;
-            groupValues[name] = [groupContrib, groupDemand];
-        }
-    }
-
-    return groupValues;
-}
-
-/**
- * Divides a ranking array into 4 groups. NOT GROUP MATCHING
- * @param  {array} groups contains contribution and demand of players
- * @return {array}        contains arrays, which contains contribution
- */
-function getGroups(groups) {
-    var i, len, subGroup, gId;
-    len = groups.length;
-    subGroup = [];
-    gId = -1;
-    for (i = 0; i < len; i++) {
-        if (i % SUBGROUP_SIZE == 0) {
-            ++gId;
-            subGroup[gId] = [];
-        }
-        subGroup[gId].push([groups[i].contribution]);
-    }
-    return subGroup;
-}

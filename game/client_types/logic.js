@@ -23,6 +23,8 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     var channel = gameRoom.channel;
     var node = gameRoom.node;
 
+    var dk = require('descil-mturk')();
+
     var EXCHANGE_RATE = settings.EXCHANGE_RATE;
 
     // Variable registered outside of the export function are shared among all
@@ -32,18 +34,13 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     // Group names.
     var groupNames = settings.GROUP_NAMES;
 
-
     var DUMP_DIR, DUMP_DIR_JSON, DUMP_DIR_CSV;
     var ngdb, mdb;
     
-    var treatments, treatment;
-    var dk, confPath;
-
+    var treatments;
     var client;
-    
     var nbRequiredPlayers;
     
-    console.log(gameRoom.runtimeConf);
     console.log('=====================');
 
     // Preparing storage: FILE or MONGODB.
@@ -69,7 +66,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         node.on.data('questionnaire', function(msg) {
             var saveObject = {
                 session: node.nodename,
-                condition: treatment,
+                condition: treatmentName,
                 stage: msg.stage,
                 player: msg.from,
                 created: msg.created,
@@ -85,7 +82,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         node.on.data('QUIZ', function(msg) {
             var saveObject = {
                 session: node.nodename,
-                condition: treatment,
+                condition: treatmentName,
                 stage: msg.stage,
                 player: msg.from,
                 created: msg.created,
@@ -97,7 +94,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         node.on.data('timestep', function(msg) {
             var saveObject = {
                 session: node.nodename,
-                condition: treatment,
+                condition: treatmentName,
                 stage: msg.stage,
                 player: msg.from,
                 timeElapsed: msg.data.time,
@@ -120,7 +117,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
             mdb.store({
                 session: node.nodename,
-                condition: treatment,
+                condition: treatmentName,
                 stage: currentStage,
                 player: p.player,
                 group: p.group,
@@ -142,7 +139,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                                               noisyRanking, noisyGroupStats) {
             mdb.store({
                 session: node.nodename,
-                condition: treatment,
+                condition: treatmentName,
                 ranking: ranking,
                 noisyRanking: noisyRanking,
                 groupAverages: groupStats,
@@ -162,33 +159,14 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     // client = channel.require(__dirname + '/game.client', { ngc: ngc });
     client = gameRoom.getClientType('player');
 
-    // Reads in descil-mturk configuration.
-    confPath = path.resolve(__dirname, '..', 'descil.conf.js');
-    dk = require('descil-mturk')(confPath);
-
-    function codesNotFound() {
-        if (!dk.codes.size()) {
-            throw new Error('game.logic: no codes found.');
-        }
-    }
-
-    if (settings.AUTH === 'MTURK') {
-        dk.getCodes(codesNotFound);
-    }
-    else {
-        dk.readCodes(codesNotFound);
-    }
-
-    treatment = gameRoom.group;
-
     // Not so nice. We need to delete the cache, because treatments is
     // using an old node object otherwise.
     // TODO: find a better way.
     // See http://stackoverflow.com/questions/9210542/node-js-require-cache-possible-to-invalidate
-    delete require.cache[require.resolve(__dirname + '/treatments.js')]
-    treatments = channel.require(__dirname + '/treatments.js', {
+    delete require.cache[require.resolve(__dirname + '/includes/treatments.js')];
+    treatments = channel.require(__dirname + '/includes/treatments.js', {
         node: node,
-        treatment: treatment,
+        settings: settings,
         groupNames: groupNames,
         dk: dk,
         SUBGROUP_SIZE: gameRoom.runtimeConf.SUBGROUP_SIZE
@@ -196,16 +174,14 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
     // Event handler registered in the init function are always valid.
     stager.setOnInit(function() {
-        console.log('********************** meritocracy room ' + counter+++' **********************');
+        console.log('********************** meritocracy room ' + counter++);
 
-
-        
         // Players that disconnected temporarily.
         node.game.disconnected = {};
 
         // "STEPPING" is the last event emitted before the stage is updated.
         node.on('STEPPING', function() {
-            var currentStage, db, p, gain;
+            var currentStage, db;
 
             currentStage = node.game.getCurrentGameStage();
 
@@ -242,11 +218,6 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             console.log(node.nodename, ' - Round:  ', currentStage);
         });
 
-// THIS WAS HERE BEFORE: delete if not needed.
-//         node.game.memory.on('insert', function(data) {
-//             data.group = node.game.pl.selexec('id', '=', data.player).first().group;
-//         });
-
         // Add session name to data in DB.
         node.game.memory.on('insert', function(o) {
             o.session = node.nodename;
@@ -272,7 +243,6 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                     this.countdown = setTimeout(function() {
                         var i;
                         console.log('Countdown fired. Player/s did not reconnect.');
-                        lostPlayers = 0;
                         for (i in node.game.disconnected) {
                             if (node.game.disconnected.hasOwnProperty(i)) {
                                 dk.updateCode(i, {
@@ -356,13 +326,13 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             // We could slice the game plot, and send just what we need
             // however here we resend all the stages, and move their game plot.
             console.log('** Player reconnected: ' + p.id + ' **');
-	    // Setting metadata, settings, and plot.
+            // Setting metadata, settings, and plot.
             node.remoteSetup('game_metadata',  p.id, client.metadata);
-	    node.remoteSetup('game_settings', p.id, client.settings);
-	    node.remoteSetup('plot', p.id, client.plot);
+            node.remoteSetup('game_settings', p.id, client.settings);
+            node.remoteSetup('plot', p.id, client.plot);
             node.remoteSetup('env', p.id, client.env);
             node.remoteSetup('env', p.id, {
-                treatment: node.env('roomType')
+                treatment: treatmentName
             });
 
 
@@ -419,7 +389,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
     // Event handler registered in the init function are always valid.
     stager.setOnGameOver(function() {
-        console.log('************** GAMEOVER ' + gameRoom.name + '****************');
+        console.log('************** GAMEOVER ' + gameRoom.name);
         // TODO: update database.
         channel.destroyGameRoom(gameRoom.name);
     });
@@ -476,7 +446,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
             dk.checkOut(accesscode, exitcode, code.win);
 
-	    node.say('WIN', p.id, {
+            node.say('WIN', p.id, {
                 win: code.win,
                 exitcode: code.ExitCode
             });
@@ -576,7 +546,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         cb: function() {
             // Computes the values for all players and all groups,
             // sends them to the clients, and save results into database.
-            treatments[treatment].sendResults();
+            treatments[treatmentName].sendResults();
             return true;
         }
     });

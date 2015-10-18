@@ -1,6 +1,6 @@
 /**
  * # Treatment conditions for meritocracy game.
- * Copyright(c) 2014 Stefano Balietti
+ * Copyright(c) 2015 Stefano Balietti
  * MIT Licensed
  *
  * Contains helper functions to create Gaussian noise.
@@ -13,13 +13,13 @@ var J = require('JSUS').JSUS;
 
 var ngc = require('nodegame-client');
 
-
 // Share through channel.require
 var node = module.parent.exports.node;
-var treatment = module.parent.exports.treatment;
 var settings = module.parent.exports.settings;
 var dk = module.parent.exports.dk;
 var SUBGROUP_SIZE = module.parent.exports.SUBGROUP_SIZE;
+
+var treatment = settings.treatmentName;
 
 var ENDO = treatment === 'endo';
 
@@ -547,7 +547,7 @@ treatments.exo_low = {
             .selexec('key', '=', 'bid');
         
         if (!receivedData.db.length) {
-            debugger;
+            console.log('receivedData.db.length = 0!');
         }
 
         sortedContribs = receivedData
@@ -582,7 +582,7 @@ treatments.exo_low = {
 
         
         if (!noisyGroups.length) {
-            debugger;
+            console.log('noisyGroups.length = 0 !');
         }
 
         // Bars for display in clients.
@@ -661,9 +661,8 @@ treatments.endo = {
             .selexec('key', '=', 'bid');
 
         if (!receivedData) {
-            console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
+            console.log('receivedData empty!');
             return;
-            debugger
         }
 
         sortedContribs = receivedData

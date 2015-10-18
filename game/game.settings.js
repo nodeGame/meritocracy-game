@@ -30,11 +30,6 @@ module.exports = {
     // Minimum number of players that must be always connected.
     MIN_PLAYERS: 4,
 
-    // TODO REMOVE. Game settings.
-    TREATMENTS: ['blackbox', 'endo', 'random',
-        'exo_low', 'exo_high', 'exo_perfect'
-    ],
-
     // Which treatment to play.
     // Leave undefined for a randomly chosen treatment.
     CHOSEN_TREATMENT: 'exo_low',
@@ -53,9 +48,6 @@ module.exports = {
 
     // Divider ECU / DOLLARS *
     EXCHANGE_RATE: 266,
-
-    // Show up fee.
-    showupFee: 1, // 27.07 -> 1.2
 
     // Conversion rate ECU to DOLLARS.
     exchangeRate: 0.001,
@@ -76,6 +68,10 @@ module.exports = {
 
     },
 
+//     // TODO REMOVE. Game settings.
+//     TREATMENTS: ['blackbox', 'endo', 'random',
+//         'exo_low', 'exo_high', 'exo_perfect'
+//     ],
 
 
     // DEBUG.
@@ -90,7 +86,6 @@ module.exports = {
     // AUTHORIZATION.
     AUTH: 'NO', // MTURK, LOCAL, NO.
 
-    // end to remove.
 
     // Treatments definition.
 

@@ -11,19 +11,15 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
     var game = {};
 
-    // Number Of required players to play the game.
-    var nbRequiredPlayers = settings.MIN_PLAYERS;
-
     // INIT and GAMEOVER
 
     stager.setOnInit(function() {
-        var that = this;
-        var waitingForPlayers, treatment;
-        
+        var header, frame;
+
         console.log('INIT PLAYER!');
-        
+
         node.game.INITIAL_COINS = node.env('INITIAL_COINS');
-        
+
         node.game.oldContrib = null;
         node.game.oldDemand = null;
         node.game.oldPayoff = null;
@@ -36,7 +32,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         node.game.bidderPage = 'html/';
         node.game.resultsPage = 'html/';
         node.game.quizPage = 'html/';
-        
+
         if (node.game.roomType === 'endo') {
             node.game.bidderPage += 'bidder_endo.html';
             node.game.resultsPage += 'results_endo.html';
@@ -52,7 +48,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         else {
             node.game.bidderPage += 'bidder.html';
             node.game.resultsPage += 'results.html';
-            
+
             if (node.game.roomType === 'random') {
                 node.game.instructionsPage += 'instructions_random.html';
                 node.game.quizPage += 'quiz_random.html';
@@ -64,21 +60,16 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             else {
                 node.game.instructionsPage += 'instructions_exo_lowhigh.html';
                 node.game.quizPage += 'quiz_exo_lowhigh.html';
-            }     
+            }
         }
 
-        // Hide the waiting for other players message.
-        waitingForPlayers = W.getElementById('waitingForPlayers');
-        waitingForPlayers.innerHTML = '';
-        waitingForPlayers.style.display = 'none';
+        // Setup page: header + frame.
+        header = W.generateHeader();
+        frame = W.generateFrame();
 
-        // Set up the main screen:
-        // - visual timer widget,
-        // - visual state widget,
-        // - state display widget,
-        // - iframe of play,
-        // - player.css
-        W.setupFrame('PLAYER');
+        // Add widgets.
+        this.visualRound = node.widgets.append('VisualRound', header);
+        this.visualTimer = node.widgets.append('VisualTimer', header);
 
         node.on('BID_DONE', function(bid, isTimeOut) {
             node.game.timer.stop();
@@ -104,7 +95,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         // mistakes. If in the first round a random value is chosen, otherwise
         // the previous decision is repeated. It also updates the screen.
         this.correctInputs = function(checkResults) {
-            var contrib, demand, previousChoice;
+            var contrib, demand;
             var errorC, errorD;
 
             if (checkResults.success) {
@@ -156,7 +147,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         // demand (if requested). Returns an object with the results of the
         // validation. It also displays a message in case errors are found.
         this.checkInputs = function() {
-            var contrib, demand, values;
+            var contrib, demand;
             var divErrors, errorC, errorD;
 
             divErrors = W.getElementById('divErrors');
@@ -199,6 +190,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             var group, player, i, j, div, subdiv, color, save;
             var barsDiv, showDemand;
             var text, groupHeader, groupHeaderText, groupNames;
+            var payoffSpan, bars;
 
             // Notice: _barsValues_ array:
             // 0: array: contr, demand
@@ -314,7 +306,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             W.clearFrame();
         });
 
-        
+
         node.on.data('notEnoughPlayers', function(msg) {
             // Not yet 100% safe. Some players could forge the from field.
             if (msg.from !== '[ADMIN_SERVER]') return;
@@ -385,6 +377,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         W.loadFrame(node.game.resultsPage, function() {
             node.on.data('results', function(msg) {
                 var treatment, b;
+                var barsValues;
                 console.log('Received results.');
 
                 barsValues = msg.data;
@@ -411,8 +404,6 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
     function bid() {
 
-        var that = this;
-
         //////////////////////////////////////////////
         // nodeGame hint:
         //
@@ -437,12 +428,9 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         //
         /////////////////////////////////////////////
         W.loadFrame(node.game.bidderPage, function() {
-            var toHide, i;
-            var b, options, other;
-            var treatment;
+            var b, treatment;
 
             treatment = node.env('roomType');
-
             node.game.displaySummaryPrevRound(treatment);
 
             // Re-enable input.
@@ -452,7 +440,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
             // Clear contribution and demand inputs.
             if (treatment === 'endo') {
-                W.getElementById('demand').value = '';   
+                W.getElementById('demand').value = '';
             }
 
             W.getElementById('contribution').value = '';
@@ -462,6 +450,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             // AUTOPLAY.
             node.env('auto', function() {
                 node.timer.randomExec(function() {
+                    var validation, validInputs;
                     validation = node.game.checkInputs();
                     validInputs = node.game.correctInputs(validation);
                     node.emit('BID_DONE', validInputs, false);
@@ -470,7 +459,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
             // TIMEUP.
             node.on('TIMEUP', function() {
-                var validation;
+                var validation, validInputs;
                 console.log('TIMEUP !');
                 validation = node.game.checkInputs();
                 validInputs = node.game.correctInputs(validation);
@@ -478,7 +467,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             });
 
             b.onclick = function() {
-                var validation;
+                var validation, validInputs;
                 validation = node.game.checkInputs();
                 if (!validation.success) return;
                 validInputs = node.game.correctInputs(validation);
@@ -498,7 +487,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                     // node.game.timer.doTimeUp();
                 });
             });
-            
+
         });
         console.log('Postgame');
     }
@@ -592,7 +581,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             round = node.game.getCurrentGameStage().round;
             if (round < 2) return 60000;
             if (round < 3) return 50000;
-            return 30000;        
+            return 30000;
         },
         done: clearFrame
     });
@@ -614,6 +603,8 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         timer: 120000,
         done: function() {
             var i, socExpValue, stratChoiceValue;
+            var T, gameName, stratComment, socExp, stratChoice, comments;
+            var stratCommentErr, errDiv, errors, isTimeUp;
             T = W.getFrameDocument(),
             gameName = T.getElementById('game-name').value,
             stratComment = T.getElementById('strategy-comment').value,
@@ -621,7 +612,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             stratChoice = T.getElementsByName('followed-strategy-choice'),
             comments = T.getElementById('comment').value;
 
-            var errors = [], 
+            errors = [],
             stratCommentErr = false,
             errDiv = null;
 
@@ -649,7 +640,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             if ('undefined' === typeof socExpValue) {
                 errors.push('2.');
             }
-            
+
             if ('undefined' === typeof stratChoiceValue) {
                 errors.push('3.');
             }
@@ -691,10 +682,10 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                 socExp: socExpValue,
                 stratChoice: stratChoiceValue,
                 comments: comments,
-                stratComment: stratComment            
+                stratComment: stratComment
             });
-            
-            node.emit('INPUT_DISABLE');        
+
+            node.emit('INPUT_DISABLE');
             node.set('timestep', {
                 time: node.timer.getTimeSince('step'),
                 timeup: isTimeUp
@@ -712,7 +703,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         auto: settings.AUTO,
         INITIAL_COINS: settings.INITIAL_COINS
     };
-    
+
     return game;
 
 };

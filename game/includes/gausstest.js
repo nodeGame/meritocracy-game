@@ -39,9 +39,9 @@ function endoGroupMatching(sortedContribs) {
         temp = {
             groups: [entryI],
             ranking: [entryI.player],
-            bars: [[entryI.value.contribution, entryI.value.demand]],
-            minContrib: entryI.value.contribution,
-            maxDemand: entryI.value.demand
+            bars: [[entryI.contribution, entryI.demand]],
+            minContrib: entryI.contribution,
+            maxDemand: entryI.demand
         };
 
         // Check if a group can be made with remaining entries. Entries with
@@ -53,23 +53,23 @@ function endoGroupMatching(sortedContribs) {
 
 
             // Since contributions are sorted we don't check further.
-            if (entryJ.value.contribution < temp.maxDemand) {          
+            if (entryJ.contribution < temp.maxDemand) {          
                 noGroup.push(entryI);
                 break;
             }
             
             // Entry is compatible.
-            if (entryJ.value.demand <= temp.minContrib) {
+            if (entryJ.demand <= temp.minContrib) {
 
                 // Add entryJ to the current temp group.
                 temp.groups.push(entryJ);
                 temp.ranking.push(entryJ.player);
-                temp.bars.push([entryJ.value.contribution, entryJ.value.demand]);
+                temp.bars.push([entryJ.contribution, entryJ.demand]);
 
                 // Update requirements for the group.                
                 temp.minContrib = Math.min(temp.minContrib, 
-                                           entryJ.value.contribution);
-                temp.maxDemand = Math.max(temp.maxDemand, entryJ.value.demand);
+                                           entryJ.contribution);
+                temp.maxDemand = Math.max(temp.maxDemand, entryJ.demand);
 
                 // Check if we have enough compatible players in group.
                 if (temp.groups.length >= SUBGROUP_SIZE) {
@@ -115,7 +115,7 @@ function endoGroupMatching(sortedContribs) {
             entryJ.group = groupNames[gId];
             groups[gId].push(entryJ);
             ranking.push(entryJ.player);
-            bars[gId].push([entryJ.value.contribution, entryJ.value.demand]);
+            bars[gId].push([entryJ.contribution, entryJ.demand]);
             compatibility[gId] = 0;
         }
     }

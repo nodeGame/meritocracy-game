@@ -13,13 +13,15 @@ var J = require('JSUS').JSUS;
 
 var ngc = require('nodegame-client');
 
-// Share through channel.require
+// Share through channel.require.
+var channel = module.parent.exports.channel;
 var node = module.parent.exports.node;
 var settings = module.parent.exports.settings;
 var dk = module.parent.exports.dk;
-var SUBGROUP_SIZE = module.parent.exports.SUBGROUP_SIZE;
 
+var SUBGROUP_SIZE = settings.SUBGROUP_SIZE;
 var treatment = settings.treatmentName;
+var groupNames = settings.GROUP_NAMES;
 
 var ENDO = treatment === 'endo';
 
@@ -32,19 +34,17 @@ var NOISE_LOW = settings.NOISE_LOW;
 
 var GROUP_ACCOUNT_DIVIDER = settings.GROUP_ACCOUNT_DIVIDER;
 
-var groupNames = settings.GROUP_NAMES;
-
 // Number of coins for each player at the beginning of each round
 var INITIAL_COINS = settings.INITIAL_COINS;
 
 // Functions used in map-reduce.
 
 function averageContribution(pv, cv) {
-    return pv + cv.value.contribution;
+    return pv + cv.contribution;
 }
 
 function averageDemand(pv, cv) {
-    return pv + cv.value.demand;
+    return pv + cv.demand;
 }
 
 function computeGroupAccount(prev, curr) {
@@ -53,24 +53,24 @@ function computeGroupAccount(prev, curr) {
 
 // If two contributions are exactly the same, then they are randomly ordered.
 function sortContributions(c1, c2) {
-    if (c1.value.contribution > c2.value.contribution) return -1;
-    if (c1.value.contribution < c2.value.contribution) return 1;
+    if (c1.contribution > c2.contribution) return -1;
+    if (c1.contribution < c2.contribution) return 1;
     if (Math.random() <= 0.5) return -1;
     return 1;
 }
 
 // If two demands are exactly the same, then they are randomly ordered.
 function sortDemands(c1, c2) {
-    if (c1.value.demand > c2.value.demand) return -1;
-    if (c1.value.demand < c2.value.demand) return 1;
+    if (c1.demand > c2.demand) return -1;
+    if (c1.demand < c2.demand) return 1;
     if (Math.random() <= 0.5) return -1;
     return 1;
 }
 
 // If two contributions are exactly the same, then they are randomly ordered.
 function sortNoisyContributions(c1, c2) {
-    if (c1.value.noisyContribution > c2.value.noisyContribution) return -1;
-    if (c1.value.noisyContribution < c2.value.noisyContribution) return 1;
+    if (c1.noisyContribution > c2.noisyContribution) return -1;
+    if (c1.noisyContribution < c2.noisyContribution) return 1;
     if (Math.random() <= 0.5) return -1;
     return 1;
 }
@@ -118,7 +118,7 @@ function doGroupMatching(sortedContribs) {
         entry.group = groupNames[gId];
         groups[gId].push(entry);
         ranking.push(entry.player);
-        bars[gId].push([entry.value.contribution, entry.value.demand]);
+        bars[gId].push([entry.contribution, entry.demand]);
     }
     return {
         groups: groups,
@@ -163,9 +163,9 @@ function endoGroupMatching(sortedContribs) {
         temp = {
             groups: [entryI],
             ranking: [entryI.player],
-            bars: [[entryI.value.contribution, entryI.value.demand]],
-            minContrib: entryI.value.contribution,
-            maxDemand: entryI.value.demand
+            bars: [[entryI.contribution, entryI.demand]],
+            minContrib: entryI.contribution,
+            maxDemand: entryI.demand
         };
 
         // Check if a group can be made with remaining entries. Entries with
@@ -177,23 +177,23 @@ function endoGroupMatching(sortedContribs) {
 
 
             // Since contributions are sorted we don't check further.
-            if (entryJ.value.contribution < temp.maxDemand) {          
+            if (entryJ.contribution < temp.maxDemand) {          
                 noGroup.push(entryI);
                 break;
             }
             
             // Entry is compatible.
-            if (entryJ.value.demand <= temp.minContrib) {
+            if (entryJ.demand <= temp.minContrib) {
 
                 // Add entryJ to the current temp group.
                 temp.groups.push(entryJ);
                 temp.ranking.push(entryJ.player);
-                temp.bars.push([entryJ.value.contribution, entryJ.value.demand]);
+                temp.bars.push([entryJ.contribution, entryJ.demand]);
 
                 // Update requirements for the group.                
                 temp.minContrib = Math.min(temp.minContrib, 
-                                           entryJ.value.contribution);
-                temp.maxDemand = Math.max(temp.maxDemand, entryJ.value.demand);
+                                           entryJ.contribution);
+                temp.maxDemand = Math.max(temp.maxDemand, entryJ.demand);
 
                 // Check if we have enough compatible players in group.
                 if (temp.groups.length >= SUBGROUP_SIZE) {
@@ -239,7 +239,7 @@ function endoGroupMatching(sortedContribs) {
             entryJ.group = groupNames[gId];
             groups[gId].push(entryJ);
             ranking.push(entryJ.player);
-            bars[gId].push([entryJ.value.contribution, entryJ.value.demand]);
+            bars[gId].push([entryJ.contribution, entryJ.demand]);
             compatibility[gId] = 0;
         }
     }
@@ -273,7 +273,7 @@ function computeGroupStats(groups) {
         dSumSquared = 0;
 
         for (; ++j < lenJ;) {
-            entry = groups[i][j].value;
+            entry = groups[i][j];
 
             cSum += entry.contribution;
             cSumSquared = Math.pow(entry.contribution, 2);
@@ -315,10 +315,10 @@ function createNoise(receivedData, variance) {
     var i, len;
     i = -1, len = receivedData.db.length;
     for (; ++i < len;) {
-        contrib = receivedData.db[i].value.contribution;
-        receivedData.db[i].value.noisyContribution = contrib +
+        contrib = receivedData.db[i].contribution;
+        receivedData.db[i].noisyContribution = contrib +
             J.nextNormal(0, variance);
-        console.log(contrib, receivedData.db[i].value.noisyContribution);
+        console.log(contrib, receivedData.db[i].noisyContribution);
     }
     return receivedData;
 }
@@ -368,7 +368,9 @@ function finalizeRound(currentStage, bars,
             playerPayoff = getPayoff(bars, positionInNoisyRank);
             
             // Updating the player database with the current payoff.
-            code = dk.codes.id.get(pId);
+            // code = dk.codes.id.get(pId);
+            code = channel.registry.getClient(pId);
+
             if (!code) {
                 console.log('AAAH code not found: ', pId);                
             }	   
@@ -410,7 +412,7 @@ treatments.exo_perfect = {
         ranking, groups, groupStats,
         noisyRanking, noisyGroups, noisyGroupStats,
         bars;
-debugger
+
         currentStage = node.game.getCurrentGameStage();
         previousStage = node.game.plot.previous(currentStage);
 
@@ -754,7 +756,7 @@ function getGroupsPlayerBars(player, receivedData, p, groupValues) {
     group,
     otherGroups;
 
-    player = [player.value.contribution, player.value.demand];
+    player = [player.contribution, player.demand];
 
     allPlayers = receivedData.selexec('group', '=', p.group).fetch();
     
@@ -762,7 +764,7 @@ function getGroupsPlayerBars(player, receivedData, p, groupValues) {
     for (player in allPlayers) {
         player = allPlayers[player];
         if (player.player !== p.id) {
-            playersBars.push([player.value.contribution, player.value.demand]);
+            playersBars.push([player.contribution, player.demand]);
         }
     }
 

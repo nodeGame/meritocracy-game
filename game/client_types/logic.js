@@ -45,13 +45,13 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
     // Preparing storage: FILE or MONGODB.
     if (settings.DB === 'FILE') {
-        DUMP_DIR = path.resolve(__dirname, '..', 'data') + '/' + counter + '/';
+        DUMP_DIR = channel.getGameDir() + '/data/' + counter + '/';
         DUMP_DIR_JSON = DUMP_DIR + 'json/';
         DUMP_DIR_CSV = DUMP_DIR + 'csv/';
 
         // Recursively create directories, sub-trees and all.
-        J.mkdirSyncRecursive(DUMP_DIR_JSON, 0777);
-        J.mkdirSyncRecursive(DUMP_DIR_CSV, 0777);
+        J.mkdirSyncRecursive(DUMP_DIR_JSON, '0777');
+        J.mkdirSyncRecursive(DUMP_DIR_CSV, '0777');
     }
     else {
         
@@ -121,8 +121,8 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                 stage: currentStage,
                 player: p.player,
                 group: p.group,
-                contribution: p.value.contribution,
-                demand: null === p.value.demand ? "NA" : p.value.demand,
+                contribution: p.contribution,
+                demand: null === p.demand ? "NA" : p.demand,
                 noisyContribution: noisyContribution,
                 payoff: payoff,
                 groupAvgContr: finalGroupStats.avgContr,
@@ -131,7 +131,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                 groupStdDemand: finalGroupStats.stdDemand,
                 rankBeforeNoise: ranking.indexOf(p.id) + 1,
                 rankAfterNoise: noisyRanking.indexOf(p.id) + 1,
-                timeup: p.value.isTimeOut
+                timeup: p.isTimeOut
             });
         };
 
@@ -167,9 +167,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     treatments = channel.require(__dirname + '/includes/treatments.js', {
         node: node,
         settings: settings,
-        groupNames: groupNames,
-        dk: dk,
-        SUBGROUP_SIZE: gameRoom.runtimeConf.SUBGROUP_SIZE
+        dk: dk
     });
 
     // Event handler registered in the init function are always valid.
@@ -187,9 +185,9 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
             if (settings.DB === 'FILE') {
                 // We do not save stage 0.0.0. 
-                // Morever, If the last stage is equal to the current one, we are
-                // re-playing the same stage cause of a reconnection. In this
-                // case we do not update the database, or save files.
+                // Morever, If the last stage is equal to the current one,
+                // we are re-playing the same stage cause of a reconnection.
+                // In this case we do not update the database, or save files.
                 if (!GameStage.compare(currentStage, new GameStage())) {
                     return;
                 }
@@ -226,8 +224,8 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         // Register player disconnection, and wait for him...
         node.on.pdisconnect(function(p) {
             console.log('Warning: one player disconnected! ', p.id);
-
-            dk.updateCode(p.id, {
+            
+            channel.registry.updateClient(p.id, {
                 disconnected: true,
                 stage: p.stage
             });
@@ -245,7 +243,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                         console.log('Countdown fired. Player/s did not reconnect.');
                         for (i in node.game.disconnected) {
                             if (node.game.disconnected.hasOwnProperty(i)) {
-                                dk.updateCode(i, {
+                                channel.registry.updateClient(i, {
                                     kickedOut: true
                                 });
                             }
@@ -268,7 +266,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             var code, curStage, state, i, len;
 
             console.log('Oh...somebody reconnected!', p);
-            code = dk.codeExists(p.id);
+            code = channel.registry.getClient(p.id);
 
             if (!code) {
                 console.log('game.logic: reconnecting player not found in ' +
@@ -397,27 +395,23 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     // Game Types Objects definition
 
     // Functions
-//     function precache() {
-//         console.log('Pre-Cache');
-//     }
-// 
-//     function instructions() {
-//         // debugger
-//         console.log('Instructions');
-//     }
-// 
-//     function quiz() {
-//         console.log('Quiz');
-//     }
-//    function questionnaire() {
-//        console.log('questionnaire');
-//    }
-// 
-//     function meritocracy() {
-//         // debugger
-//         console.log('Merit Matching.');
-//         doMatch();
-//     }
+    function precache() {
+        console.log('Pre-Cache');
+    }
+    function instructions() {
+        // debugger
+        console.log('Instructions');
+    }
+    function quiz() {
+        console.log('Quiz');
+    }
+    function questionnaire() {
+        console.log('questionnaire');
+    }
+    function meritocracy() {
+        console.log('Merit Matching.');
+        doMatch();
+    }
 
     function endgame() {
         var code, exitcode, accesscode;
@@ -431,8 +425,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         console.log('***********************');
 
         bonus = node.game.pl.map(function(p) {
-            // debugger
-            code = dk.codes.id.get(p.id);
+            code = channel.registry.getClient(p.id);
             if (!code) {
                 console.log('ERROR: no code in endgame:', p.id);
                 return ['NA', 'NA'];
@@ -444,8 +437,13 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             code.win =  Number((code.win || 0) / EXCHANGE_RATE).toFixed(2);
             code.win = parseFloat(code.win, 10);
 
-            dk.checkOut(accesscode, exitcode, code.win);
-
+            // TODO. Improve this.
+            if (settings.auth === 'MTURK') {
+                dk.checkOut(accesscode, exitcode, code.win);
+            }
+            
+            channel.registry.checkOut(p.id);
+               
             node.say('WIN', p.id, {
                 win: code.win,
                 exitcode: code.ExitCode
@@ -469,78 +467,42 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         }
     }
 
-    // Set default step rule.
-    stager.setDefaultStepRule(stepRules.OTHERS_SYNC_STEP);
-
-//     // Adding the stages. We can later on define the rules and order that
-//     // will determine their execution.
-//     stager.addStage({
-//         id: 'precache',
-//         cb: precache,
-//         // minPlayers: [nbRequiredPlayers, notEnoughPlayers]
+// Disable for now.
+//     stager.extendStep('precache', {
+//         cb: precache
 //     });
-// 
-//     stager.addStage({
-//         id: 'instructions',
-//         cb: instructions,
-//         // minPlayers: [nbRequiredPlayers, notEnoughPlayers]
+ 
+    stager.extendStep('instructions', {
+        cb: instructions
+    });
+ 
+//     stager.extendStep('quiz', {
+//         cb: quiz
 //     });
-// 
-//     stager.addStage({
-//         id: 'quiz',
-//         cb: quiz,
-//         // minPlayers: [nbRequiredPlayers, notEnoughPlayers]
-//     });
-// 
-//     stager.addStep({
-//         id: 'bid',
-//         cb: function() {
-//             console.log('bid');
-//             return true;
-//         },
-//         // minPlayers: [nbRequiredPlayers, notEnoughPlayers]
-//     });
-// 
-//     stager.addStep({
-//         id: 'results',
-//         cb: function() {
-//             // Computes the values for all players and all groups,
-//             // sends them to the clients, and save results into database.
-//             treatments[treatment].sendResults();
-//             return true;
-//         },
-//         // minPlayers: [nbRequiredPlayers, notEnoughPlayers]
-//     });
-// 
-//     stager.addStage({
-//         id: 'meritocracy',
-//         steps: ['bid', 'results'],
-//         // minPlayers: [nbRequiredPlayers, notEnoughPlayers]
-//     });
-// 
-//     stager.addStage({
-//         id: 'questionnaire',
-//         cb: questionnaire
-//     });
-// 
-//     stager.addStage({
-//         id: 'end',
-//         cb: endgame
-//     });
-// 
-//     // Building the game plot.
-// 
-//     // Here we define the sequence of stages of the game (game plot).
-//     stager
-//         .init()
-//         .next('precache')
-//         .next('instructions')
-//         .next('quiz')
-//         .repeat('meritocracy', settings.REPEAT)
-//         .next('questionnaire')
-//         .next('end')
-//     .gameover();
-
+ 
+    stager.extendStep('bid', {
+        cb: function() {
+            console.log('bid');
+            return true;
+        },
+    });
+ 
+    stager.extendStep('results', {
+        cb: function() {
+            // Computes the values for all players and all groups,
+            // sends them to the clients, and save results into database.
+            treatments[treatment].sendResults();
+            return true;
+        }
+    });
+ 
+    stager.extendStep('questionnaire', {
+        cb: questionnaire
+    });
+ 
+    stager.extendStep('end', {
+        cb: endgame
+    });
 
     stager.extendStep('results', {
         cb: function() {

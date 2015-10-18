@@ -11,8 +11,6 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
     var game = {};
 
-    // INIT and GAMEOVER
-
     stager.setOnInit(function() {
         var header, frame;
 
@@ -26,8 +24,10 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
         // Change so that roomtype is set as decided in game.room.
         node.game.roomType = node.env('roomType');
-
-        // Adapting the game to the treatment.
+        
+        // Set variables containing paths to the instructions
+        // pages, depending on the treatment condition.
+        //
         node.game.instructionsPage = 'html/';
         node.game.bidderPage = 'html/';
         node.game.resultsPage = 'html/';
@@ -62,6 +62,8 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                 node.game.quizPage += 'quiz_exo_lowhigh.html';
             }
         }
+        // End instr pages.
+
 
         // Setup page: header + frame.
         header = W.generateHeader();
@@ -69,22 +71,26 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
         // Add widgets.
         this.visualRound = node.widgets.append('VisualRound', header);
-        this.timer = this.visualTimer = node.widgets.append('VisualTimer', header);
+        this.visualTimer = node.widgets.append('VisualTimer', header);
+        // Compatibility.
+        this.timer = this.visualTimer;
 
         node.on('BID_DONE', function(bid, isTimeOut) {
             node.game.timer.stop();
             W.getElementById('submitOffer').disabled = 'disabled';
-            node.set('bid', {
-                demand: bid.demand,
-                contribution: bid.contrib,
-                isTimeOut: isTimeOut
-            });
+
             node.game.oldContrib = bid.contrib;
             node.game.oldDemand = bid.demand;
 
             console.log(' Your contribution: ' + bid.contrib + '.');
             console.log(' Your demand: ' + bid.demand + '.');
-            node.done();
+            
+            node.done({
+                key: 'bid',
+                demand: bid.demand,
+                contribution: bid.contrib,
+                isTimeOut: isTimeOut
+            });
         });
 
         this.shouldCheckDemand = function() {
@@ -312,12 +318,14 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             if (msg.from !== '[ADMIN_SERVER]') return;
 
             node.game.pause();
-            W.lockScreen('One player disconnected. We are now waiting to see if ' +
-                         'he or she reconnects. If not, the game will continue ' +
-                         'with fewer players.');
+            W.lockScreen('One player disconnected. We are now waiting to ' +
+                         'see if he or she reconnects. If not, the game ' +
+                         'will continue with fewer players.');
         });
 
         node.on('SOCKET_DISCONNECT', function() {
+            // Disabled.
+            return;
             alert('Connection with the server was terminated. If you think ' +
                   'this is an error, please try to refresh the page. You can ' +
                   'also look for a HIT called ETH Descil Trouble Ticket for ' +
@@ -511,7 +519,9 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     function clearFrame() {
         node.emit('INPUT_DISABLE');
         // We save also the time to complete the step.
-        node.set('timestep', {
+        // TODO. Check if we need it.
+        node.set({
+            key: 'timestep',
             time: node.timer.getTimeSince('step'),
             timeup: node.game.timer.gameTimer.timeLeft <= 0
         });
@@ -537,30 +547,34 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         done: clearFrame
     });
 
-    stager.extendStep('quiz', {
-        cb: quiz,
-        // minPlayers: [nbRequiredPlayers, notEnoughPlayers],
-        // syncOnLoaded: true,
-        // `timer` starts automatically the timer managed by the widget VisualTimer
-        // if the widget is loaded. When the time is up it fires the DONE event.
-        // It accepts as parameter:
-        //  - a number (in milliseconds),
-        //  - an object containing properties _milliseconds_, and _timeup_
-        //     the latter being the name of the event to fire (default DONE)
-        // - or a function returning the number of milliseconds.
-        timer: 120000,
-        done: function() {
-            console.log('EXECUTING DONE HANDLER!!');
-            node.set('QUIZ', node.game.quizResults);
-            node.emit('INPUT_DISABLE');
-            // We save also the time to complete the step.
-            node.set('timestep', {
-                time: node.timer.getTimeSince('step'),
-                timeup: node.game.timer.gameTimer.timeLeft <= 0
-            });
-            return true;
-        }
-    });
+//     stager.extendStep('quiz', {
+//         cb: quiz,
+//         // minPlayers: [nbRequiredPlayers, notEnoughPlayers],
+//         // syncOnLoaded: true,
+//         // `timer` starts automatically the timer managed by the widget VisualTimer
+//         // if the widget is loaded. When the time is up it fires the DONE event.
+//         // It accepts as parameter:
+//         //  - a number (in milliseconds),
+//         //  - an object containing properties _milliseconds_, and _timeup_
+//         //     the latter being the name of the event to fire (default DONE)
+//         // - or a function returning the number of milliseconds.
+//         timer: 120000,
+//         done: function() {
+//             console.log('EXECUTING DONE HANDLER!!');
+//             node.game.quizResults.key = 'QUIZ';
+//             node.set(node.game.quizResults);
+//             node.emit('INPUT_DISABLE');
+// 
+//             // TODO: check if we need it.
+//             // We save also the time to complete the step.
+//             node.set({
+//                 key: 'timestep',
+//                 time: node.timer.getTimeSince('step'),
+//                 timeup: node.game.timer.gameTimer.timeLeft <= 0
+//             });
+//             return true;
+//         }
+//     });
 
     stager.extendStep('bid', {
         cb: bid,
@@ -677,7 +691,8 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             });
 
             // Sending values to server.
-            node.set('questionnaire', {
+            node.set({
+                key: 'questionnaire',
                 gameName: gameName,
                 socExp: socExpValue,
                 stratChoice: stratChoiceValue,
@@ -686,7 +701,10 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             });
 
             node.emit('INPUT_DISABLE');
-            node.set('timestep', {
+            
+            // TODO. Check if we need it.
+            node.set({
+                key: 'timestep',
                 time: node.timer.getTimeSince('step'),
                 timeup: isTimeUp
             });

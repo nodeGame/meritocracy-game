@@ -186,6 +186,9 @@ module.exports = function(settings, waitRoom, runtimeConf) {
         // Decide treatment.
         treatmentName = decideTreatment(settings.CHOSEN_TREATMENT);
 
+        console.log(treatmentName, ' ', settings.CHOSEN_TREATMENT);
+        
+
         // Create new game room.
         gameRoom = channel.createGameRoom({
             clients: tmpPlayerList,

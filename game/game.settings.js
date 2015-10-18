@@ -21,7 +21,7 @@ module.exports = {
     // Variables shared by all treatments.
 
     // Session counter.
-    SESSION_ID: 12,
+    SESSION_ID: 1000,
 
     // Numnber of game rounds repetitions.
     // TODO: if the value is changed the QUIZ page needs to be updated.
@@ -30,11 +30,9 @@ module.exports = {
     // Minimum number of players that must be always connected.
     MIN_PLAYERS: 4,
 
-    // Which treatment to play.
-    // Leave undefined for a randomly chosen treatment.
-    CHOSEN_TREATMENT: 'exo_low',
 
-    GROUP_NAMES: ['1', '2', '3', '4'],
+    GROUP_NAMES: ['Singapore', '2', '3', '4'],
+
     // How many player in each group. *
     SUBGROUP_SIZE: 4,
 
@@ -54,10 +52,9 @@ module.exports = {
 
     timer: {
 
-        instr1: 90000,
-        instr2: 60000,
+        instructions: 90000,
         quiz: 90000,
-        decision: function() {
+        bid: function() {
             if (this.getCurrentGameStage().round === 1) return 45000;
             return 15000;
         },
@@ -90,23 +87,26 @@ module.exports = {
     // Treatments definition.
 
     treatments: {
+        singapore: {
+
+        },
         blackbox: {
-            group: 'blackbox'
-        }, 
+
+        },
         endo: {
-            group: 'endo'
-        }, 
+
+        },
         random: {
-            group: 'random'
-        }, 
+
+        },
         exo_low: {
-            group: 'exo_low'
-        }, 
+
+        },
         exo_high: {
-            group: 'exo_high'
-        }, 
+
+        },
         exo_perfect: {
-            group: 'exo_perfect'
+
         }
     }
 };

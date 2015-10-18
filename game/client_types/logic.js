@@ -491,7 +491,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         cb: function() {
             // Computes the values for all players and all groups,
             // sends them to the clients, and save results into database.
-            treatments[treatment].sendResults();
+            treatments[treatmentName].sendResults();
             return true;
         }
     });

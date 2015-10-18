@@ -17,3 +17,6 @@ table {
     margin:auto;
     background-color:#E0E0E0;
 }
+table th {
+    text-align: center;
+}

@@ -10,6 +10,61 @@
 module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
     var game = {};
+    
+    stager.setDefaultGlobals({
+        // Total number of players in group.
+        totPlayers: gameRoom.game.waitroom.GROUP_SIZE,
+
+        // Set variables containing paths to the instructions
+        // pages, depending on the treatment condition.
+        setUris: function() {
+            var t;
+            
+            t = node.game.settings.treatmentName;
+
+            node.game.instructionsPage = 'html/';
+            node.game.bidderPage = 'html/';
+            node.game.resultsPage = 'html/';
+            node.game.quizPage = 'html/';
+
+            if (t === 'endo') {
+                node.game.bidderPage += 'bidder_endo.html';
+                node.game.resultsPage += 'results_endo.html';
+                node.game.instructionsPage += 'instructions_endo.html';
+                node.game.quizPage += 'quiz_endo.html';
+            }
+            else if (t === 'blackbox') {
+                node.game.bidderPage += 'bidder_blackbox.html';
+                node.game.resultsPage += 'results_blackbox.html';
+                node.game.instructionsPage += 'instructions_blackbox.html';
+                node.game.quizPage += 'quiz_blackbox.html';
+            }
+            else {
+                node.game.bidderPage += 'bidder.html';
+                node.game.resultsPage += 'results.html';
+
+                if (t === 'singapore') {
+                    node.game.instructionsPage += 'instructions_singapore.html';
+                    node.game.quizPage += 'quiz_random.html';
+                }
+                else if (t === 'random') {
+                    node.game.instructionsPage += 'instructions_random.html';
+                    node.game.quizPage += 'quiz_random.html';
+                }
+                else if (t === 'exo_perfect') {
+                    node.game.instructionsPage +=
+                    'instructions_exo_perfect.html';
+                    node.game.quizPage +=
+                    'quiz_exo_perfect.html';
+                }
+                else {
+                    node.game.instructionsPage +=
+                    'instructions_exo_lowhigh.html';
+                    node.game.quizPage += 'quiz_exo_lowhigh.html';
+                }
+            }
+        }
+    });
 
     stager.setOnInit(function() {
         var header, frame;
@@ -22,48 +77,8 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         node.game.oldDemand = null;
         node.game.oldPayoff = null;
 
-        // Change so that roomtype is set as decided in game.room.
-        node.game.roomType = node.env('roomType');
-        
-        // Set variables containing paths to the instructions
-        // pages, depending on the treatment condition.
-        //
-        node.game.instructionsPage = 'html/';
-        node.game.bidderPage = 'html/';
-        node.game.resultsPage = 'html/';
-        node.game.quizPage = 'html/';
-
-        if (node.game.roomType === 'endo') {
-            node.game.bidderPage += 'bidder_endo.html';
-            node.game.resultsPage += 'results_endo.html';
-            node.game.instructionsPage += 'instructions_endo.html';
-            node.game.quizPage += 'quiz_endo.html';
-        }
-        else if (node.game.roomType === 'blackbox') {
-            node.game.bidderPage += 'bidder_blackbox.html';
-            node.game.resultsPage += 'results_blackbox.html';
-            node.game.instructionsPage += 'instructions_blackbox.html';
-            node.game.quizPage += 'quiz_blackbox.html';
-        }
-        else {
-            node.game.bidderPage += 'bidder.html';
-            node.game.resultsPage += 'results.html';
-
-            if (node.game.roomType === 'random') {
-                node.game.instructionsPage += 'instructions_random.html';
-                node.game.quizPage += 'quiz_random.html';
-            }
-            else if (node.game.roomType === 'exo_perfect') {
-                node.game.instructionsPage += 'instructions_exo_perfect.html';
-                node.game.quizPage += 'quiz_exo_perfect.html';
-            }
-            else {
-                node.game.instructionsPage += 'instructions_exo_lowhigh.html';
-                node.game.quizPage += 'quiz_exo_lowhigh.html';
-            }
-        }
-        // End instr pages.
-
+        // Set uris to load.
+        node.game.globals.setUris();
 
         // Setup page: header + frame.
         header = W.generateHeader();
@@ -93,8 +108,8 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             });
         });
 
-        this.shouldCheckDemand = function() {
-            return node.env('roomType') === "endo";
+        this.isEndo = function() {
+            return node.game.settings.treatmentName === "endo";
         };
 
         // Takes in input the results of _checkInputs_ and correct eventual
@@ -107,7 +122,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             if (checkResults.success) {
                 contrib = parseInt(W.getElementById('contribution').value, 10);
 
-                if (node.game.shouldCheckDemand()) {
+                if (node.game.isEndo()) {
                     demand = parseInt(W.getElementById('demand').value, 10);
                 }
             }
@@ -172,7 +187,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             }
 
             // In ENDO we check the demand too.
-            if (node.game.shouldCheckDemand()) {
+            if (node.game.isEndo()) {
 
                 demand = W.getElementById('demand').value;
 
@@ -204,9 +219,9 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             // 2: payoff
             // 3: array: groups are compatible or not (only endo)
 
-            groupNames = ['A', 'B', 'C', 'D'];
+            groupNames = node.game.settings.GROUP_NAMES;
 
-            showDemand = node.env('roomType') === 'endo';
+            showDemand = node.game.isEndo();
 
             console.log(barsValues);
             console.log(showDemand);
@@ -362,7 +377,16 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
     function instructions() {
         W.loadFrame(node.game.instructionsPage, function() {
-            var b = W.getElementById('read');
+            var b, n, s;
+            
+            s = node.game.settings;
+            n = node.game.globals.totPlayers;
+
+            W.getElementById('players-count').innerHTML = n;
+            W.getElementById('players-count-minus-1').innerHTML = (n-1);
+            W.getElementById('rounds-count').innerHTML = s.REPEAT;
+
+            b = W.getElementById('read');
             b.onclick = function() {
                 node.done();
             };

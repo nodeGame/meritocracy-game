@@ -531,16 +531,16 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
     // Add all the stages into the stager.
 
-
-    stager.extendStep('precache', {
-        cb: precache,
-        // `minPlayers` triggers the execution of a callback in the case
-        // the number of players (including this client) falls the below
-        // the chosen threshold. Related: `maxPlayers`, and `exactPlayers`.
-        // minPlayers: [nbRequiredPlayers, notEnoughPlayers],
-        // syncOnLoaded: true,
-        done: clearFrame
-    });
+// Removed for now.
+//    stager.extendStep('precache', {
+//        cb: precache,
+//        // `minPlayers` triggers the execution of a callback in the case
+//        // the number of players (including this client) falls the below
+//        // the chosen threshold. Related: `maxPlayers`, and `exactPlayers`.
+//        // minPlayers: [nbRequiredPlayers, notEnoughPlayers],
+//        // syncOnLoaded: true,
+//        done: clearFrame
+//    });
 
     stager.extendStep('instructions', {
         cb: instructions,
@@ -599,8 +599,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
 
 
-    stager.extendStep({
-        id: 'endgame',
+    stager.extendStep('end', {
         cb: endgame,
         // `done` is a callback function that is executed as soon as a
         // _DONE_ event is emitted. It can perform clean-up operations (such

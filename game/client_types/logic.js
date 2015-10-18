@@ -20,6 +20,8 @@ var J = ngc.JSUS;
 
 module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
+    var channel = gameRoom.channel;
+    var node = gameRoom.node;
 
     var EXCHANGE_RATE = settings.EXCHANGE_RATE;
 
@@ -157,8 +159,9 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     nbRequiredPlayers = gameRoom.runtimeConf.MIN_PLAYERS;
 
     // Client game to send to reconnecting players.
-    client = channel.require(__dirname + '/game.client', { ngc: ngc });
-    
+    // client = channel.require(__dirname + '/game.client', { ngc: ngc });
+    client = gameRoom.getClientType('player');
+
     // Reads in descil-mturk configuration.
     confPath = path.resolve(__dirname, '..', 'descil.conf.js');
     dk = require('descil-mturk')(confPath);
@@ -551,7 +554,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 //     });
 // 
 //     stager.addStage({
-//         id: 'endgame',
+//         id: 'end',
 //         cb: endgame
 //     });
 // 
@@ -565,7 +568,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 //         .next('quiz')
 //         .repeat('meritocracy', settings.REPEAT)
 //         .next('questionnaire')
-//         .next('endgame')
+//         .next('end')
 //     .gameover();
 
 

@@ -12,15 +12,7 @@
 module.exports = function(stager, settings) {
 
     stager.addStep({
-        id: 'instr1',
-        cb: function() {}
-    });
-    stager.addStep({
-        id: 'instr2',
-        cb: function() {}
-    });
-    stager.addStep({
-        id: 'decision',
+        id: 'bid',
         cb: function() {}
     });
     stager.addStep({
@@ -29,22 +21,20 @@ module.exports = function(stager, settings) {
     });
 
     stager.addStage({
-        id: 'instructions',
-        steps: ['instr1', 'instr2']
-    });
-
-    stager.addStage({
         id: 'game',
-        steps: ['decision', 'results']
+        steps: ['bid', 'results']
     });
 
     stager
         .next('instructions')
         .next('quiz')
         .repeat('game', settings.REPEAT)
+        .next('questionnaire')
         .next('end')
         .gameover();
 
+
+    // Precache stage removed.
 
     // Modifty the stager to skip some stages.
 

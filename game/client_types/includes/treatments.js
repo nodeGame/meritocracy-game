@@ -347,16 +347,16 @@ function finalizeRound(currentStage, bars,
                                    noisyRanking, noisyGroupStats);
     }
 
-    console.log(noisyGroups.length);
-    console.log('!!!!!');
+//     console.log(noisyGroups.length);
+//     console.log('!!!!!');
 
     // Save the results for each player, and notify him.
     i = -1, len = noisyGroups.length;
     for (; ++i < len;) {
         j = -1, lenJ = noisyGroups[i].length;
         
-        console.log(noisyGroups[i].length);
-        console.log('======');
+//         console.log(noisyGroups[i].length);
+//         console.log('======');
         
         for (; ++j < lenJ;) {
             contribObj = noisyGroups[i][j];

@@ -78,7 +78,7 @@ module.exports = {
     DEBUG: false,
 
     // AUTO-PLAY.
-    AUTO: true,
+    AUTO: false,
 
     // DATABASE.
     DB: 'FILE', // FILE, MONGODB

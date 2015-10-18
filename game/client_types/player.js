@@ -69,7 +69,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
         // Add widgets.
         this.visualRound = node.widgets.append('VisualRound', header);
-        this.visualTimer = node.widgets.append('VisualTimer', header);
+        this.timer = this.visualTimer = node.widgets.append('VisualTimer', header);
 
         node.on('BID_DONE', function(bid, isTimeOut) {
             node.game.timer.stop();

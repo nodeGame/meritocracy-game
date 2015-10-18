@@ -410,7 +410,7 @@ treatments.exo_perfect = {
         ranking, groups, groupStats,
         noisyRanking, noisyGroups, noisyGroupStats,
         bars;
-
+debugger
         currentStage = node.game.getCurrentGameStage();
         previousStage = node.game.plot.previous(currentStage);
 

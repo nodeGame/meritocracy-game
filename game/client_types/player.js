@@ -741,11 +741,11 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     // We serialize the game sequence before sending it.
     game.plot = stager.getState();
 
-    // TODO. Check this.
-    game.env = {
-        auto: settings.AUTO,
-        INITIAL_COINS: settings.INITIAL_COINS
-    };
+//     // TODO. Check this.
+//     game.env = {
+//         auto: settings.AUTO,
+//         INITIAL_COINS: settings.INITIAL_COINS
+//     };
 
     return game;
 

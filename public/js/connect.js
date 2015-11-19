@@ -25,5 +25,11 @@ window.onload = function () {
     });
 
     // Connecting to waiting room.
-    node.connect("/meritocracy");
+    if (location.search) {
+      // Pass query arguments on.
+      node.connect("/meritocracy", { query: location.search.substr(1) });
+    }
+    else {
+      node.connect("/meritocracy");
+    }
 };

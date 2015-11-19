@@ -517,7 +517,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
             node.env('auto', function() {
                 node.timer.randomExec(function() {
-                    // node.game.timer.doTimeUp();
+                    node.game.timer.doTimeUp();
                 });
             });
 

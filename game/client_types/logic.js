@@ -8,6 +8,7 @@
  */
 
 var path = require('path');
+var fs   = require('fs');
 
 var Database = require('nodegame-db').Database;
 
@@ -179,7 +180,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
         // "STEPPING" is the last event emitted before the stage is updated.
         node.on('STEPPING', function() {
-            var currentStage, db;
+            var currentStage, db, file;
 
             currentStage = node.game.getCurrentGameStage();
 
@@ -198,17 +199,17 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                 
                 if (db && db.size()) {
                     try {
+                        file = DUMP_DIR + 'memory_' + currentStage;
+                        
                         // Saving results to FS.
-                        node.fs.saveMemory('csv', DUMP_DIR + 'memory_' + currentStage +
-                                           '.csv', { flags: 'w' }, db);
-                        node.fs.saveMemory('json', DUMP_DIR + 'memory_' + currentStage +
-                                           '.nddb', null, db);        
+                        db.save(file + '.csv', { flags: 'w' });
+                        db.save(file + '.json');        
                         
                         console.log('Round data saved ', currentStage);
                     }
                     catch(e) {
                         console.log('OH! An error occurred while saving: ',
-                                    currentStage);
+                                    currentStage, ' ', e);
                     }
                 }
             }
@@ -415,7 +416,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
     function endgame() {
         var code, exitcode, accesscode;
-        var bonusFile, bonus;
+        var bonusFile, bonus, csvString;
 
         console.log('endgame');
         
@@ -456,15 +457,16 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         console.log('***********************');
         console.log('Game ended');
 
-        try {
-            node.fs.writeCsv(bonusFile, bonus, {
-                headers: ["access", "exit", "bonus", "terminated"]
-            });
-        } 
-        catch(e) {
-            console.log('ERROR: could not save the bonus file: ', 
-                        DUMP_DIR + 'bonus.csv');
-        }
+
+        bonus = [["access", "exit", "bonus", "terminated"]].concat(bonus);
+        csvString = bonus.join("\r\n");
+        fs.writeFile(bonusFile, csvString, function(err) {
+            if (err) {
+                console.log('ERROR: could not save the bonus file: ', 
+                            DUMP_DIR + 'bonus.csv');
+                console.log(err);
+            }
+        });
     }
 
 // Disable for now.

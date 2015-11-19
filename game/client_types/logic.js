@@ -476,9 +476,9 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         cb: instructions
     });
  
-//     stager.extendStep('quiz', {
-//         cb: quiz
-//     });
+    stager.extendStep('quiz', {
+        cb: quiz
+    });
  
     stager.extendStep('bid', {
         cb: function() {

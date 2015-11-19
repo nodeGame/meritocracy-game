@@ -555,16 +555,16 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
     // Add all the stages into the stager.
 
-// Removed for now.
-//    stager.extendStep('precache', {
-//        cb: precache,
-//        // `minPlayers` triggers the execution of a callback in the case
-//        // the number of players (including this client) falls the below
-//        // the chosen threshold. Related: `maxPlayers`, and `exactPlayers`.
-//        // minPlayers: [nbRequiredPlayers, notEnoughPlayers],
-//        // syncOnLoaded: true,
-//        done: clearFrame
-//    });
+    // Removed for now.
+    //    stager.extendStep('precache', {
+    //        cb: precache,
+    //        // `minPlayers` triggers the execution of a callback in the case
+    //        // the number of players (including this client) falls the below
+    //        // the chosen threshold. Related: `maxPlayers`, and `exactPlayers`.
+    //        // minPlayers: [nbRequiredPlayers, notEnoughPlayers],
+    //        // syncOnLoaded: true,
+    //        done: clearFrame
+    //    });
 
     stager.extendStep('instructions', {
         cb: instructions,
@@ -572,34 +572,34 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         done: clearFrame
     });
 
-//     stager.extendStep('quiz', {
-//         cb: quiz,
-//         // minPlayers: [nbRequiredPlayers, notEnoughPlayers],
-//         // syncOnLoaded: true,
-//         // `timer` starts automatically the timer managed by the widget VisualTimer
-//         // if the widget is loaded. When the time is up it fires the DONE event.
-//         // It accepts as parameter:
-//         //  - a number (in milliseconds),
-//         //  - an object containing properties _milliseconds_, and _timeup_
-//         //     the latter being the name of the event to fire (default DONE)
-//         // - or a function returning the number of milliseconds.
-//         timer: 120000,
-//         done: function() {
-//             console.log('EXECUTING DONE HANDLER!!');
-//             node.game.quizResults.key = 'QUIZ';
-//             node.set(node.game.quizResults);
-//             node.emit('INPUT_DISABLE');
-// 
-//             // TODO: check if we need it.
-//             // We save also the time to complete the step.
-//             node.set({
-//                 key: 'timestep',
-//                 time: node.timer.getTimeSince('step'),
-//                 timeup: node.game.timer.gameTimer.timeLeft <= 0
-//             });
-//             return true;
-//         }
-//     });
+    stager.extendStep('quiz', {
+        cb: quiz,
+        // minPlayers: [nbRequiredPlayers, notEnoughPlayers],
+        // syncOnLoaded: true,
+        // `timer` starts automatically the timer managed by the widget VisualTimer
+        // if the widget is loaded. When the time is up it fires the DONE event.
+        // It accepts as parameter:
+        //  - a number (in milliseconds),
+        //  - an object containing properties _milliseconds_, and _timeup_
+        //     the latter being the name of the event to fire (default DONE)
+        // - or a function returning the number of milliseconds.
+        timer: 120000,
+        done: function() {
+            console.log('EXECUTING DONE HANDLER!!');
+            node.game.quizResults.key = 'QUIZ';
+            node.set(node.game.quizResults);
+            node.emit('INPUT_DISABLE');
+            
+            // TODO: check if we need it.
+            // We save also the time to complete the step.
+            node.set({
+                key: 'timestep',
+                time: node.timer.getTimeSince('step'),
+                timeup: node.game.timer.gameTimer.timeLeft <= 0
+            });
+            return true;
+        }
+    });
 
     stager.extendStep('bid', {
         cb: bid,

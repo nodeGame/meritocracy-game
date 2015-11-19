@@ -11,15 +11,6 @@
 
 module.exports = function(stager, settings) {
 
-    stager.addStep({
-        id: 'bid',
-        cb: function() {}
-    });
-    stager.addStep({
-        id: 'results',
-        cb: function() {}
-    });
-
     stager.addStage({
         id: 'game',
         steps: ['bid', 'results']
@@ -27,7 +18,7 @@ module.exports = function(stager, settings) {
 
     stager
         .next('instructions')
-        // .next('quiz')
+        .next('quiz')
         .repeat('game', settings.REPEAT)
         .next('questionnaire')
         .next('end')

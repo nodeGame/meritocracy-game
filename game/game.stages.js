@@ -1,6 +1,6 @@
 /**
  * # Game stages definition file
- * Copyright(c) 2015 Stefano Balietti
+ * Copyright(c) 2017 Stefano Balietti
  * MIT Licensed
  *
  * Stages are defined using the stager API
@@ -11,11 +11,6 @@
 
 module.exports = function(stager, settings) {
 
-    stager.addStage({
-        id: 'game',
-        steps: ['bid', 'results']
-    });
-
     stager
         .next('instructions')
         .next('quiz')
@@ -24,8 +19,11 @@ module.exports = function(stager, settings) {
         .next('end')
         .gameover();
 
+    
+    stager.extendStage('game', {
+        steps: ['bid', 'results']
+    });
 
-    // Precache stage removed.
 
     // Modifty the stager to skip some stages.
 

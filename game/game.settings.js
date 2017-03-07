@@ -1,6 +1,6 @@
 /**
  * # Game settings definition file
- * Copyright(c) 2015 Stefano Balietti <futur.dorko@gmail.com>
+ * Copyright(c) 2017 Stefano Balietti
  * MIT Licensed
  *
  * The variables in this file will be sent to each client and saved under:
@@ -15,13 +15,12 @@
  * ---
  */
 
-
 module.exports = {
 
     // Variables shared by all treatments.
 
     // Session counter.
-    SESSION_ID: 1000,
+    SESSION_ID: 1,
 
     // Numnber of game rounds repetitions.
     // TODO: if the value is changed the QUIZ page needs to be updated.
@@ -31,7 +30,7 @@ module.exports = {
     MIN_PLAYERS: 4,
 
 
-    GROUP_NAMES: ['Singapore', '2', '3', '4'],
+    GROUP_NAMES: ['1', '2', '3', '4'],
 
     // How many player in each group. *
     SUBGROUP_SIZE: 4,
@@ -55,21 +54,19 @@ module.exports = {
         instructions: 90000,
         quiz: 90000,
         bid: function() {
+            // Variable time, longer on first round 
+            // to get familiar with game interface.
             if (this.getCurrentGameStage().round === 1) return 45000;
             return 15000;
         },
         results: function() {
+            // Variable time, longer on first round 
+            // to get familiar with game interface.
             if (this.getCurrentGameStage().round === 1) return 20000;
             return 8000;
         }
 
     },
-
-//     // TODO REMOVE. Game settings.
-//     TREATMENTS: ['blackbox', 'endo', 'random',
-//         'exo_low', 'exo_high', 'exo_perfect'
-//     ],
-
 
     // DEBUG.
     DEBUG: false,
@@ -80,13 +77,11 @@ module.exports = {
     // DATABASE.
     DB: 'FILE', // FILE, MONGODB
 
-    // AUTHORIZATION.
-    AUTH: 'NO', // MTURK, LOCAL, NO.
-
-
     // Treatments definition.
+    // (They are actually defined in the game).
 
     treatments: {
+
         singapore: {
 
         },

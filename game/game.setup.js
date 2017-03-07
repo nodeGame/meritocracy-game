@@ -1,12 +1,9 @@
 /**
  * # Game setup
- * Copyright(c) 2015 Stefano Balietti <futur.dorko@gmail.com>
+ * Copyright(c) 2017 Stefano Balietti
  * MIT Licensed
  *
- * The file includes settings for the nodeGame client instance
- *
- * This settings are then used to call `node.setup('nodegame')` and its
- * remote version.
+ * This file includes settings that are shared amongst all client types
  *
  * http://www.nodegame.org
  * ---

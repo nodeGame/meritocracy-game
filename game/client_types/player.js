@@ -1,6 +1,6 @@
 /**
  * # Player code for Meritocracy Game
- * Copyright(c) 2015 Stefano Balietti
+ * Copyright(c) 2017 Stefano Balietti
  * MIT Licensed
  *
  * http://www.nodegame.org

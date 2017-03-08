@@ -388,6 +388,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             b.onclick = function() {
                 node.done();
             };
+
             node.env('auto', function() {
                 node.timer.randomEmit('DONE', 8000);
             });

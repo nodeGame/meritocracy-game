@@ -53,14 +53,11 @@ module.exports = {
 
         instructions: 90000,
         quiz: 90000,
-        bid: {
-            milliseconds: function() {
-                var round;
-                round = this.getCurrentGameStage().round;
-                if (round < 3) return 30000;
-                return 15000;
-            },
-            timeup: 'TIMEUP'
+        bid: function() {
+            var round;
+            round = this.getCurrentGameStage().round;
+            if (round < 3) return 30000;
+            return 15000;
         },
         results: function() {
             var round;

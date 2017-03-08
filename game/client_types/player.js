@@ -87,8 +87,9 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         // Add widgets.
         this.visualRound = node.widgets.append('VisualRound', header);
         this.visualTimer = node.widgets.append('VisualTimer', header);
+
         // Compatibility.
-        this.timer = this.visualTimer;
+        // this.timer = this.visualTimer;
 
         node.on('BID_DONE', function(bid, isTimeOut) {
             node.game.timer.stop();
@@ -323,10 +324,10 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             }
         };
 
-        // Remove the content of the previous frame before loading the next one.
-        node.on('STEPPING', function() {
-            W.clearFrame();
-        });
+//         // Remove the content of the previous frame before loading the next one.
+//         node.on('STEPPING', function() {
+//             W.clearFrame();
+//         });
 
 
         node.on.data('notEnoughPlayers', function(msg) {
@@ -406,7 +407,6 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     }
 
     function showResults(bars) {
-
         W.loadFrame(node.game.resultsPage, function() {
             node.on.data('results', function(msg) {
                 var treatment, b;
@@ -436,7 +436,6 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     }
 
     function bid() {
-
         //////////////////////////////////////////////
         // nodeGame hint:
         //
@@ -513,45 +512,39 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     }
 
     function postgame() {
-        W.loadFrame('html/postgame.html', function() {
-
-            node.env('auto', function() {
-                node.timer.randomExec(function() {
-                    node.game.timer.doTimeUp();
-                });
+        node.env('auto', function() {
+            node.timer.randomExec(function() {
+                node.game.timer.doTimeUp();
             });
-
         });
         console.log('Postgame');
     }
 
     function endgame() {
-        W.loadFrame('html/ended.html', function() {
-            node.game.timer.setToZero();
-            node.on.data('WIN', function(msg) {
-                var win, exitcode, codeErr;
-                codeErr = 'ERROR (code not found)';
-                win = msg.data && msg.data.win || 0;
-                exitcode = msg.data && msg.data.exitcode || codeErr;
-                W.writeln('Your bonus in this game is: ' + win);
-                W.writeln('Your exitcode is: ' + exitcode);
-            });
+        node.game.timer.setToZero();
+        node.on.data('WIN', function(msg) {
+            var win, exitcode, codeErr;
+            codeErr = 'ERROR (code not found)';
+            win = msg.data && msg.data.win || 0;
+            exitcode = msg.data && msg.data.exitcode || codeErr;
+            W.writeln('Your bonus in this game is: ' + win);
+            W.writeln('Your exitcode is: ' + exitcode);
         });
-
+        
         console.log('Game ended');
     }
 
-    function clearFrame() {
-        node.emit('INPUT_DISABLE');
-        // We save also the time to complete the step.
-        // TODO. Check if we need it.
-        node.set({
-            key: 'timestep',
-            time: node.timer.getTimeSince('step'),
-            timeup: node.game.timer.gameTimer.timeLeft <= 0
-        });
-        return true;
-    }
+//     function clearFrame() {
+//         node.emit('INPUT_DISABLE');
+//         // We save also the time to complete the step.
+//         // TODO. Check if we need it.
+//         node.set({
+//             key: 'timestep',
+//             time: node.timer.getTimeSince('step'),
+//             timeup: node.game.timer.gameTimer.timeLeft <= 0
+//         });
+//         return true;
+//     }
 
     // Add all the stages into the stager.
 
@@ -569,7 +562,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     stager.extendStep('instructions', {
         cb: instructions,
         timer: 180000,
-        done: clearFrame
+        // done: clearFrame
     });
 
     stager.extendStep('quiz', {
@@ -585,25 +578,26 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         // - or a function returning the number of milliseconds.
         timer: 120000,
         done: function() {
-            console.log('EXECUTING DONE HANDLER!!');
+ //           console.log('EXECUTING DONE HANDLER!!');
             node.game.quizResults.key = 'QUIZ';
-            node.set(node.game.quizResults);
-            node.emit('INPUT_DISABLE');
-            
-            // TODO: check if we need it.
-            // We save also the time to complete the step.
-            node.set({
-                key: 'timestep',
-                time: node.timer.getTimeSince('step'),
-                timeup: node.game.timer.gameTimer.timeLeft <= 0
-            });
-            return true;
+ //           node.set(node.game.quizResults);
+ //           node.emit('INPUT_DISABLE');
+ //           
+ //            // TODO: check if we need it.
+ //            // We save also the time to complete the step.
+ //            node.set({
+ //                key: 'timestep',
+ //                time: node.timer.getTimeSince('step'),
+ //                timeup: node.game.timer.gameTimer.timeLeft <= 0
+ //            });
+ //            return true;
+            return node.game.quizResults;
         }
     });
 
     stager.extendStep('bid', {
         cb: bid,
-        done: clearFrame,
+        // done: clearFrame,
         timer: {
             milliseconds: function() {
                 if (node.game.getCurrentGameStage().round < 3) return 30000;
@@ -622,22 +616,24 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             if (round < 3) return 50000;
             return 30000;
         },
-        done: clearFrame
+        // done: clearFrame
     });
 
 
 
     stager.extendStep('end', {
+        frame: 'html/ended.html',
         cb: endgame,
         // `done` is a callback function that is executed as soon as a
         // _DONE_ event is emitted. It can perform clean-up operations (such
         // as disabling all the forms) and only if it returns true, the
         // client will enter the _DONE_ stage level, and the step rule
         // will be evaluated.
-        done: clearFrame
+        // done: clearFrame
     });
 
     stager.extendStep('questionnaire', {
+        frame: 'html/postgame.html',
         cb: postgame,
         timer: 120000,
         done: function() {

@@ -1,6 +1,6 @@
 /**
  * # Logic code for Meritocracy Game
- * Copyright(c) 2015 Stefano Balietti
+ * Copyright(c) 2017 Stefano Balietti
  * MIT Licensed
  *
  * http://www.nodegame.org
@@ -8,7 +8,7 @@
  */
 
 var path = require('path');
-var fs   = require('fs');
+var fs   = require('fs-extra');
 
 var Database = require('nodegame-db').Database;
 
@@ -50,9 +50,9 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         DUMP_DIR_JSON = DUMP_DIR + 'json/';
         DUMP_DIR_CSV = DUMP_DIR + 'csv/';
 
-        // Recursively create directories, sub-trees and all.
-        J.mkdirSyncRecursive(DUMP_DIR_JSON, '0777');
-        J.mkdirSyncRecursive(DUMP_DIR_CSV, '0777');
+        // Recursively create directories..       
+        fs.mkdirsSync(DUMP_DIR_JSON);
+        fs.mkdirsSync(DUMP_DIR_CSV);
     }
     else {
         
@@ -396,19 +396,20 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     // Game Types Objects definition
 
     // Functions
-    function precache() {
-        console.log('Pre-Cache');
-    }
-    function instructions() {
-        // debugger
-        console.log('Instructions');
-    }
-    function quiz() {
-        console.log('Quiz');
-    }
-    function questionnaire() {
-        console.log('questionnaire');
-    }
+//     function precache() {
+//         console.log('Pre-Cache');
+//     }
+//     function instructions() {
+//         // debugger
+//         console.log('Instructions');
+//     }
+//     function quiz() {
+//         console.log('Quiz');
+//     }
+//     function questionnaire() {
+//         console.log('questionnaire');
+//     }
+
     function meritocracy() {
         console.log('Merit Matching.');
         doMatch();
@@ -474,14 +475,18 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 //         cb: precache
 //     });
  
-    stager.extendStep('instructions', {
-        cb: instructions
-    });
+//     stager.extendStep('instructions', {
+//         cb: instructions
+//     });
  
-    stager.extendStep('quiz', {
-        cb: quiz
-    });
+//     stager.extendStep('quiz', {
+//         cb: quiz
+//     });
  
+//     stager.extendStep('questionnaire', {
+//         cb: questionnaire
+//     });
+
     stager.extendStep('bid', {
         cb: function() {
             console.log('bid');
@@ -498,9 +503,6 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         }
     });
  
-    stager.extendStep('questionnaire', {
-        cb: questionnaire
-    });
  
     stager.extendStep('end', {
         cb: endgame

@@ -90,18 +90,6 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             mdb.store(saveObject);
         });
 
-        node.on.data('timestep', function(msg) {
-            var saveObject = {
-                session: node.nodename,
-                condition: treatmentName,
-                stage: msg.stage,
-                player: msg.from,
-                timeElapsed: msg.data.time,
-                timeup: msg.data.timeup
-            };
-            mdb.store(saveObject);
-        });
-
         node.game.savePlayerValues = function(p, payoff, positionInNoisyRank,
                                               ranking, noisyRanking,
                                               groupStats,
@@ -154,20 +142,12 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     // Players required to be connected at the same (NOT USED).
     nbRequiredPlayers = gameRoom.runtimeConf.MIN_PLAYERS;
 
-    // Client game to send to reconnecting players.
-    // client = channel.require(__dirname + '/game.client', { ngc: ngc });
-    client = gameRoom.getClientType('player');
-
-    // Not so nice. We need to delete the cache, because treatments is
-    // using an old node object otherwise.
-    // TODO: find a better way.
-    // See http://stackoverflow.com/questions/9210542/node-js-require-cache-possible-to-invalidate
-    delete require.cache[require.resolve(__dirname + '/includes/treatments.js')];
+    // Require treatments file.
     treatments = channel.require(__dirname + '/includes/treatments.js', {
         node: node,
         settings: settings,
         dk: dk
-    });
+    }, true);
 
     // Event handler registered in the init function are always valid.
     stager.setOnInit(function() {
@@ -220,261 +200,173 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             o.session = node.nodename;
         });
 
-        // Register player disconnection, and wait for him...
-        node.on.pdisconnect(function(p) {
-            console.log('Warning: one player disconnected! ', p.id);
-            
-            channel.registry.updateClient(p.id, {
-                disconnected: true,
-                stage: p.stage
-            });
-               
-            // We don't care in the questionnaire
-            if (node.game.getCurrentGameStage().stage < 5) {
+//         // Register player disconnection, and wait for him...
+//         node.on.pdisconnect(function(p) {
+//             console.log('Warning: one player disconnected! ', p.id);
+//             
+//             channel.registry.updateClient(p.id, {
+//                 disconnected: true,
+//                 stage: p.stage
+//             });
+//                
+//             // We don't care in the questionnaire
+//             if (node.game.getCurrentGameStage().stage < 5) {
+// 
+//                 // If we do not have other disconnected players, 
+//                 // start the procedure.
+//                 if (!J.size(node.game.disconnected)) {
+//                     node.say('notEnoughPlayers', 'ALL');        
+//                     
+//                     this.countdown = setTimeout(function() {
+//                         var i;
+//                         console.log('Countdown fired. Player/s did not reconnect.');
+//                         for (i in node.game.disconnected) {
+//                             if (node.game.disconnected.hasOwnProperty(i)) {
+//                                 channel.registry.updateClient(i, {
+//                                     kickedOut: true
+//                                 });
+//                             }
+//                         }
+//                         // Clear list of temporarily disconnected players.
+//                         node.game.disconnected = {};
+// 
+//                         node.remoteCommand('resume', 'ALL');
+//                     }, 30000);
+//                 }
+//             }
+// 
+//             // delete node.game.memory.stage[node.game.getCurrentGameStage()];
+//             node.game.disconnected[p.id] = '';
+//         });
+// 
+// 
+//         // Reconnections must be handled by the game developer.
+//         node.on.preconnect(function(p) {
+//             var code, curStage, state, i, len;
+// 
+//             console.log('Oh...somebody reconnected!', p);
+//             code = channel.registry.getClient(p.id);
+// 
+//             if (!code) {
+//                 console.log('game.logic: reconnecting player not found in ' +
+//                             'code db: ' + p.id);
+//                 return;
+//             }
+//             if (!code.disconnected) {
+//                 console.log('game.logic: reconnecting player that was not ' +
+//                             'marked disconnected: ' + p.id);
+//                 return;
+//             }
+// 
+//             if (code.kickedOut) {
+//                 node.redirect('html/disconnected.htm', code);
+//                 console.log('game.logic: kicked out player tried to ' + 
+//                             'reconnect: ' + p.id);
+//                 return;
+//             }
+// 
+//             curStage = node.game.getCurrentGameStage();
+// 
+//             delete node.game.disconnected[p.id];
+// 
+//             // If all disconnected players reconnected...
+//             if (!J.size(node.game.disconnected)) {
+//                 // Delete countdown game.
+//                 clearTimeout(this.countdown);
+//             }
+// 
+//             // Mark code as connected.
+//             code.disconnected = false;
+// 
+//             
+//             // Clear any message in the buffer from.
+//             // node.remoteCommand('erase_buffer', 'ALL');
+// 
+//             // Notify other player he is back.
+//             // TODO: add it automatically if we return TRUE? It must be done
+//             // both in the alias and the real event handler
+//             node.game.pl.each(function(player) {                
+//                 node.socket.send(node.msg.create({
+//                     target: 'PCONNECT',
+//                     data: p,
+//                     to: player.id
+//                 }));
+//             });
+//             
+//             // Send currently connected players to reconnecting.
+//             node.socket.send(node.msg.create({
+//                 target: 'PLIST',
+//                 data: node.game.pl.db,
+//                 to: p.id
+//             }));
+// 
+//             // We could slice the game plot, and send just what we need
+//             // however here we resend all the stages, and move their game plot.
+//             console.log('** Player reconnected: ' + p.id + ' **');
+//             // Setting metadata, settings, and plot.
+//             node.remoteSetup('game_metadata',  p.id, client.metadata);
+//             node.remoteSetup('game_settings', p.id, client.settings);
+//             node.remoteSetup('plot', p.id, client.plot);
+//             node.remoteSetup('env', p.id, client.env);
+//             node.remoteSetup('env', p.id, {
+//                 treatment: treatmentName
+//             });
+// 
+// 
+//             // It is not added automatically.
+//             // TODO: add it automatically if we return TRUE? It must be done
+//             // both in the alias and the real event handler
+//             node.game.pl.add(p);
+// 
+//             // Do something.
+//             // Resend state to connected player.
+//             // node.remoteCommand('goto_step', p.id, curStage);
+//             
+//             // Start the game on the reconnecting client.
+//             node.remoteCommand('start', p.id, {
+//                 startStage: node.game.plot.previous(curStage)
+//             });
+// 
+//             state = node.socket.journal.stage[curStage];
+//             
+//             if (state && state.size()) {
+//                 state = state.selexec('to', '=', p.id).fetch();
+// 
+//                 if (state) {
+//                     i = -1, len = state.length;
+//                     for ( ; ++i < len ; ) {
+//                         node.socket.send(state[i]);
+//                     }
+//                 }
+//             }
+// 
+//             // If all disconnected players reconnected...
+//             if (!J.size(node.game.disconnected)) {
+// 
+//                 // Will send all the players to current stage
+//                 // (also those who were there already).
+//                 // node.game.gotoStep(node.player.stage);
+//             
+// 
+//                 // Unpause ALL players
+//                 // TODO: add it automatically if we return TRUE? It must be done
+//                 // both in the alias and the real event handler
+//                 node.game.pl.each(function(player) {
+//                     if (player.id !== p.id) {
+//                         node.remoteCommand('resume', player.id);
+//                     }
+//                 });                
+//             }
+//             else {
+//                 node.say('notEnoughPlayers', p.id);
+//             }
+//             console.log('init');
+//         });
 
-                // If we do not have other disconnected players, 
-                // start the procedure.
-                if (!J.size(node.game.disconnected)) {
-                    node.say('notEnoughPlayers', 'ALL');        
-                    
-                    this.countdown = setTimeout(function() {
-                        var i;
-                        console.log('Countdown fired. Player/s did not reconnect.');
-                        for (i in node.game.disconnected) {
-                            if (node.game.disconnected.hasOwnProperty(i)) {
-                                channel.registry.updateClient(i, {
-                                    kickedOut: true
-                                });
-                            }
-                        }
-                        // Clear list of temporarily disconnected players.
-                        node.game.disconnected = {};
-
-                        node.remoteCommand('resume', 'ALL');
-                    }, 30000);
-                }
-            }
-
-            // delete node.game.memory.stage[node.game.getCurrentGameStage()];
-            node.game.disconnected[p.id] = '';
-        });
-
-
-        // Reconnections must be handled by the game developer.
-        node.on.preconnect(function(p) {
-            var code, curStage, state, i, len;
-
-            console.log('Oh...somebody reconnected!', p);
-            code = channel.registry.getClient(p.id);
-
-            if (!code) {
-                console.log('game.logic: reconnecting player not found in ' +
-                            'code db: ' + p.id);
-                return;
-            }
-            if (!code.disconnected) {
-                console.log('game.logic: reconnecting player that was not ' +
-                            'marked disconnected: ' + p.id);
-                return;
-            }
-
-            if (code.kickedOut) {
-                node.redirect('html/disconnected.htm', code);
-                console.log('game.logic: kicked out player tried to ' + 
-                            'reconnect: ' + p.id);
-                return;
-            }
-
-            curStage = node.game.getCurrentGameStage();
-
-            delete node.game.disconnected[p.id];
-
-            // If all disconnected players reconnected...
-            if (!J.size(node.game.disconnected)) {
-                // Delete countdown game.
-                clearTimeout(this.countdown);
-            }
-
-            // Mark code as connected.
-            code.disconnected = false;
-
-            
-            // Clear any message in the buffer from.
-            // node.remoteCommand('erase_buffer', 'ALL');
-
-            // Notify other player he is back.
-            // TODO: add it automatically if we return TRUE? It must be done
-            // both in the alias and the real event handler
-            node.game.pl.each(function(player) {                
-                node.socket.send(node.msg.create({
-                    target: 'PCONNECT',
-                    data: p,
-                    to: player.id
-                }));
-            });
-            
-            // Send currently connected players to reconnecting.
-            node.socket.send(node.msg.create({
-                target: 'PLIST',
-                data: node.game.pl.db,
-                to: p.id
-            }));
-
-            // We could slice the game plot, and send just what we need
-            // however here we resend all the stages, and move their game plot.
-            console.log('** Player reconnected: ' + p.id + ' **');
-            // Setting metadata, settings, and plot.
-            node.remoteSetup('game_metadata',  p.id, client.metadata);
-            node.remoteSetup('game_settings', p.id, client.settings);
-            node.remoteSetup('plot', p.id, client.plot);
-            node.remoteSetup('env', p.id, client.env);
-            node.remoteSetup('env', p.id, {
-                treatment: treatmentName
-            });
-
-
-            // It is not added automatically.
-            // TODO: add it automatically if we return TRUE? It must be done
-            // both in the alias and the real event handler
-            node.game.pl.add(p);
-
-            // Do something.
-            // Resend state to connected player.
-            // node.remoteCommand('goto_step', p.id, curStage);
-            
-            // Start the game on the reconnecting client.
-            node.remoteCommand('start', p.id, {
-                startStage: node.game.plot.previous(curStage)
-            });
-
-            state = node.socket.journal.stage[curStage];
-            
-            if (state && state.size()) {
-                state = state.selexec('to', '=', p.id).fetch();
-
-                if (state) {
-                    i = -1, len = state.length;
-                    for ( ; ++i < len ; ) {
-                        node.socket.send(state[i]);
-                    }
-                }
-            }
-
-            // If all disconnected players reconnected...
-            if (!J.size(node.game.disconnected)) {
-
-                // Will send all the players to current stage
-                // (also those who were there already).
-                // node.game.gotoStep(node.player.stage);
-            
-
-                // Unpause ALL players
-                // TODO: add it automatically if we return TRUE? It must be done
-                // both in the alias and the real event handler
-                node.game.pl.each(function(player) {
-                    if (player.id !== p.id) {
-                        node.remoteCommand('resume', player.id);
-                    }
-                });                
-            }
-            else {
-                node.say('notEnoughPlayers', p.id);
-            }
-            console.log('init');
-        });
     });
 
-//     // Event handler registered in the init function are always valid.
-//     stager.setOnGameOver(function() {
-//         console.log('************** GAMEOVER ' + gameRoom.name);
-//         // TODO: update database.
-//         channel.destroyGameRoom(gameRoom.name);
-//     });
+    // Extends Stages and Steps where needed.
 
-    // Game Types Objects definition
-
-    // Functions
-//     function precache() {
-//         console.log('Pre-Cache');
-//     }
-//     function instructions() {
-//         // debugger
-//         console.log('Instructions');
-//     }
-//     function quiz() {
-//         console.log('Quiz');
-//     }
-//     function questionnaire() {
-//         console.log('questionnaire');
-//     }
-
-    function meritocracy() {
-        console.log('Merit Matching.');
-        doMatch();
-    }
-
-    function endgame() {
-        var code, exitcode, accesscode;
-        var bonusFile, bonus, csvString;
-
-        console.log('endgame');
-        
-        bonusFile = DUMP_DIR + 'bonus.csv';
-
-        console.log('FINAL PAYOFF PER PLAYER');
-        console.log('***********************');
-
-        bonus = node.game.pl.map(function(p) {
-            code = channel.registry.getClient(p.id);
-            if (!code) {
-                console.log('ERROR: no code in endgame:', p.id);
-                return ['NA', 'NA'];
-            }
-
-            accesscode = code.AccessCode;
-            exitcode = code.ExitCode;
-
-            code.win =  Number((code.win || 0) / EXCHANGE_RATE).toFixed(2);
-            code.win = parseFloat(code.win, 10);
-
-            // TODO. Improve this.
-            if (settings.auth === 'MTURK') {
-                dk.checkOut(accesscode, exitcode, code.win);
-            }
-            
-            channel.registry.checkOut(p.id);
-               
-            node.say('WIN', p.id, {
-                win: code.win,
-                exitcode: code.ExitCode
-            });
-
-            console.log(p.id, ': ',  code.win, code.ExitCode);
-            return [p.id, code.ExitCode, code.win, node.game.gameTerminated];
-        });
-
-        console.log('***********************');
-        console.log('Game ended');
-
-
-        bonus = [["access", "exit", "bonus", "terminated"]].concat(bonus);
-        csvString = bonus.join("\r\n");
-        fs.writeFile(bonusFile, csvString, function(err) {
-            if (err) {
-                console.log('ERROR: could not save the bonus file: ', 
-                            DUMP_DIR + 'bonus.csv');
-                console.log(err);
-            }
-        });
-    }
-
-    stager.extendStep('bid', {
-        cb: function() {
-            console.log('bid');
-            return true;
-        },
-    });
- 
     stager.extendStep('results', {
         cb: function() {
             // Computes the values for all players and all groups,
@@ -483,9 +375,64 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             return true;
         }
     });
- 
+    
     stager.extendStep('end', {
-        cb: endgame
+        cb: function() {
+            var code, exitcode, accesscode;
+            var bonusFile, bonus, csvString;
+
+            console.log('endgame');
+            
+            bonusFile = DUMP_DIR + 'bonus.csv';
+
+            console.log('FINAL PAYOFF PER PLAYER');
+            console.log('***********************');
+
+            bonus = node.game.pl.map(function(p) {
+                code = channel.registry.getClient(p.id);
+                if (!code) {
+                    console.log('ERROR: no code in endgame:', p.id);
+                    return ['NA', 'NA'];
+                }
+
+                accesscode = code.AccessCode;
+                exitcode = code.ExitCode;
+
+                code.win =  Number((code.win || 0) / EXCHANGE_RATE).toFixed(2);
+                code.win = parseFloat(code.win, 10);
+
+                // TODO. Improve this.
+                if (settings.auth === 'MTURK') {
+                    dk.checkOut(accesscode, exitcode, code.win);
+                }
+                
+                channel.registry.checkOut(p.id);
+                
+                node.say('WIN', p.id, {
+                    win: code.win,
+                    exitcode: code.ExitCode
+                });
+
+                console.log(p.id, ': ',  code.win, code.ExitCode);
+                return [
+                    p.id, code.ExitCode, code.win, node.game.gameTerminated
+                ];
+            });
+
+            console.log('***********************');
+            console.log('Game ended');
+
+
+            bonus = [["access", "exit", "bonus", "terminated"]].concat(bonus);
+            csvString = bonus.join("\r\n");
+            fs.writeFile(bonusFile, csvString, function(err) {
+                if (err) {
+                    console.log('ERROR: could not save the bonus file: ', 
+                                DUMP_DIR + 'bonus.csv');
+                    console.log(err);
+                }
+            });
+        }
     });
 
     return {

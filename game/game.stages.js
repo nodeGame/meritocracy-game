@@ -29,6 +29,7 @@ module.exports = function(stager, settings) {
 
     stager.skip('instructions');
     stager.skip('quiz');
+    stager.skip('game');
 
     return stager.getState();
 };

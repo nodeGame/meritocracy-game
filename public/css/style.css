@@ -1,0 +1,25 @@
+div#root {
+    margin: 0 auto;
+    width: 800px;
+    border: 0;
+    background: #fff;
+}
+
+table#alreadyParticipated td {
+    text-align: left;
+    font-weight: normal;
+}
+
+table#strategy td {
+    width: 600px;
+    text-align: left;
+    font-weight: normal;
+}
+
+table#strategy td {
+    width: 600px;
+}
+
+.choicemanager-freetext {
+    width: 600px
+}

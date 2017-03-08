@@ -10,7 +10,7 @@
 module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
     var game = {};
-    
+
     // Variable here are available to all stages.
     stager.setDefaultGlobals({
         // Total number of players in group.
@@ -46,7 +46,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         this.isValidDemand = this.isValidContribution = function(n) {
             return false !== JSUS.isInt(n, -1, (COINS + 1));
         };
- 
+
         // BID_DONE.
         node.on('BID_DONE', function(bid, isTimeOut) {
 
@@ -204,13 +204,13 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                     // It is me?
                     if (barsValues[1][0] === i && barsValues[1][1] === j) {
                         color = [undefined, '#9932CC'];
-                        text = ' YOU <img src="imgs/arrow.jpg" style="height:15px;"/>';                       
+                        text = ' YOU <img src="imgs/arrow.jpg" style="height:15px;"/>';
                     }
                     else {
                         color = ['#DEB887', '#A52A2A'];
                         text = '';
                     }
-                    
+
                     // This is the DIV actually containing the bar
                     subdiv = document.createElement('div');
                     div.appendChild(subdiv);
@@ -291,7 +291,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     function instructions() {
         W.loadFrame(node.game.settings.instrPage, function() {
             var b, n, s;
-            
+
             s = node.game.settings;
             n = node.game.globals.totPlayers;
 
@@ -312,13 +312,6 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         console.log('Instructions');
     }
 
-//     function quiz() {        
-//         node.env('auto', function() {
-//             node.timer.randomEmit('DONE', 8000);
-//         });        
-//         console.log('Quiz');
-//     }
-
     function showResults(bars) {
         W.loadFrame(node.game.settings.resultsPage, function() {
             node.on.data('results', function(msg) {
@@ -330,8 +323,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                 treatment = node.env('roomType');
 
                 if (treatment === 'endo') {
-                    W.getElementById('yourOldDemand').innerHTML =
-                        node.game.oldDemand;
+                    W.setInnerHTML('yourOldDemand', node.game.oldDemand);
                 }
 
                 this.updateResults(barsValues);
@@ -402,15 +394,6 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                 }, 4000);
             });
 
-            // TIMEUP.
-            node.on('TIMEUP', function() {
-                var validation, validInputs;
-                console.log('TIMEUP !');
-                validation = node.game.checkInputs();
-                validInputs = node.game.correctInputs(validation);
-                node.emit('BID_DONE', validInputs, true);
-            });
-
             b.onclick = function() {
                 var validation, validInputs;
                 validation = node.game.checkInputs();
@@ -424,30 +407,6 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         console.log('Meritocracy: bid page.');
     }
 
-    function postgame() {
-        node.env('auto', function() {
-            node.timer.randomExec(function() {
-                node.game.timer.doTimeUp();
-            });
-        });
-        console.log('Postgame');
-    }
-
-    function endgame() {
-        node.game.timer.setToZero();
-        node.on.data('WIN', function(msg) {
-            var win, exitcode, codeErr;
-            codeErr = 'ERROR (code not found)';
-            win = msg.data && msg.data.win || 0;
-            exitcode = msg.data && msg.data.exitcode || codeErr;
-            W.writeln('Your bonus in this game is: ' + win);
-            W.writeln('Your exitcode is: ' + exitcode);
-        });
-        
-        console.log('Game ended');
-    }
-
-
     // Add all the stages into the stager.
 
     stager.extendStep('instructions', {
@@ -456,7 +415,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
     stager.extendStep('quiz', {
         frame: 'quiz.html',
-        init: function() {            
+        init: function() {
             this.quizStuff = {
                 // Coins.
                 coins: 'How many coins do you get each of the 20 rounds ?',
@@ -495,8 +454,8 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             // Widgets are re-usable components with predefined methods,
             // such as: hide, highlight, disable, getValues, etc.
             // Here we use the `ChoiceManager` widget to create a quiz page.
-            w = node.widgets;            
-            this.quiz = w.append('ChoiceManager', W.getElementById('quiz'), {
+            w = node.widgets;
+            this.quiz = w.append('ChoiceManager', W.getElementById('root'), {
                 id: 'quizzes',
                 title: false,
                 forms: [
@@ -548,117 +507,71 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     });
 
     stager.extendStep('bid', {
-        cb: bid
+        cb: bid,
+        timeup: function() {
+            var validation, validInputs;
+            console.log('TIMEUP !');
+            validation = this.checkInputs();
+            validInputs = this.correctInputs(validation);
+            node.emit('BID_DONE', validInputs, true);
+        }
     });
 
     stager.extendStep('results', {
         cb: showResults,
     });
 
+    stager.extendStep('questionnaire', {
+        frame: 'postgame.html',
+        widget: {
+            name: 'ChoiceManager',
+            root: 'root',
+            options: {
+                id: 'questionnaire',
+                title: false,
+                forms:  [
+                    {
+                        name: 'ChoiceTable',
+                        id: 'alreadyParticipated',
+                        choices: [ 'Yes', 'No' ],
+                        requiredChoice: true,
+                        title: false,
+                        mainText: 'Have you participated in other ' +
+                            'social experiments before ?'
+                    },
+                    {
+                        name: 'ChoiceTable',
+                        id: 'strategy',
+                        choices: [
+                            [ 'random', 'Randomly chose numbers' ],
+                            [ 'egoist', 'Maximized my own personal payoff' ],
+                            [ 'team', 'Maximized group payoff' ],
+                            [ 'other', 'Other (please described below)' ]
+                        ],
+                        title: false,
+                        orientation: 'v',
+                        requiredChoice: true,
+                        mainText: 'Describe the strategy you played:'
+                    }
+                ],
+                freeText: 'Leave here any feedback for the experimenter'
+            }
+        }
+    });
+
 
     stager.extendStep('end', {
         frame: 'ended.html',
-        cb: endgame,
-    });
-
-    stager.extendStep('questionnaire', {
-        frame: 'postgame.html',
-        cb: postgame,
-        timer: 120000,
-        done: function() {
-            var i, socExpValue, stratChoiceValue;
-            var T, gameName, stratComment, socExp, stratChoice, comments;
-            var stratCommentErr, errDiv, errors, isTimeUp;
-            T = W.getFrameDocument(),
-            gameName = T.getElementById('game-name').value,
-            stratComment = T.getElementById('strategy-comment').value,
-            socExp = T.getElementsByName('played-other-experiment'),
-            stratChoice = T.getElementsByName('followed-strategy-choice'),
-            comments = T.getElementById('comment').value;
-
-            errors = [],
-            stratCommentErr = false,
-            errDiv = null;
-
-            // Getting values of form.
-            for (i = 0; i < socExp.length; i++) {
-                if (socExp[i].checked) {
-                    socExpValue = socExp[i].value;
-                    break;
-                }
-            }
-
-            for (i = 0; i < stratChoice.length; i++) {
-                if (stratChoice[i].checked) {
-                    stratChoiceValue = stratChoice[i].value;
-                    break;
-                }
-            }
-
-            // Checking if values are correct.
-
-            if (gameName === '') {
-                errors.push('1.');
-            }
-
-            if ('undefined' === typeof socExpValue) {
-                errors.push('2.');
-            }
-
-            if ('undefined' === typeof stratChoiceValue) {
-                errors.push('3.');
-            }
-
-            if (stratChoiceValue === 'other') {
-                if (stratComment.length < 5) {
-                    errors.push('3.');
-                    stratCommentErr = true;
-                }
-            }
-
-            isTimeUp = node.game.timer.gameTimer.timeLeft <= 0;
-
-            if (errors.length && !isTimeUp) {
-                errDiv = W.getElementById('divErrors');
-                errors = '<p>Please answer question' +
-                    (errors.length === 1 ? ' ' + errors[0] :
-                     's ' + errors.join(' ')) + '</p>';
-
-                if (stratCommentErr) {
-                    errors += '<p>Answer 3. is too short.</p>';
-                }
-
-                errDiv.innerHTML = errors;
-                return false;
-            }
-
-            console.log({
-                gameName: gameName,
-                socExp: socExpValue,
-                stratChoice: stratChoiceValue,
-                comments: comments,
-                stratComment: stratComment
-            });
-
-            // Sending values to server.
-            node.set({
-                key: 'questionnaire',
-                gameName: gameName,
-                socExp: socExpValue,
-                stratChoice: stratChoiceValue,
-                comments: comments,
-                stratComment: stratComment
-            });
-
-            node.emit('INPUT_DISABLE');
-            
-            // TODO. Check if we need it.
-            node.set({
-                key: 'timestep',
-                time: node.timer.getTimeSince('step'),
-                timeup: isTimeUp
-            });
-            return true;
+        cb: function() {
+            node.on.data('WIN', function(msg) {
+                var win, exitcode, codeErr;
+                codeErr = 'ERROR (code not found)';
+                win = msg.data && msg.data.win || 0;
+                exitcode = msg.data && msg.data.exitcode || codeErr;
+                W.writeln('Your bonus in this game is: ' + win);
+                W.writeln('Your exitcode is: ' + exitcode);
+            });           
+            console.log('Game ended');
         }
     });
 

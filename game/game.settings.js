@@ -65,7 +65,8 @@ module.exports = {
             if (round < 2) return 60000;
             if (round < 3) return 50000;
             return 30000;
-        }
+        },
+        questionnaire: 45000
     },
 
     // DEBUG.

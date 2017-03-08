@@ -11,72 +11,22 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
     var game = {};
     
+    // Variable here are available to all stages.
     stager.setDefaultGlobals({
         // Total number of players in group.
         totPlayers: gameRoom.game.waitroom.GROUP_SIZE,
-
-        // Set variables containing paths to the instructions
-        // pages, depending on the treatment condition.
-        setUris: function() {
-            var t;
-            
-            t = node.game.settings.treatmentName;
-
-            node.game.instructionsPage = 'html/';
-            node.game.bidderPage = 'html/';
-            node.game.resultsPage = 'html/';
-            node.game.quizPage = 'html/';
-
-            if (t === 'endo') {
-                node.game.bidderPage += 'bidder_endo.html';
-                node.game.resultsPage += 'results_endo.html';
-                node.game.instructionsPage += 'instructions_endo.html';
-                node.game.quizPage += 'quiz_endo.html';
-            }
-            else if (t === 'blackbox') {
-                node.game.bidderPage += 'bidder_blackbox.html';
-                node.game.resultsPage += 'results_blackbox.html';
-                node.game.instructionsPage += 'instructions_blackbox.html';
-                node.game.quizPage += 'quiz_blackbox.html';
-            }
-            else {
-                node.game.bidderPage += 'bidder.html';
-                node.game.resultsPage += 'results.html';
-
-                if (t === 'singapore') {
-                    node.game.instructionsPage += 'instructions_singapore.html';
-                    node.game.quizPage += 'quiz_random.html';
-                }
-                else if (t === 'random') {
-                    node.game.instructionsPage += 'instructions_random.html';
-                    node.game.quizPage += 'quiz_random.html';
-                }
-                else if (t === 'exo_perfect') {
-                    node.game.instructionsPage +=
-                    'instructions_exo_perfect.html';
-                    node.game.quizPage +=
-                    'quiz_exo_perfect.html';
-                }
-                else {
-                    node.game.instructionsPage +=
-                    'instructions_exo_lowhigh.html';
-                    node.game.quizPage += 'quiz_exo_lowhigh.html';
-                }
-            }
-        }
     });
 
     stager.setOnInit(function() {
         var header, frame;
+        var COINS;
 
         console.log('INIT PLAYER!');
 
+        COINS = node.game.settings.INITIAL_COINS;
         node.game.oldContrib = null;
         node.game.oldDemand = null;
         node.game.oldPayoff = null;
-
-        // Set uris to load.
-        node.game.globals.setUris();
 
         // Setup page: header + frame.
         header = W.generateHeader();
@@ -86,9 +36,17 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         this.visualRound = node.widgets.append('VisualRound', header);
         this.visualTimer = node.widgets.append('VisualTimer', header);
 
-        // Compatibility.
-        // this.timer = this.visualTimer;
+        // Check if treatment is Endo.
+        this.isEndo = function() {
+            return node.game.settings.treatmentName === "endo";
+        };
 
+        // Valid Bid and Demand.
+        this.isValidDemand = this.isValidContribution = function(n) {
+            return false !== JSUS.isInt(n, -1, (COINS + 1));
+        };
+ 
+        // BID_DONE.
         node.on('BID_DONE', function(bid, isTimeOut) {
             // node.game.timer.stop();
             W.getElementById('submitOffer').disabled = 'disabled';
@@ -96,20 +54,16 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             node.game.oldContrib = bid.contrib;
             node.game.oldDemand = bid.demand;
 
-            console.log(' Your contribution: ' + bid.contrib + '.');
-            console.log(' Your demand: ' + bid.demand + '.');
+            // console.log(' Your contribution: ' + bid.contrib + '.');
+            // console.log(' Your demand: ' + bid.demand + '.');
             
             node.done({
                 key: 'bid',
                 demand: bid.demand,
-                contribution: bid.contrib,
-                isTimeOut: isTimeOut
+                contribution: bid.contrib
             });
         });
 
-        this.isEndo = function() {
-            return node.game.settings.treatmentName === "endo";
-        };
 
         // Takes in input the results of _checkInputs_ and correct eventual
         // mistakes. If in the first round a random value is chosen, otherwise
@@ -181,7 +135,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             if (!node.game.isValidContribution(contrib)) {
                 errorC = document.createElement('p');
                 errorC.innerHTML = 'Invalid contribution. ' +
-                    'Please enter a number between 0 and 20.';
+                    'Please enter a number between 0 and ' + COINS;
                 divErrors.appendChild(errorC);
             }
 
@@ -193,7 +147,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                 if (!node.game.isValidDemand(demand)) {
                     errorD = document.createElement('p');
                     errorD.innerHTML = 'Invalid demand. ' +
-                        'Please enter a number between 0 and 20.';
+                        'Please enter a number between 0 and ' + COINS;
                     divErrors.appendChild(errorD);
                 }
             }
@@ -284,21 +238,9 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             node.game.oldPayoff = +barsValues[2]; // final payoff
 
             // How many coins player put in personal account.
-            save = node.game.settings.INITIAL_COINS - node.game.oldContrib;
+            save = COINS - node.game.oldContrib;
             payoffSpan.innerHTML = save + ' + ' + (barsValues[2] - save) +
                 ' = ' + node.game.oldPayoff;
-        };
-
-        this.isValidContribution = function(n) {
-            return false !== JSUS.isInt(n, -1, 21);
-            // n = parseInt(n, 10);
-            // return !isNaN(n) && isFinite(n) && n >= 0 && n <= 20;
-        };
-
-        this.isValidDemand = function(n) {
-            return false !== JSUS.isInt(n, -1, 21);
-            // n = parseInt(n, 10);
-            // return !isNaN(n) && isFinite(n) && n >= 0 && n <= 20;
         };
 
         this.displaySummaryPrevRound = function(treatment) {
@@ -307,28 +249,22 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             // Shows previous round if round number is not 1.
             if (node.game.oldContrib) {
 
-                save = node.game.settings.INITIAL_COINS - node.game.oldContrib;
+                save = COINS - node.game.oldContrib;
                 groupReturn = node.game.oldPayoff - save;
 
                 W.getElementById('previous-round-info').style.display = 'block';
+
                 // Updates display for current round.
-                W.getElementById('yourPB').innerHTML = save;
-                W.getElementById('yourOldContrib').innerHTML = node.game.oldContrib;
-                W.getElementById('yourReturn').innerHTML = groupReturn;
-                W.getElementById('yourPayoff').innerHTML = node.game.oldPayoff;
+                W.setInnerHTML('yourPB', save);
+                W.setInnerHTML('yourOldContrib', node.game.oldContrib);
+                W.setInnerHTML('yourReturn', groupReturn);
+                W.setInnerHTML('yourPayoff', node.game.oldPayoff);
 
                 if (treatment === 'endo') {
-                    W.getElementById('yourOldDemand').innerHTML =
-                        node.game.oldDemand;
+                    W.setInnerHTML('yourOldDemand', node.game.oldDemand);
                 }
             }
         };
-
-//         // Remove the content of the previous frame before loading the next one.
-//         node.on('STEPPING', function() {
-//             W.clearFrame();
-//         });
-
 
         node.on.data('notEnoughPlayers', function(msg) {
             // Not yet 100% safe. Some players could forge the from field.
@@ -352,7 +288,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
     });
 
-    ///// STAGES and STEPS
+    // STAGES and STEPS.
 
     function precache() {
         W.lockScreen('Loading...');
@@ -365,8 +301,8 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             node.game.quizPage,
             // node.game.bidderPage,  // these two are cached by following
             // node.game.resultsPage,    // loadFrame calls (for demonstration)
-            '/meritocracy/html/postgame.html',
-            '/meritocracy/html/ended.html'
+            'postgame.html',
+            'ended.html'
         ], function() {
             // Pre-Caching done; proceed to the next stage.
             node.done();
@@ -374,7 +310,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     }
 
     function instructions() {
-        W.loadFrame(node.game.instructionsPage, function() {
+        W.loadFrame(node.game.settings.instrPage, function() {
             var b, n, s;
             
             s = node.game.settings;
@@ -398,7 +334,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     }
 
     function quiz() {
-        W.loadFrame(node.game.quizPage, function() {
+        W.loadFrame(node.game.settings.quizPage, function() {
             node.env('auto', function() {
                 node.timer.randomEmit('DONE', 8000);
             });
@@ -408,7 +344,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     }
 
     function showResults(bars) {
-        W.loadFrame(node.game.resultsPage, function() {
+        W.loadFrame(node.game.settings.resultsPage, function() {
             node.on.data('results', function(msg) {
                 var treatment, b;
                 var barsValues;
@@ -460,7 +396,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         // the frame was open.
         //
         /////////////////////////////////////////////
-        W.loadFrame(node.game.bidderPage, function() {
+        W.loadFrame(node.game.settings.bidderPage, function() {
             var b, treatment;
 
             treatment = node.env('roomType');
@@ -561,80 +497,33 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     //    });
 
     stager.extendStep('instructions', {
-        cb: instructions,
-        timer: 180000,
-        // done: clearFrame
+        cb: instructions
     });
 
     stager.extendStep('quiz', {
         cb: quiz,
-        // minPlayers: [nbRequiredPlayers, notEnoughPlayers],
-        // syncOnLoaded: true,
-        // `timer` starts automatically the timer managed by the widget VisualTimer
-        // if the widget is loaded. When the time is up it fires the DONE event.
-        // It accepts as parameter:
-        //  - a number (in milliseconds),
-        //  - an object containing properties _milliseconds_, and _timeup_
-        //     the latter being the name of the event to fire (default DONE)
-        // - or a function returning the number of milliseconds.
-        timer: 120000,
         done: function() {
- //           console.log('EXECUTING DONE HANDLER!!');
             node.game.quizResults.key = 'QUIZ';
- //           node.set(node.game.quizResults);
- //           node.emit('INPUT_DISABLE');
- //           
- //            // TODO: check if we need it.
- //            // We save also the time to complete the step.
- //            node.set({
- //                key: 'timestep',
- //                time: node.timer.getTimeSince('step'),
- //                timeup: node.game.timer.gameTimer.timeLeft <= 0
- //            });
- //            return true;
             return node.game.quizResults;
         }
     });
 
     stager.extendStep('bid', {
-        cb: bid,
-        // done: clearFrame,
-        timer: {
-            milliseconds: function() {
-                if (node.game.getCurrentGameStage().round < 3) return 30000;
-                return 15000;
-            },
-            timeup: 'TIMEUP'
-        }
+        cb: bid
     });
 
     stager.extendStep('results', {
         cb: showResults,
-        timer: function() {
-            var round;
-            round = node.game.getCurrentGameStage().round;
-            if (round < 2) return 60000;
-            if (round < 3) return 50000;
-            return 30000;
-        },
-        // done: clearFrame
     });
-
 
 
     stager.extendStep('end', {
-        frame: 'html/ended.html',
+        frame: 'ended.html',
         cb: endgame,
-        // `done` is a callback function that is executed as soon as a
-        // _DONE_ event is emitted. It can perform clean-up operations (such
-        // as disabling all the forms) and only if it returns true, the
-        // client will enter the _DONE_ stage level, and the step rule
-        // will be evaluated.
-        // done: clearFrame
     });
 
     stager.extendStep('questionnaire', {
-        frame: 'html/postgame.html',
+        frame: 'postgame.html',
         cb: postgame,
         timer: 120000,
         done: function() {
@@ -737,12 +626,6 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     game = setup;
     // We serialize the game sequence before sending it.
     game.plot = stager.getState();
-
-//     // TODO. Check this.
-//     game.env = {
-//         auto: settings.AUTO,
-//         INITIAL_COINS: settings.INITIAL_COINS
-//     };
 
     return game;
 

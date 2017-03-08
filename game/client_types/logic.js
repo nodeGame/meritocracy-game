@@ -42,8 +42,6 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     var client;
     var nbRequiredPlayers;
     
-    console.log('=====================');
-
     // Preparing storage: FILE or MONGODB.
     if (settings.DB === 'FILE') {
         DUMP_DIR = channel.getGameDir() + '/data/' + counter + '/';
@@ -386,12 +384,12 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         });
     });
 
-    // Event handler registered in the init function are always valid.
-    stager.setOnGameOver(function() {
-        console.log('************** GAMEOVER ' + gameRoom.name);
-        // TODO: update database.
-        channel.destroyGameRoom(gameRoom.name);
-    });
+//     // Event handler registered in the init function are always valid.
+//     stager.setOnGameOver(function() {
+//         console.log('************** GAMEOVER ' + gameRoom.name);
+//         // TODO: update database.
+//         channel.destroyGameRoom(gameRoom.name);
+//     });
 
     // Game Types Objects definition
 
@@ -470,23 +468,6 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         });
     }
 
-// Disable for now.
-//     stager.extendStep('precache', {
-//         cb: precache
-//     });
- 
-//     stager.extendStep('instructions', {
-//         cb: instructions
-//     });
- 
-//     stager.extendStep('quiz', {
-//         cb: quiz
-//     });
- 
-//     stager.extendStep('questionnaire', {
-//         cb: questionnaire
-//     });
-
     stager.extendStep('bid', {
         cb: function() {
             console.log('bid');
@@ -503,18 +484,8 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         }
     });
  
- 
     stager.extendStep('end', {
         cb: endgame
-    });
-
-    stager.extendStep('results', {
-        cb: function() {
-            // Computes the values for all players and all groups,
-            // sends them to the clients, and save results into database.
-            treatments[treatmentName].sendResults();
-            return true;
-        }
     });
 
     return {

@@ -71,8 +71,6 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
         console.log('INIT PLAYER!');
 
-        node.game.INITIAL_COINS = node.env('INITIAL_COINS');
-
         node.game.oldContrib = null;
         node.game.oldDemand = null;
         node.game.oldPayoff = null;
@@ -92,7 +90,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         // this.timer = this.visualTimer;
 
         node.on('BID_DONE', function(bid, isTimeOut) {
-            node.game.timer.stop();
+            // node.game.timer.stop();
             W.getElementById('submitOffer').disabled = 'disabled';
 
             node.game.oldContrib = bid.contrib;
@@ -286,19 +284,21 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             node.game.oldPayoff = +barsValues[2]; // final payoff
 
             // How many coins player put in personal account.
-            save = node.game.INITIAL_COINS - node.game.oldContrib;
+            save = node.game.settings.INITIAL_COINS - node.game.oldContrib;
             payoffSpan.innerHTML = save + ' + ' + (barsValues[2] - save) +
                 ' = ' + node.game.oldPayoff;
         };
 
         this.isValidContribution = function(n) {
-            n = parseInt(n, 10);
-            return !isNaN(n) && isFinite(n) && n >= 0 && n <= 20;
+            return false !== JSUS.isInt(n, -1, 21);
+            // n = parseInt(n, 10);
+            // return !isNaN(n) && isFinite(n) && n >= 0 && n <= 20;
         };
 
         this.isValidDemand = function(n) {
-            n = parseInt(n, 10);
-            return !isNaN(n) && isFinite(n) && n >= 0 && n <= 20;
+            return false !== JSUS.isInt(n, -1, 21);
+            // n = parseInt(n, 10);
+            // return !isNaN(n) && isFinite(n) && n >= 0 && n <= 20;
         };
 
         this.displaySummaryPrevRound = function(treatment) {
@@ -307,7 +307,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             // Shows previous round if round number is not 1.
             if (node.game.oldContrib) {
 
-                save = node.game.INITIAL_COINS - node.game.oldContrib;
+                save = node.game.settings.INITIAL_COINS - node.game.oldContrib;
                 groupReturn = node.game.oldPayoff - save;
 
                 W.getElementById('previous-round-info').style.display = 'block';

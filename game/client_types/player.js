@@ -35,6 +35,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         // Add widgets.
         this.visualRound = node.widgets.append('VisualRound', header);
         this.visualTimer = node.widgets.append('VisualTimer', header);
+        this.doneButton = node.widgets.append('DoneButton', header);
 
         // Check if treatment is Endo.
         this.isEndo = function() {
@@ -48,15 +49,12 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
  
         // BID_DONE.
         node.on('BID_DONE', function(bid, isTimeOut) {
-            // node.game.timer.stop();
+
             W.getElementById('submitOffer').disabled = 'disabled';
 
             node.game.oldContrib = bid.contrib;
             node.game.oldDemand = bid.demand;
 
-            // console.log(' Your contribution: ' + bid.contrib + '.');
-            // console.log(' Your demand: ' + bid.demand + '.');
-            
             node.done({
                 key: 'bid',
                 demand: bid.demand,
@@ -90,7 +88,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                         contrib = node.game.oldContrib;
                     }
                     errorC = document.createElement('p');
-                    errorC.innerHTML = 'Your contribution was set to ' + contrib;
+                    errorC.innerHTML = 'Your contribution was set to ' +contrib;
                     W.getElementById('divErrors').appendChild(errorC);
                     W.getElementById('contribution').value = contrib;
                 }
@@ -290,25 +288,6 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
     // STAGES and STEPS.
 
-    function precache() {
-        W.lockScreen('Loading...');
-        node.done();
-        // Disabled for the moment. It does not reload the QUIZ script.
-        return;
-
-        W.preCache([
-            node.game.instructionsPage,
-            node.game.quizPage,
-            // node.game.bidderPage,  // these two are cached by following
-            // node.game.resultsPage,    // loadFrame calls (for demonstration)
-            'postgame.html',
-            'ended.html'
-        ], function() {
-            // Pre-Caching done; proceed to the next stage.
-            node.done();
-        });
-    }
-
     function instructions() {
         W.loadFrame(node.game.settings.instrPage, function() {
             var b, n, s;
@@ -333,15 +312,12 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         console.log('Instructions');
     }
 
-    function quiz() {
-        W.loadFrame(node.game.settings.quizPage, function() {
-            node.env('auto', function() {
-                node.timer.randomEmit('DONE', 8000);
-            });
-        });
-
-        console.log('Quiz');
-    }
+//     function quiz() {        
+//         node.env('auto', function() {
+//             node.timer.randomEmit('DONE', 8000);
+//         });        
+//         console.log('Quiz');
+//     }
 
     function showResults(bars) {
         W.loadFrame(node.game.settings.resultsPage, function() {
@@ -471,40 +447,103 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         console.log('Game ended');
     }
 
-//     function clearFrame() {
-//         node.emit('INPUT_DISABLE');
-//         // We save also the time to complete the step.
-//         // TODO. Check if we need it.
-//         node.set({
-//             key: 'timestep',
-//             time: node.timer.getTimeSince('step'),
-//             timeup: node.game.timer.gameTimer.timeLeft <= 0
-//         });
-//         return true;
-//     }
 
     // Add all the stages into the stager.
-
-    // Removed for now.
-    //    stager.extendStep('precache', {
-    //        cb: precache,
-    //        // `minPlayers` triggers the execution of a callback in the case
-    //        // the number of players (including this client) falls the below
-    //        // the chosen threshold. Related: `maxPlayers`, and `exactPlayers`.
-    //        // minPlayers: [nbRequiredPlayers, notEnoughPlayers],
-    //        // syncOnLoaded: true,
-    //        done: clearFrame
-    //    });
 
     stager.extendStep('instructions', {
         cb: instructions
     });
 
     stager.extendStep('quiz', {
-        cb: quiz,
+        frame: 'quiz.html',
+        init: function() {            
+            this.quizStuff = {
+                // Coins.
+                coins: 'How many coins do you get each of the 20 rounds ?',
+                coinsChoices: [ 20, 10, 5, 'Other' ],
+                coinsCorrect: 0,
+                // Lowest Pay.
+                lowestPay: 'If you put 5 in the group account, what is the ' +
+                    'lowest payment you are guaranteed from this round ?',
+                lowestPayChoices: [ 5, 7.5, 10, 'Other' ],
+                lowestPayCorrect: 1,
+                // Guarantee Pay.
+                guaranteePay: 'If you put 5 in the group account, and all ' +
+                    'others do the same, how much are you guaranteed from ' +
+                    'this round ?',
+                guranteePayChoices: [ 7.5, 15, 20, 'Other' ],
+                guaranteePayCorrect: 1,
+                // Likelyness.
+                likely: 'Are you more likely to be matched in a group with ' +
+                    'other high-contributers if you also put in a large ' +
+                    'amount than if you put in only a small amount ?',
+                likelyChoices: [
+                    'Yes', 'No', 'Other',
+                    [ 'true if&lt;5, false if&gt;5', '5' ]
+                ],
+                likelyCorrect: 0
+            };
+        },
+        cb: function() {
+            var w, qs, t;
+            t = this.settings.treatmentName;
+            qs = this.quizStuff;
+
+            /////////////////////////////////////////////////////////////
+            // nodeGame hint: the widget collection
+            //
+            // Widgets are re-usable components with predefined methods,
+            // such as: hide, highlight, disable, getValues, etc.
+            // Here we use the `ChoiceManager` widget to create a quiz page.
+            w = node.widgets;            
+            this.quiz = w.append('ChoiceManager', W.getElementById('quiz'), {
+                id: 'quizzes',
+                title: false,
+                forms: [
+                    w.get('ChoiceTable', {
+                        id: 'coinsEveryRound',
+                        shuffleChoices: true,
+                        title: false,
+                        choices: qs.coinsChoices,
+                        correctChoice: qs.coinsCorrect,
+                        mainText: qs.coins
+                    }),
+                    w.get('ChoiceTable', {
+                        id: 'lowestPayment',
+                        shuffleChoices: true,
+                        title: false,
+                        choices: qs.lowestPayChoices,
+                        correctChoice: qs.lowestPayCorrect,
+                        mainText: qs.lowestPay
+                    }),
+                    w.get('ChoiceTable', {
+                        id: 'leastGuarantee',
+                        shuffleChoices: true,
+                        title: false,
+                        choices: qs.guranteePayChoices,
+                        correctChoice: qs.guaranteePayCorrect,
+                        mainText: qs.guaranteePay
+                    }),
+                    w.get('ChoiceTable', {
+                        id: 'likeliness',
+                        shuffleChoices: true,
+                        title: false,
+                        choices: qs.likelyChoices,
+                        correctChoice: qs.likelyCorrect,
+                        mainText: qs.likely
+                    })
+                ]
+            });
+        },
         done: function() {
-            node.game.quizResults.key = 'QUIZ';
-            return node.game.quizResults;
+            var answers, isTimeup;
+            answers = this.quiz.getValues({
+                markAttempt: true,
+                highlight: true
+            });
+            isTimeup = node.game.timer.isTimeup();
+            if (!answers.isCorrect && !isTimeup) return false;
+            return answers;
         }
     });
 

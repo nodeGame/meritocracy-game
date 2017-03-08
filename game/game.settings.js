@@ -49,20 +49,22 @@ module.exports = {
     // Conversion rate ECU to DOLLARS.
     exchangeRate: 0.001,
 
-    timer: {
+    TIMER: {
 
         instructions: 90000,
         quiz: 90000,
         bid: {
             milliseconds: function() {
-                if (node.game.getCurrentGameStage().round < 3) return 30000;
+                var round;
+                round = this.getCurrentGameStage().round;
+                if (round < 3) return 30000;
                 return 15000;
             },
             timeup: 'TIMEUP'
         },
         results: function() {
             var round;
-            round = node.game.getCurrentGameStage().round;
+            round = this.getCurrentGameStage().round;
             if (round < 2) return 60000;
             if (round < 3) return 50000;
             return 30000;

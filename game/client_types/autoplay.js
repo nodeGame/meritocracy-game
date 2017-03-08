@@ -43,12 +43,15 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                     node.emit('BID_DONE', validInputs, false);
                 }, 4000);
             }
-            else if (id === 'quiz' || id === 'questionnaire') {
-                node.widgets.lastAppended.setValues();                
-                node.timer.randomDone(2000);
-            }
             else {
-              node.timer.randomDone(2000);
+                if (id === 'quiz' || id === 'questionnaire') {
+                    node.widgets.lastAppended.setValues();
+            
+                    
+                    if (id !== 'end') {
+                        node.timer.randomDone(2000);
+                    }
+                }
             }
         };
         return o;

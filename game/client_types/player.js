@@ -241,7 +241,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                 ' = ' + node.game.oldPayoff;
         };
 
-        this.displaySummaryPrevRound = function(treatment) {
+        this.displaySummaryPrevRound = function() {
             var save, groupReturn;
 
             // Shows previous round if round number is not 1.
@@ -258,7 +258,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                 W.setInnerHTML('yourReturn', groupReturn);
                 W.setInnerHTML('yourPayoff', node.game.oldPayoff);
 
-                if (treatment === 'endo') {
+                if (node.game.isEndo()) {
                     W.setInnerHTML('yourOldDemand', node.game.oldDemand);
                 }
             }
@@ -288,129 +288,26 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
     // STAGES and STEPS.
 
-    function instructions() {
-        W.loadFrame(node.game.settings.instrPage, function() {
-            var b, n, s;
+    stager.extendStep('instructions', {
+        cb: function() {
+            W.loadFrame(node.game.settings.instrPage, function() {
+                var b, n, s;
 
-            s = node.game.settings;
-            n = node.game.globals.totPlayers;
+                s = node.game.settings;
+                n = node.game.globals.totPlayers;
 
-            W.getElementById('players-count').innerHTML = n;
-            W.getElementById('players-count-minus-1').innerHTML = (n-1);
-            W.getElementById('rounds-count').innerHTML = s.REPEAT;
+                W.setInnerHTML('players-count', n);
+                W.setInnerHTML('players-count-minus-1', (n-1));
+                W.setInnerHTML('rounds-count', s.REPEAT);
 
-            b = W.getElementById('read');
-            b.onclick = function() {
-                node.done();
-            };
-
-            node.env('auto', function() {
-                node.timer.randomEmit('DONE', 8000);
-            });
-        });
-
-        console.log('Instructions');
-    }
-
-    function showResults(bars) {
-        W.loadFrame(node.game.settings.resultsPage, function() {
-            node.on.data('results', function(msg) {
-                var treatment, b;
-                var barsValues;
-                console.log('Received results.');
-
-                barsValues = msg.data;
-                treatment = node.env('roomType');
-
-                if (treatment === 'endo') {
-                    W.setInnerHTML('yourOldDemand', node.game.oldDemand);
-                }
-
-                this.updateResults(barsValues);
-
-                b = W.getElementById('submitOffer');
+                b = W.getElementById('read');
                 b.onclick = function() {
                     node.done();
                 };
-
-                node.env('auto', function() {
-                    node.timer.randomEmit('DONE', 6000);
-                });
-            });
-        });
-    }
-
-    function bid() {
-        //////////////////////////////////////////////
-        // nodeGame hint:
-        //
-        // W.loadFrame takes an optional third 'options' argument which can
-        // be used to request caching of the displayed frames (see the end
-        // of the following function call). The caching mode can be set with
-        // two fields: 'loadMode' and 'storeMode'.
-        //
-        // 'loadMode' specifies whether the frame should be reloaded
-        // regardless of caching (loadMode = 'reload') or whether the frame
-        // should be looked up in the cache (loadMode = 'cache', default).
-        // If the frame is not in the cache, it is always loaded from the
-        // server.
-        //
-        // 'storeMode' says when, if at all, to store the loaded frame. By
-        // default the cache isn't updated (storeMode = 'off'). The other
-        // options are to cache the frame right after it has been loaded
-        // (storeMode = 'onLoad') and to cache it when it is closed, that
-        // is, when the frame is replaced by other contents (storeMode =
-        // 'onClose'). This last mode preserves all the changes done while
-        // the frame was open.
-        //
-        /////////////////////////////////////////////
-        W.loadFrame(node.game.settings.bidderPage, function() {
-            var b, treatment;
-
-            treatment = node.env('roomType');
-            node.game.displaySummaryPrevRound(treatment);
-
-            // Re-enable input.
-            W.getElementById('submitOffer').disabled = '';
-            // Clear previous errors.
-            W.getElementById('divErrors').innerHTML = '';
-
-            // Clear contribution and demand inputs.
-            if (treatment === 'endo') {
-                W.getElementById('demand').value = '';
-            }
-
-            W.getElementById('contribution').value = '';
-
-            b = W.getElementById('submitOffer');
-
-            // AUTOPLAY.
-            node.env('auto', function() {
-                node.timer.randomExec(function() {
-                    var validation, validInputs;
-                    validation = node.game.checkInputs();
-                    validInputs = node.game.correctInputs(validation);
-                    node.emit('BID_DONE', validInputs, false);
-                }, 4000);
             });
 
-            b.onclick = function() {
-                var validation, validInputs;
-                validation = node.game.checkInputs();
-                if (!validation.success) return;
-                validInputs = node.game.correctInputs(validation);
-                node.emit('BID_DONE', validInputs, false);
-            };
-
-        });
-
-        console.log('Meritocracy: bid page.');
-    }
-
-    // Add all the stages into the stager.
-
-    stager.extendStep('instructions', {
-        cb: instructions
+            console.log('Instructions');
+        }
     });
 
     stager.extendStep('quiz', {
@@ -507,18 +404,59 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     });
 
     stager.extendStep('bid', {
-        cb: bid,
+        cb: function() {
+            W.loadFrame(node.game.settings.bidderPage, function() {
+                // Show summary previous round.
+                node.game.displaySummaryPrevRound();
+
+                // Re-enable input.
+                W.getElementById('submitOffer').disabled = '';
+
+                // Clear previous errors.
+                W.setInnerHTML('divErrors', '');
+
+                // Clear contribution and demand inputs.
+                W.getElementById('contribution').value = '';
+                if (node.game.isEndo()) W.getElementById('demand').value = '';
+            });
+
+            console.log('Meritocracy: bid page.');
+        },
         timeup: function() {
             var validation, validInputs;
             console.log('TIMEUP !');
             validation = this.checkInputs();
             validInputs = this.correctInputs(validation);
             node.emit('BID_DONE', validInputs, true);
+        },
+        done: function() {
+            var validation, validInputs;
+            validation = node.game.checkInputs();
+            if (!validation.success) return;
+            validInputs = node.game.correctInputs(validation);
+            node.emit('BID_DONE', validInputs, false);
         }
     });
 
     stager.extendStep('results', {
-        cb: showResults,
+        cb: function () {
+            W.loadFrame(node.game.settings.resultsPage, function() {
+                node.on.data('results', function(msg) {
+                    var treatment, barsValues;
+
+                    console.log('Received results.');
+
+                    barsValues = msg.data;
+                    treatment = node.env('roomType');
+
+                    if (treatment === 'endo') {
+                        W.setInnerHTML('yourOldDemand', node.game.oldDemand);
+                    }
+
+                    this.updateResults(barsValues);
+                });
+            });
+        }  
     });
 
     stager.extendStep('questionnaire', {
@@ -568,8 +506,8 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                 codeErr = 'ERROR (code not found)';
                 win = msg.data && msg.data.win || 0;
                 exitcode = msg.data && msg.data.exitcode || codeErr;
-                W.writeln('Your bonus in this game is: ' + win);
-                W.writeln('Your exitcode is: ' + exitcode);
+                W.setInnerHTML('bonus', 'Your bonus in this game is: ' + win);
+                W.setInnerHTML('exit', 'Your exitcode is: ' + exitcode);
             });           
             console.log('Game ended');
         }

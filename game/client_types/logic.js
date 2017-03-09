@@ -37,23 +37,23 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
     var DUMP_DIR, DUMP_DIR_JSON, DUMP_DIR_CSV;
     var ngdb, mdb;
-    
+
     var treatments;
     var client;
     var nbRequiredPlayers;
-    
+
     // Preparing storage: FILE or MONGODB.
     if (settings.DB === 'FILE') {
         DUMP_DIR = channel.getGameDir() + '/data/' + counter + '/';
         DUMP_DIR_JSON = DUMP_DIR + 'json/';
         DUMP_DIR_CSV = DUMP_DIR + 'csv/';
 
-        // Recursively create directories..       
+        // Recursively create directories..
         fs.mkdirsSync(DUMP_DIR_JSON);
         fs.mkdirsSync(DUMP_DIR_CSV);
     }
     else {
-        
+
         ngdb = new Database(node);
         mdb = ngdb.getLayer('MongoDB', {
             dbName: 'meritocracy_db',
@@ -135,7 +135,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         };
     }
 
-    
+
     // Outgoing messages will be saved.
     node.socket.journalOn = true;
 
@@ -149,12 +149,14 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         dk: dk
     }, true);
 
+    stager.setDefaultProperty('minPlayers', [ gameRoom.game.waitroom.GROUP_SIZE ]);
+
     // Event handler registered in the init function are always valid.
     stager.setOnInit(function() {
         console.log('********************** meritocracy room ' + counter++);
 
-        // Players that disconnected temporarily.
-        node.game.disconnected = {};
+        // Keep tracks of results sent to players in case of disconnections.
+        node.game.savedResults = {};
 
         // "STEPPING" is the last event emitted before the stage is updated.
         node.on('STEPPING', function() {
@@ -163,7 +165,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             currentStage = node.game.getCurrentGameStage();
 
             if (settings.DB === 'FILE') {
-                // We do not save stage 0.0.0. 
+                // We do not save stage 0.0.0.
                 // Morever, If the last stage is equal to the current one,
                 // we are re-playing the same stage cause of a reconnection.
                 // In this case we do not update the database, or save files.
@@ -172,17 +174,17 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                 }
                 // Update last stage reference.
                 node.game.lastStage = currentStage;
-                
+
                 db = node.game.memory.stage[currentStage];
-                
+
                 if (db && db.size()) {
                     try {
                         file = DUMP_DIR + 'memory_' + currentStage;
-                        
+
                         // Saving results to FS.
                         db.save(file + '.csv', { flags: 'w' });
-                        db.save(file + '.json');        
-                        
+                        db.save(file + '.json');
+
                         console.log('Round data saved ', currentStage);
                     }
                     catch(e) {
@@ -191,7 +193,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                     }
                 }
             }
-            
+
             console.log(node.nodename, ' - Round:  ', currentStage);
         });
 
@@ -203,20 +205,20 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 //         // Register player disconnection, and wait for him...
 //         node.on.pdisconnect(function(p) {
 //             console.log('Warning: one player disconnected! ', p.id);
-//             
+//
 //             channel.registry.updateClient(p.id, {
 //                 disconnected: true,
 //                 stage: p.stage
 //             });
-//                
+//
 //             // We don't care in the questionnaire
 //             if (node.game.getCurrentGameStage().stage < 5) {
-// 
-//                 // If we do not have other disconnected players, 
+//
+//                 // If we do not have other disconnected players,
 //                 // start the procedure.
 //                 if (!J.size(node.game.disconnected)) {
-//                     node.say('notEnoughPlayers', 'ALL');        
-//                     
+//                     node.say('notEnoughPlayers', 'ALL');
+//
 //                     this.countdown = setTimeout(function() {
 //                         var i;
 //                         console.log('Countdown fired. Player/s did not reconnect.');
@@ -229,24 +231,24 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 //                         }
 //                         // Clear list of temporarily disconnected players.
 //                         node.game.disconnected = {};
-// 
+//
 //                         node.remoteCommand('resume', 'ALL');
 //                     }, 30000);
 //                 }
 //             }
-// 
+//
 //             // delete node.game.memory.stage[node.game.getCurrentGameStage()];
 //             node.game.disconnected[p.id] = '';
 //         });
-// 
-// 
+//
+//
 //         // Reconnections must be handled by the game developer.
 //         node.on.preconnect(function(p) {
 //             var code, curStage, state, i, len;
-// 
+//
 //             console.log('Oh...somebody reconnected!', p);
 //             code = channel.registry.getClient(p.id);
-// 
+//
 //             if (!code) {
 //                 console.log('game.logic: reconnecting player not found in ' +
 //                             'code db: ' + p.id);
@@ -257,49 +259,49 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 //                             'marked disconnected: ' + p.id);
 //                 return;
 //             }
-// 
+//
 //             if (code.kickedOut) {
 //                 node.redirect('html/disconnected.htm', code);
-//                 console.log('game.logic: kicked out player tried to ' + 
+//                 console.log('game.logic: kicked out player tried to ' +
 //                             'reconnect: ' + p.id);
 //                 return;
 //             }
-// 
+//
 //             curStage = node.game.getCurrentGameStage();
-// 
+//
 //             delete node.game.disconnected[p.id];
-// 
+//
 //             // If all disconnected players reconnected...
 //             if (!J.size(node.game.disconnected)) {
 //                 // Delete countdown game.
 //                 clearTimeout(this.countdown);
 //             }
-// 
+//
 //             // Mark code as connected.
 //             code.disconnected = false;
-// 
-//             
+//
+//
 //             // Clear any message in the buffer from.
 //             // node.remoteCommand('erase_buffer', 'ALL');
-// 
+//
 //             // Notify other player he is back.
 //             // TODO: add it automatically if we return TRUE? It must be done
 //             // both in the alias and the real event handler
-//             node.game.pl.each(function(player) {                
+//             node.game.pl.each(function(player) {
 //                 node.socket.send(node.msg.create({
 //                     target: 'PCONNECT',
 //                     data: p,
 //                     to: player.id
 //                 }));
 //             });
-//             
+//
 //             // Send currently connected players to reconnecting.
 //             node.socket.send(node.msg.create({
 //                 target: 'PLIST',
 //                 data: node.game.pl.db,
 //                 to: p.id
 //             }));
-// 
+//
 //             // We could slice the game plot, and send just what we need
 //             // however here we resend all the stages, and move their game plot.
 //             console.log('** Player reconnected: ' + p.id + ' **');
@@ -311,27 +313,27 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 //             node.remoteSetup('env', p.id, {
 //                 treatment: treatmentName
 //             });
-// 
-// 
+//
+//
 //             // It is not added automatically.
 //             // TODO: add it automatically if we return TRUE? It must be done
 //             // both in the alias and the real event handler
 //             node.game.pl.add(p);
-// 
+//
 //             // Do something.
 //             // Resend state to connected player.
 //             // node.remoteCommand('goto_step', p.id, curStage);
-//             
+//
 //             // Start the game on the reconnecting client.
 //             node.remoteCommand('start', p.id, {
 //                 startStage: node.game.plot.previous(curStage)
 //             });
-// 
+//
 //             state = node.socket.journal.stage[curStage];
-//             
+//
 //             if (state && state.size()) {
 //                 state = state.selexec('to', '=', p.id).fetch();
-// 
+//
 //                 if (state) {
 //                     i = -1, len = state.length;
 //                     for ( ; ++i < len ; ) {
@@ -339,15 +341,15 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 //                     }
 //                 }
 //             }
-// 
+//
 //             // If all disconnected players reconnected...
 //             if (!J.size(node.game.disconnected)) {
-// 
+//
 //                 // Will send all the players to current stage
 //                 // (also those who were there already).
 //                 // node.game.gotoStep(node.player.stage);
-//             
-// 
+//
+//
 //                 // Unpause ALL players
 //                 // TODO: add it automatically if we return TRUE? It must be done
 //                 // both in the alias and the real event handler
@@ -355,7 +357,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 //                     if (player.id !== p.id) {
 //                         node.remoteCommand('resume', player.id);
 //                     }
-//                 });                
+//                 });
 //             }
 //             else {
 //                 node.say('notEnoughPlayers', p.id);
@@ -368,21 +370,31 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     // Extends Stages and Steps where needed.
 
     stager.extendStep('results', {
+        init: function() {
+            this.savedResults = {};
+        },
         cb: function() {
             // Computes the values for all players and all groups,
             // sends them to the clients, and save results into database.
             treatments[treatmentName].sendResults();
             return true;
+        },
+        // Callback executed when a clients reconnects.
+        reconnect: function(p) {
+            setTimeout(function() {
+                // Send results (make sure that client is ready).
+                node.say('results', p.id, node.game.savedResults[p.id]);                
+            }, 200);
         }
     });
-    
+
     stager.extendStep('end', {
         cb: function() {
             var code, exitcode, accesscode;
             var bonusFile, bonus, csvString;
 
             console.log('endgame');
-            
+
             bonusFile = DUMP_DIR + 'bonus.csv';
 
             console.log('FINAL PAYOFF PER PLAYER');
@@ -405,9 +417,9 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                 if (settings.auth === 'MTURK') {
                     dk.checkOut(accesscode, exitcode, code.win);
                 }
-                
+
                 channel.registry.checkOut(p.id);
-                
+
                 node.say('WIN', p.id, {
                     win: code.win,
                     exitcode: code.ExitCode
@@ -427,7 +439,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             csvString = bonus.join("\r\n");
             fs.writeFile(bonusFile, csvString, function(err) {
                 if (err) {
-                    console.log('ERROR: could not save the bonus file: ', 
+                    console.log('ERROR: could not save the bonus file: ',
                                 DUMP_DIR + 'bonus.csv');
                     console.log(err);
                 }

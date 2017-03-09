@@ -8,7 +8,7 @@
  * http://www.nodegame.org
  */
 
- var ngc =  require('nodegame-client');
+ var ngc = require('nodegame-client');
 
 module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
@@ -35,24 +35,14 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             id = stepObj.id;
 
             // Actions in Specific steps.
-            if (id === 'bid') {
-                node.timer.randomExec(function() {
-                    var validation, validInputs;
-                    validation = node.game.checkInputs();
-                    validInputs = node.game.correctInputs(validation);
-                    node.emit('BID_DONE', validInputs, false);
-                }, 4000);
+
+            if (id === 'quiz' || id === 'questionnaire') {
+                node.widgets.lastAppended.setValues();
             }
-            else {
-                if (id === 'quiz' || id === 'questionnaire') {
-                    node.widgets.lastAppended.setValues();
-            
                     
-                    if (id !== 'end') {
-                        node.timer.randomDone(2000);
-                    }
-                }
-            }
+            if (id !== 'end') {
+                node.timer.randomDone(2000);
+            }            
         };
         return o;
     });

@@ -318,7 +318,7 @@ function createNoise(receivedData, variance) {
         contrib = receivedData.db[i].contribution;
         receivedData.db[i].noisyContribution = contrib +
             J.nextNormal(0, variance);
-        console.log(contrib, receivedData.db[i].noisyContribution);
+        // console.log(contrib, receivedData.db[i].noisyContribution);
     }
     return receivedData;
 }
@@ -326,10 +326,12 @@ function createNoise(receivedData, variance) {
 /**
  * Send and saves received values for each player.
  */
-function emitPlayersResults(pId, bars, position, payoff, compatibility) {
+function emitPlayersResults(pid, bars, position, payoff, compatibility) {
     var finalBars;
-    finalBars = [bars, position, payoff, compatibility];
-    node.say('results', pId, finalBars);
+    finalBars = [ bars, position, payoff, compatibility ];
+    // Store it here in case of disconnection.
+    node.game.savedResults[pid] = finalBars;
+    node.say('results', pid, finalBars);
 }
 
 // Saves the outcome of a round to database, and communicates it to the clients.
@@ -418,8 +420,6 @@ treatments.exo_perfect = {
 
         receivedData = node.game.memory.stage[previousStage]
             .selexec('contribution');
-
-        console.log(node.game.memory.stage[previousStage].db);
         
         // If a player submitted twice with reconnections.
 

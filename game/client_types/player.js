@@ -47,22 +47,6 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             return false !== JSUS.isInt(n, -1, (COINS + 1));
         };
 
-        // BID_DONE.
-        node.on('BID_DONE', function(bid, isTimeOut) {
-
-            W.getElementById('submitOffer').disabled = 'disabled';
-
-            node.game.oldContrib = bid.contrib;
-            node.game.oldDemand = bid.demand;
-
-            node.done({
-                key: 'bid',
-                demand: bid.demand,
-                contribution: bid.contrib
-            });
-        });
-
-
         // Takes in input the results of _checkInputs_ and correct eventual
         // mistakes. If in the first round a random value is chosen, otherwise
         // the previous decision is repeated. It also updates the screen.
@@ -409,9 +393,6 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                 // Show summary previous round.
                 node.game.displaySummaryPrevRound();
 
-                // Re-enable input.
-                W.getElementById('submitOffer').disabled = '';
-
                 // Clear previous errors.
                 W.setInnerHTML('divErrors', '');
 
@@ -422,19 +403,15 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
             console.log('Meritocracy: bid page.');
         },
-        timeup: function() {
-            var validation, validInputs;
-            console.log('TIMEUP !');
-            validation = this.checkInputs();
-            validInputs = this.correctInputs(validation);
-            node.emit('BID_DONE', validInputs, true);
-        },
         done: function() {
-            var validation, validInputs;
+            var validation, bid;
             validation = node.game.checkInputs();
-            if (!validation.success) return;
-            validInputs = node.game.correctInputs(validation);
-            node.emit('BID_DONE', validInputs, false);
+            // Do not go forward if it is not timeup and validation failed.
+            if (!node.game.timer.isTimeup() && !validation.success) {
+                return false;
+            }
+            bid = node.game.correctInputs(validation);            
+            return bid;
         }
     });
 

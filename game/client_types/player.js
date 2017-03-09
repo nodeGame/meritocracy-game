@@ -94,7 +94,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             }
 
             return {
-                contrib: contrib,
+                contribution: contrib,
                 demand: demand
             };
         };
@@ -410,7 +410,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             if (!node.game.timer.isTimeup() && !validation.success) {
                 return false;
             }
-            bid = node.game.correctInputs(validation);            
+            bid = node.game.correctInputs(validation);
             return bid;
         }
     });
@@ -433,7 +433,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                     this.updateResults(barsValues);
                 });
             });
-        }  
+        }
     });
 
     stager.extendStep('questionnaire', {
@@ -485,7 +485,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                 exitcode = msg.data && msg.data.exitcode || codeErr;
                 W.setInnerHTML('bonus', 'Your bonus in this game is: ' + win);
                 W.setInnerHTML('exit', 'Your exitcode is: ' + exitcode);
-            });           
+            });
             console.log('Game ended');
         }
     });

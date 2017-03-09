@@ -417,7 +417,9 @@ treatments.exo_perfect = {
         previousStage = node.game.plot.previous(currentStage);
 
         receivedData = node.game.memory.stage[previousStage]
-            .selexec('key', '=', 'bid');
+            .selexec('contribution');
+
+        console.log(node.game.memory.stage[previousStage].db);
         
         // If a player submitted twice with reconnections.
 
@@ -489,7 +491,7 @@ treatments.exo_high = {
         previousStage = node.game.plot.previous(currentStage);
 
         receivedData = node.game.memory.stage[previousStage]
-            .selexec('key', '=', 'bid');
+            .selexec('key', '=', 'contrib');
 
         sortedContribs = receivedData
             .sort(sortContributions)
@@ -546,7 +548,7 @@ treatments.exo_low = {
         previousStage = node.game.plot.previous(currentStage);
 
         receivedData = node.game.memory.stage[previousStage]
-            .selexec('key', '=', 'bid');
+            .selexec('key', '=', 'contrib');
         
         if (!receivedData.db.length) {
             console.log('receivedData.db.length = 0!');
@@ -612,7 +614,7 @@ treatments.random = {
         previousStage = node.game.plot.previous(currentStage);
 
         receivedData = node.game.memory.stage[previousStage]
-            .selexec('key', '=', 'bid');
+            .selexec('key', '=', 'contrib');
 
         // Shuffle contributions randomly.
         sortedContribs = receivedData
@@ -660,7 +662,7 @@ treatments.endo = {
         previousStage = node.game.plot.previous(currentStage);
 
         receivedData = node.game.memory.stage[previousStage]
-            .selexec('key', '=', 'bid');
+            .selexec('key', '=', 'contrib');
 
         if (!receivedData) {
             console.log('receivedData empty!');

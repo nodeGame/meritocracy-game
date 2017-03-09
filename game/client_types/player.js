@@ -248,6 +248,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             }
         };
 
+        /*
         node.on.data('notEnoughPlayers', function(msg) {
             // Not yet 100% safe. Some players could forge the from field.
             if (msg.from !== '[ADMIN_SERVER]') return;
@@ -257,7 +258,8 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                          'see if he or she reconnects. If not, the game ' +
                          'will continue with fewer players.');
         });
-
+        */
+        
         node.on('SOCKET_DISCONNECT', function() {
             // Disabled.
             return;
@@ -275,7 +277,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     stager.extendStep('instructions', {
         cb: function() {
             W.loadFrame(node.game.settings.instrPage, function() {
-                var b, n, s;
+                var n, s;
 
                 s = node.game.settings;
                 n = node.game.globals.totPlayers;
@@ -283,11 +285,6 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                 W.setInnerHTML('players-count', n);
                 W.setInnerHTML('players-count-minus-1', (n-1));
                 W.setInnerHTML('rounds-count', s.REPEAT);
-
-                b = W.getElementById('read');
-                b.onclick = function() {
-                    node.done();
-                };
             });
 
             console.log('Instructions');

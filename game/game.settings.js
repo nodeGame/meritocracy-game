@@ -88,8 +88,9 @@ module.exports = {
 
     treatments: {
 
-        singapore: {
-            instrPage: 'instructions_singapore.html'
+        exo_perfect: {
+            instrPage: 'instructions_exo_perfect.html',
+            quizPage: 'quiz_exo_perfect.html'
         },
         blackbox: {
             instrPage: 'instructions_blackbox.html',
@@ -113,10 +114,6 @@ module.exports = {
         exo_high: {
             instrPage: 'instructions_exo_lowhigh.html',
             quizPage: 'quiz_exo_lowhigh.html'
-        },
-        exo_perfect: {
-            instrPage: 'instructions_exo_perfect.html',
-            quizPage: 'quiz_exo_perfect.html'
         }
     }
 };

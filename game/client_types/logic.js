@@ -20,20 +20,11 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     var channel = gameRoom.channel;
     var node = gameRoom.node;
 
-    var DUMP_DIR_JSON, DUMP_DIR_CSV;
-
     var treatments;
 
-    DUMP_DIR_JSON = path.join(gameRoom.dataDir, 'json') + '/';
-    DUMP_DIR_CSV = path.join(gameRoom.dataDir, 'csv') + '/';
-
-    // Recursively create directories..
-    fs.mkdirsSync(DUMP_DIR_JSON);
-    fs.mkdirsSync(DUMP_DIR_CSV);
-
     // Experimental!
-    // Outgoing messages will be saved.
-    node.socket.journalOn = true;
+    // Outgoing messages will be saved (use if reconnections are important).
+    // node.socket.journalOn = true;
 
     // Require treatments file.
     treatments = channel.require(__dirname + '/includes/treatments.js', {
@@ -71,13 +62,10 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             db = node.game.memory.stage[currentStage];
 
             if (db && db.size()) {
-                try {
+                try {                    
+                    // Saving each round results to FS.
                     file = gameRoom.dataDir + 'memory_' + currentStage;
-
-                    // Saving results to FS.
-                    db.save(file + '.csv', { flags: 'w' });
-                    db.save(file + '.json');
-
+                    db.save(file + '.csv');
                     console.log('Round data saved ', currentStage);
                 }
                 catch(e) {
@@ -284,7 +272,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
             console.log('FINAL PAYOFF PER PLAYER');
             console.log('***********************');
-debugger
+
             gameRoom.computeBonus({
                 say: true,   // default false
                 dump: true,  // default false

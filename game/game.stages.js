@@ -20,9 +20,9 @@ module.exports = function(stager, settings) {
         .step('bid')
         .step('results')
     
-        .repeat('game AS game2', settings.REPEAT)
+        // .repeat('game AS game2', settings.REPEAT)
     
-        .repeat('game AS game3', settings.REPEAT)
+        // .repeat('game AS game3', settings.REPEAT)
     
         .next('questionnaire')
     

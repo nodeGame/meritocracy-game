@@ -18,7 +18,6 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     var game, stager;
 
     game = gameRoom.getClientType('player');
-    game.env.auto = true;
     game.nodename = 'autoplay';
 
     stager = ngc.getStager(game.plot);
@@ -39,7 +38,14 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             if (id === 'quiz' || id === 'questionnaire') {
                 node.widgets.lastAppended.setValues();
             }
-                    
+            else if (id === 'bidder') {                
+                node.on('PLAYING', function() {
+                    node.timer.randomExec(function() {
+                        node.game.timer.doTimeUp();
+                    });
+                });
+            }
+                
             if (id !== 'end') {
                 node.timer.randomDone(2000);
             }            

@@ -284,7 +284,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
             console.log('FINAL PAYOFF PER PLAYER');
             console.log('***********************');
-
+debugger
             gameRoom.computeBonus({
                 say: true,   // default false
                 dump: true,  // default false

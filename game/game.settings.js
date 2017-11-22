@@ -19,16 +19,12 @@ module.exports = {
 
     // Variables shared by all treatments.
 
-    // Session counter.
-    SESSION_ID: 1,
-
     // Numnber of game rounds repetitions.
     // TODO: if the value is changed the QUIZ page needs to be updated.
     REPEAT: 1,
 
     // Minimum number of players that must be always connected.
     MIN_PLAYERS: 4,
-
 
     GROUP_NAMES: ['1', '2', '3', '4'],
 
@@ -44,13 +40,9 @@ module.exports = {
     INITIAL_COINS: 20,
 
     // Divider ECU / DOLLARS *
-    EXCHANGE_RATE: 266,
-
-    // Conversion rate ECU to DOLLARS.
-    exchangeRate: 0.001,
+    EXCHANGE_RATE: 0.001,
 
     TIMER: {
-
         instructions: 90000,
         quiz: 90000,
         bid: function() {
@@ -68,15 +60,6 @@ module.exports = {
         },
         questionnaire: 45000
     },
-
-    // DEBUG.
-    DEBUG: false,
-
-    // AUTO-PLAY.
-    AUTO: false,
-
-    // DATABASE.
-    DB: 'FILE', // FILE, MONGODB
 
     // Treatments definition.
     // (They are actually defined in the game).

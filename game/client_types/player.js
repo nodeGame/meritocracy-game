@@ -186,7 +186,8 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                     // It is me?
                     if (barsValues[1][0] === i && barsValues[1][1] === j) {
                         color = [undefined, '#9932CC'];
-                        text = ' YOU <img src="imgs/arrow.jpg" style="height:15px;"/>';
+                        text = ' YOU <img src="imgs/arrow.jpg" ' +
+                            'style="height:15px;"/>';
                     }
                     else {
                         color = ['#DEB887', '#A52A2A'];
@@ -246,17 +247,17 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             }
         };
 
-        /*
-        node.on.data('notEnoughPlayers', function(msg) {
-            // Not yet 100% safe. Some players could forge the from field.
-            if (msg.from !== '[ADMIN_SERVER]') return;
-
-            node.game.pause();
-            W.lockScreen('One player disconnected. We are now waiting to ' +
-                         'see if he or she reconnects. If not, the game ' +
-                         'will continue with fewer players.');
-        });
-        */
+        
+        // node.on.data('notEnoughPlayers', function(msg) {
+        //     // Not yet 100% safe. Some players could forge the from field.
+        //     if (msg.from !== '[ADMIN_SERVER]') return;
+        // 
+        //     node.game.pause();
+        //     W.lockScreen('One player disconnected. We are now waiting to ' +
+        //                  'see if he or she reconnects. If not, the game ' +
+        //                  'will continue with fewer players.');
+        // });
+        
         
         node.on('SOCKET_DISCONNECT', function() {
             // Disabled.
@@ -276,14 +277,11 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         frame: settings.instrPage,
         cb: function() {
             var n, s;
-
             s = node.game.settings;
             n = node.game.globals.totPlayers;
-
             W.setInnerHTML('players-count', n);
             W.setInnerHTML('players-count-minus-1', (n-1));
             W.setInnerHTML('rounds-count', s.REPEAT);
-
             console.log('Instructions');
         }
     });
@@ -478,9 +476,9 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             options: {
                 panel: false,
                 title: false,
-                showEmailForm: true,
-                email: { errString: 'Please enter a valid email and retry' },
-                feedback: false
+                feedback: false,
+                exitCode: false,
+                email: { errString: 'Please enter a valid email and retry' }
             }
         }
     });

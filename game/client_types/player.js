@@ -8,9 +8,7 @@
  */
 
 module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
-
-    var game = {};
-
+    
     // Variable here are available to all stages.
     stager.setDefaultGlobals({
         // Total number of players in group.
@@ -275,17 +273,16 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     // STAGES and STEPS.
 
     stager.extendStep('instructions', {
+        frame: settings.instrPage,
         cb: function() {
-            W.loadFrame(node.game.settings.instrPage, function() {
-                var n, s;
+            var n, s;
 
-                s = node.game.settings;
-                n = node.game.globals.totPlayers;
+            s = node.game.settings;
+            n = node.game.globals.totPlayers;
 
-                W.setInnerHTML('players-count', n);
-                W.setInnerHTML('players-count-minus-1', (n-1));
-                W.setInnerHTML('rounds-count', s.REPEAT);
-            });
+            W.setInnerHTML('players-count', n);
+            W.setInnerHTML('players-count-minus-1', (n-1));
+            W.setInnerHTML('rounds-count', s.REPEAT);
 
             console.log('Instructions');
         }
@@ -385,19 +382,18 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     });
 
     stager.extendStep('bid', {
+        frame: settings.bidderPage,
         cb: function() {
-            W.loadFrame(node.game.settings.bidderPage, function() {
-                // Show summary previous round.
-                node.game.displaySummaryPrevRound();
+            // Show summary previous round.
+            node.game.displaySummaryPrevRound();
 
-                // Clear previous errors.
-                W.setInnerHTML('divErrors', '');
+            // Clear previous errors.
+            W.setInnerHTML('divErrors', '');
 
-                // Clear contribution and demand inputs.
-                W.getElementById('contribution').value = '';
-                if (node.game.isEndo()) W.getElementById('demand').value = '';
-            });
-
+            // Clear contribution and demand inputs.
+            W.getElementById('contribution').value = '';
+            if (node.game.isEndo()) W.getElementById('demand').value = '';
+            
             console.log('Meritocracy: bid page.');
         },
         done: function() {
@@ -417,22 +413,21 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     });
 
     stager.extendStep('results', {
+        frame: settings.resultsPage,
         cb: function () {
-            W.loadFrame(node.game.settings.resultsPage, function() {
-                node.on.data('results', function(msg) {
-                    var treatment, barsValues;
+            node.on.data('results', function(msg) {
+                var treatment, barsValues;
 
-                    console.log('Received results.');
+                console.log('Received results.');
 
-                    barsValues = msg.data;
-                    treatment = node.env('roomType');
+                barsValues = msg.data;
+                treatment = node.env('roomType');
 
-                    if (treatment === 'endo') {
-                        W.setInnerHTML('yourOldDemand', node.game.oldDemand);
-                    }
+                if (treatment === 'endo') {
+                    W.setInnerHTML('yourOldDemand', node.game.oldDemand);
+                }
 
-                    this.updateResults(barsValues);
-                });
+                this.updateResults(barsValues);
             });
         }
     });
@@ -475,26 +470,18 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         }
     });
 
-
     stager.extendStep('end', {
         frame: 'ended.html',
-        cb: function() {
-            node.on.data('WIN', function(msg) {
-                var win, exitcode, codeErr;
-                codeErr = 'ERROR (code not found)';
-                win = msg.data && msg.data.win || 0;
-                exitcode = msg.data && msg.data.exitcode || codeErr;
-                W.setInnerHTML('bonus', 'Your bonus in this game is: ' + win);
-                W.setInnerHTML('exit', 'Your exitcode is: ' + exitcode);
-            });
-            console.log('Game ended');
+        widget: {
+            name: 'EndScreen',
+            root: 'root',
+            options: {
+                panel: false,
+                title: false,
+                showEmailForm: true,
+                email: { errString: 'Please enter a valid email and retry' },
+                feedback: false
+            }
         }
     });
-
-    game = setup;
-    // We serialize the game sequence before sending it.
-    game.plot = stager.getState();
-
-    return game;
-
 };

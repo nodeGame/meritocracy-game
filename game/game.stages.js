@@ -13,23 +13,32 @@ module.exports = function(stager, settings) {
 
     stager
         .next('instructions')
+
         .next('quiz')
+
         .repeat('game', settings.REPEAT)
+        .step('bid')
+        .step('results')
+    
+        .repeat('game AS game2', settings.REPEAT)
+    
+        .repeat('game AS game3', settings.REPEAT)
+    
         .next('questionnaire')
+    
         .next('end')
+
         .gameover();
 
     
-    stager.extendStage('game', {
-        steps: ['bid', 'results']
-    });
 
 
     // Modifty the stager to skip some stages.
 
-    // stager.skip('instructions');
-    // stager.skip('quiz');
+    stager.skip('instructions');
+    stager.skip('quiz');
     // stager.skip('game');
+    stager.skip('questionnaire');
 
     return stager.getState();
 };

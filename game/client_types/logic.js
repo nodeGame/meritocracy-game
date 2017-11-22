@@ -10,11 +10,7 @@
 var path = require('path');
 var fs   = require('fs-extra');
 
-var Database = require('nodegame-db').Database;
-
 var ngc = require('nodegame-client');
-var Stager = ngc.Stager;
-var stepRules = ngc.stepRules;
 var GameStage = ngc.GameStage;
 var J = ngc.JSUS;
 
@@ -24,136 +20,34 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     var channel = gameRoom.channel;
     var node = gameRoom.node;
 
-    var dk = require('descil-mturk')();
-
-    var EXCHANGE_RATE = settings.EXCHANGE_RATE;
-
-    // Variable registered outside of the export function are shared among all
-    // instances of game logics.
-    var counter = settings.SESSION_ID;
-
-    // Group names.
-    var groupNames = settings.GROUP_NAMES;
-
-    var DUMP_DIR, DUMP_DIR_JSON, DUMP_DIR_CSV;
-    var ngdb, mdb;
+    var DUMP_DIR_JSON, DUMP_DIR_CSV;
 
     var treatments;
-    var client;
-    var nbRequiredPlayers;
 
-    // Preparing storage: FILE or MONGODB.
-    if (settings.DB === 'FILE') {
-        DUMP_DIR = channel.getGameDir() + '/data/' + counter + '/';
-        DUMP_DIR_JSON = DUMP_DIR + 'json/';
-        DUMP_DIR_CSV = DUMP_DIR + 'csv/';
+    DUMP_DIR_JSON = path.join(gameRoom.dataDir, 'json') + '/';
+    DUMP_DIR_CSV = path.join(gameRoom.dataDir, 'csv') + '/';
 
-        // Recursively create directories..
-        fs.mkdirsSync(DUMP_DIR_JSON);
-        fs.mkdirsSync(DUMP_DIR_CSV);
-    }
-    else {
+    // Recursively create directories..
+    fs.mkdirsSync(DUMP_DIR_JSON);
+    fs.mkdirsSync(DUMP_DIR_CSV);
 
-        ngdb = new Database(node);
-        mdb = ngdb.getLayer('MongoDB', {
-            dbName: 'meritocracy_db',
-            collectionName: 'user_data'
-        });
-
-        mdb.connect(function() {});
-
-        node.on.data('questionnaire', function(msg) {
-            var saveObject = {
-                session: node.nodename,
-                condition: treatmentName,
-                stage: msg.stage,
-                player: msg.from,
-                created: msg.created,
-                gameName: msg.data.gameName,
-                additionalComments: msg.data.comments,
-                alreadyParticipated: msg.data.socExp,
-                strategyChoice: msg.data.stratChoice,
-                strategyComments: msg.data.stratComment
-            };
-            mdb.store(saveObject);
-        });
-
-        node.on.data('QUIZ', function(msg) {
-            var saveObject = {
-                session: node.nodename,
-                condition: treatmentName,
-                stage: msg.stage,
-                player: msg.from,
-                created: msg.created,
-                quiz: msg.data
-            };
-            mdb.store(saveObject);
-        });
-
-        node.game.savePlayerValues = function(p, payoff, positionInNoisyRank,
-                                              ranking, noisyRanking,
-                                              groupStats,
-                                              currentStage) {
-
-            var noisyContribution, finalGroupStats;
-
-            noisyContribution = 'undefined' === typeof p.noisyContribution ?
-                'NA' : p.noiseContribution;
-
-            finalGroupStats = groupStats[groupNames[positionInNoisyRank[0]]];
-
-            mdb.store({
-                session: node.nodename,
-                condition: treatmentName,
-                stage: currentStage,
-                player: p.player,
-                group: p.group,
-                contribution: p.contribution,
-                demand: null === p.demand ? "NA" : p.demand,
-                noisyContribution: noisyContribution,
-                payoff: payoff,
-                groupAvgContr: finalGroupStats.avgContr,
-                groupStdContr: finalGroupStats.stdContr,
-                groupAvgDemand: finalGroupStats.avgDemand,
-                groupStdDemand: finalGroupStats.stdDemand,
-                rankBeforeNoise: ranking.indexOf(p.id) + 1,
-                rankAfterNoise: noisyRanking.indexOf(p.id) + 1,
-                timeup: p.isTimeOut
-            });
-        };
-
-        node.game.saveRoundResults = function(ranking, groupStats,
-                                              noisyRanking, noisyGroupStats) {
-            mdb.store({
-                session: node.nodename,
-                condition: treatmentName,
-                ranking: ranking,
-                noisyRanking: noisyRanking,
-                groupAverages: groupStats,
-                noisyGroupAverages: noisyGroupStats
-            });
-        };
-    }
-
-
+    // Experimental!
     // Outgoing messages will be saved.
     node.socket.journalOn = true;
-
-    // Players required to be connected at the same (NOT USED).
-    nbRequiredPlayers = gameRoom.runtimeConf.MIN_PLAYERS;
 
     // Require treatments file.
     treatments = channel.require(__dirname + '/includes/treatments.js', {
         node: node,
-        settings: settings,
-        dk: dk
+        settings: settings
     }, true);
 
-    stager.setDefaultProperty('minPlayers', [ gameRoom.game.waitroom.GROUP_SIZE ]);
+    stager.setDefaultProperty('minPlayers', [
+        gameRoom.game.waitroom.GROUP_SIZE
+    ]);
 
     // Event handler registered in the init function are always valid.
     stager.setOnInit(function() {
-        console.log('********************** meritocracy room ' + counter++);
+        console.log('********************** meritocracy ' + gameRoom.name);
 
         // Keep tracks of results sent to players in case of disconnections.
         node.game.savedResults = {};
@@ -161,36 +55,34 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         // "STEPPING" is the last event emitted before the stage is updated.
         node.on('STEPPING', function() {
             var currentStage, db, file;
-
+            
             currentStage = node.game.getCurrentGameStage();
 
-            if (settings.DB === 'FILE') {
-                // We do not save stage 0.0.0.
-                // Morever, If the last stage is equal to the current one,
-                // we are re-playing the same stage cause of a reconnection.
-                // In this case we do not update the database, or save files.
-                if (!GameStage.compare(currentStage, new GameStage())) {
-                    return;
+            // We do not save stage 0.0.0.
+            // Morever, If the last stage is equal to the current one,
+            // we are re-playing the same stage cause of a reconnection.
+            // In this case we do not update the database, or save files.
+            if (!GameStage.compare(currentStage, new GameStage())) {
+                return;
+            }
+            // Update last stage reference.
+            node.game.lastStage = currentStage;
+
+            db = node.game.memory.stage[currentStage];
+
+            if (db && db.size()) {
+                try {
+                    file = gameRoom.dataDir + 'memory_' + currentStage;
+
+                    // Saving results to FS.
+                    db.save(file + '.csv', { flags: 'w' });
+                    db.save(file + '.json');
+
+                    console.log('Round data saved ', currentStage);
                 }
-                // Update last stage reference.
-                node.game.lastStage = currentStage;
-
-                db = node.game.memory.stage[currentStage];
-
-                if (db && db.size()) {
-                    try {
-                        file = DUMP_DIR + 'memory_' + currentStage;
-
-                        // Saving results to FS.
-                        db.save(file + '.csv', { flags: 'w' });
-                        db.save(file + '.json');
-
-                        console.log('Round data saved ', currentStage);
-                    }
-                    catch(e) {
-                        console.log('OH! An error occurred while saving: ',
-                                    currentStage, ' ', e);
-                    }
+                catch(e) {
+                    console.log('OH! An error occurred while saving: ',
+                                currentStage, ' ', e);
                 }
             }
 
@@ -377,79 +269,36 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             // Computes the values for all players and all groups,
             // sends them to the clients, and save results into database.
             treatments[treatmentName].sendResults();
-            return true;
-        },
-        // Callback executed when a clients reconnects.
-        reconnect: function(p) {
-            setTimeout(function() {
-                // Send results (make sure that client is ready).
-                node.say('results', p.id, node.game.savedResults[p.id]);                
-            }, 200);
         }
+        // Callback executed when a clients reconnects.
+        // reconnect: function(p) {
+        //    setTimeout(function() {
+        //        // Send results (make sure that client is ready).
+        //        node.say('results', p.id, node.game.savedResults[p.id]);
+        //    }, 200);
+        // }
     });
 
     stager.extendStep('end', {
         cb: function() {
-            var code, exitcode, accesscode;
-            var bonusFile, bonus, csvString;
-
-            console.log('endgame');
-
-            bonusFile = DUMP_DIR + 'bonus.csv';
 
             console.log('FINAL PAYOFF PER PLAYER');
             console.log('***********************');
 
-            bonus = node.game.pl.map(function(p) {
-                code = channel.registry.getClient(p.id);
-                if (!code) {
-                    console.log('ERROR: no code in endgame:', p.id);
-                    return ['NA', 'NA'];
-                }
-
-                accesscode = code.AccessCode;
-                exitcode = code.ExitCode;
-
-                code.win =  Number((code.win || 0) / EXCHANGE_RATE).toFixed(2);
-                code.win = parseFloat(code.win, 10);
-
-                // TODO. Improve this.
-                if (settings.auth === 'MTURK') {
-                    dk.checkOut(accesscode, exitcode, code.win);
-                }
-
-                channel.registry.checkOut(p.id);
-
-                node.say('WIN', p.id, {
-                    win: code.win,
-                    exitcode: code.ExitCode
-                });
-
-                console.log(p.id, ': ',  code.win, code.ExitCode);
-                return [
-                    p.id, code.ExitCode, code.win, node.game.gameTerminated
-                ];
+            gameRoom.computeBonus({
+                say: true,   // default false
+                dump: true,  // default false
+                print: true  // default false
+                // Optional. Pre-process the results of each player.
+                // cb: function(info, player) {
+                // // The sum of partial results is diplayed before the total.
+                //         info.partials = [ 10, -1, 7];
+                // }
             });
-
-            console.log('***********************');
-            console.log('Game ended');
-
-
-            bonus = [["access", "exit", "bonus", "terminated"]].concat(bonus);
-            csvString = bonus.join("\r\n");
-            fs.writeFile(bonusFile, csvString, function(err) {
-                if (err) {
-                    console.log('ERROR: could not save the bonus file: ',
-                                DUMP_DIR + 'bonus.csv');
-                    console.log(err);
-                }
-            });
+            
+            // Dump all memory.
+            node.game.memory.save('memory_all.json');
         }
     });
-
-    return {
-        nodename: 'lgc' + counter,
-        plot: stager.getState()
-    };
 
 };

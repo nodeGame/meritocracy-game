@@ -25,7 +25,7 @@ module.exports = {
     // as found in the package.json file. This means that files will
     // be served from the address http://myserver/gameName/
     // Here you can add aliases to enable urls like: http://myserver/alias/
-    alias: [ 'experiment' ],
+    // alias: [ 'experiment' ],
 
     // Name of the endpoint for socket.io player connections
     playerServer: 'meritocracy',

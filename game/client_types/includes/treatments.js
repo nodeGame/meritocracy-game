@@ -1,6 +1,6 @@
 /**
  * # Treatment conditions for meritocracy game.
- * Copyright(c) 2015 Stefano Balietti
+ * Copyright(c) 2017 Stefano Balietti
  * MIT Licensed
  *
  * Contains helper functions to create Gaussian noise.
@@ -10,14 +10,12 @@
  */
 
 var J = require('JSUS').JSUS;
-
 var ngc = require('nodegame-client');
 
 // Share through channel.require.
 var channel = module.parent.exports.channel;
 var node = module.parent.exports.node;
 var settings = module.parent.exports.settings;
-var dk = module.parent.exports.dk;
 
 var SUBGROUP_SIZE = settings.SUBGROUP_SIZE;
 var treatment = settings.treatmentName;
@@ -326,13 +324,27 @@ function createNoise(receivedData, variance) {
 /**
  * Send and saves received values for each player.
  */
-function emitPlayersResults(pid, bars, position, payoff, compatibility) {
+function sendPlayersResults(pid, bars, position, payoff, compatibility) {
     var finalBars;
     finalBars = [ bars, position, payoff, compatibility ];
     // Store it here in case of disconnection.
     node.game.savedResults[pid] = finalBars;
     node.say('results', pid, finalBars);
 }
+
+/**
+ * We store it in registry, and send it out later with gameRoom.computeBonus
+ */
+function storePayoffInRegistry(p, gain) {
+    var client;
+    if (gain) {
+        // Respondent payoff.
+        client = channel.registry.getClient(p);
+        client.win = !client.win ? gain : client.win + gain;
+        console.log('Added ', gain, ' to ', p);
+    }
+}
+
 
 // Saves the outcome of a round to database, and communicates it to the clients.
 function finalizeRound(currentStage, bars,
@@ -341,13 +353,6 @@ function finalizeRound(currentStage, bars,
 
     var i, len, j, lenJ, contribObj;
     var pId, positionInNoisyRank, playerPayoff;
-    var code;
-
-    if (settings.DB === 'MONGODB') {
-        // Save the results at the group level.
-        node.game.saveRoundResults(ranking, groupStats,
-                                   noisyRanking, noisyGroupStats);
-    }
 
 //     console.log(noisyGroups.length);
 //     console.log('!!!!!');
@@ -369,28 +374,11 @@ function finalizeRound(currentStage, bars,
             
             playerPayoff = getPayoff(bars, positionInNoisyRank);
             
-            // Updating the player database with the current payoff.
-            // code = dk.codes.id.get(pId);
-            code = channel.registry.getClient(pId);
-
-            if (!code) {
-                console.log('AAAH code not found: ', pId);                
-            }      
-            code.win = !code.win ? playerPayoff : code.win + playerPayoff;
-            console.log('Added to ' + pId + ' ' + playerPayoff + ' ECU');
-            // End Update.
+            storePayoffInRegistry(pId, playerPayoff);
             
-            if (settings.DB === 'MONGODB') {
-                node.game.savePlayerValues(contribObj, playerPayoff,
-                                           positionInNoisyRank,
-                                           ranking,
-                                           noisyRanking,
-                                           groupStats,
-                                           currentStage);
-            }
-
-            emitPlayersResults(pId, bars, positionInNoisyRank,
+            sendPlayersResults(pId, bars, positionInNoisyRank,
                                playerPayoff, compatibility);
+
         }
     }
 }

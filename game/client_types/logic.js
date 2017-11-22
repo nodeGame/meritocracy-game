@@ -82,6 +82,9 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             o.session = node.nodename;
         });
 
+
+// TODO: check if this needs updates.
+// Use if reconnections are important.        
 //         // Register player disconnection, and wait for him...
 //         node.on.pdisconnect(function(p) {
 //             console.log('Warning: one player disconnected! ', p.id);
@@ -248,7 +251,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     });
 
     // Extends Stages and Steps where needed.
-
+        
     stager.extendStep('results', {
         init: function() {
             this.savedResults = {};

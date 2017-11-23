@@ -38,7 +38,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             if (id === 'quiz' || id === 'questionnaire') {
                 node.widgets.lastAppended.setValues();
             }
-            else if (id === 'bidder') {                
+            else if (id === 'bid') {                
                 node.on('PLAYING', function() {
                     node.timer.randomExec(function() {
                         node.game.timer.doTimeUp();

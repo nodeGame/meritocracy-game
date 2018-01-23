@@ -1,7 +1,8 @@
 {
   "name": "meritocracy",
   "url": "https://github.com/nodeGame/meritocracy",
-  "description": "Plays a public-goods game with assortativity matching with nodegame",
+  "abstract": "https://link.springer.com/article/10.1007/s00355-017-1081-5",
+  "description": "Public-Good game with noisy matching of high contributors",
   "version": "0.2.0",
   "author": {
     "name": "Stefano Balietti",

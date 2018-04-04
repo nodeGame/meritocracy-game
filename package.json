@@ -4,6 +4,7 @@
   "abstract": "https://link.springer.com/article/10.1007/s00355-017-1081-5",
   "description": "Public-Good game with noisy matching of high contributors",
   "version": "0.2.0",
+  "icon": "gavel",
   "author": {
     "name": "Stefano Balietti",
     "email": "info@nodegame.org",

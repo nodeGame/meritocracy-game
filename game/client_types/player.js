@@ -44,7 +44,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
         // Valid Bid and Demand.
         this.isValidDemand = this.isValidContribution = function(n) {
-            return false !== JSUS.isInt(n, -1, (COINS + 1));
+            return false !== JSUS.isInt(n, 0, COINS);
         };
 
         // Takes in input the results of _checkInputs_ and correct eventual
@@ -65,7 +65,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
                 if (checkResults.errContrib) {
 
-                    if (!node.game.oldContrib) {
+                    if ('number' !== typeof node.game.oldContrib) {
                         contrib = JSUS.randomInt(-1, 20);
                     }
                     else {
@@ -80,7 +80,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                 // In ENDO we check the demand too.
                 if (checkResults.errDemand) {
 
-                    if (!node.game.oldDemand) {
+                    if ('number' !== typeof node.game.oldDemand) {
                         demand = JSUS.randomInt(-1, 20);
                     }
                     else {
@@ -230,7 +230,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             var save, groupReturn;
 
             // Shows previous round if round number is not 1.
-            if (node.game.oldContrib) {
+            if ('number' === typeof node.game.oldContrib) {
 
                 save = COINS - node.game.oldContrib;
                 groupReturn = node.game.oldPayoff - save;
@@ -481,7 +481,11 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                 title: false,
                 feedback: false,
                 exitCode: false,
-                email: { errString: 'Please enter a valid email and retry' }
+                email: {
+                    texts: {
+                        label: 'Enter your email (optional):'
+                    }
+                }
             }
         }
     });

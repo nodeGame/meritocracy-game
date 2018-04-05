@@ -3,6 +3,7 @@ div#root {
     width: 800px;
     border: 0;
     background: #fff;
+    font-size: 20px;
 }
 
 table#alreadyParticipated td {

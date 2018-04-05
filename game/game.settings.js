@@ -21,7 +21,7 @@ module.exports = {
 
     // Numnber of game rounds repetitions.
     // TODO: if the value is changed the QUIZ page needs to be updated.
-    REPEAT: 1,
+    REPEAT: 5,
 
     // Minimum number of players that must be always connected.
     MIN_PLAYERS: 4,

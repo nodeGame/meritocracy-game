@@ -406,7 +406,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             bid = node.game.correctInputs(validation);
             // Store reference for next round.
             node.game.oldContrib = bid.contribution;
-            node.game.oldDeman = bid.demand;
+            node.game.oldDemand = bid.demand;
             // Send it to server.
             return bid;
         }
@@ -471,6 +471,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     });
 
     stager.extendStep('end', {
+        donebutton: false,
         frame: 'ended.html',
         widget: {
             name: 'EndScreen',

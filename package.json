@@ -1,34 +1,26 @@
 {
   "name": "meritocracy",
-<<<<<<< HEAD
-  "description": "Public-Good game with noisy matching of high contributors",
-=======
   "url": "https://github.com/nodeGame/meritocracy",
   "abstract": "https://link.springer.com/article/10.1007/s00355-017-1081-5",
-  "description": "Public-good game with assortative matching of high contributors",
->>>>>>> bfb78e78cb41f8c3175bb0bbcaeec4ce6edebc9b
+  "description": "Public-good game with assortative matching of high contributors.",
   "version": "0.2.0",
   "card": {
     "url": "https://github.com/nodeGame/meritocracy",
     "publication": "https://link.springer.com/article/10.1007/s00355-017-1081-5",
-    "description": "Public-Good game with noisy matching of high contributors",
+    "description": "Public-Good game with noisy matching of high contributors.",
     "icon": "gavel"
   },
   "author": {
     "name": "Stefano Balietti",
     "email": "info@nodegame.org",
     "url": "http://www.nodegame.org"
-  }
-,
-  "main": "./index.html"
-,
+  },
+  "main": "./index.html",
   "keywords": [
     "meritocracy",
     "game theory"
-  ]
-,
-  "license": "MIT/X11"
-,
+  ],
+  "license": "MIT/X11",
   "engines": {
     "node": "*",
     "nodegame": ">= 3.0.0"

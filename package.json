@@ -1,6 +1,12 @@
 {
   "name": "meritocracy",
+<<<<<<< HEAD
   "description": "Public-Good game with noisy matching of high contributors",
+=======
+  "url": "https://github.com/nodeGame/meritocracy",
+  "abstract": "https://link.springer.com/article/10.1007/s00355-017-1081-5",
+  "description": "Public-good game with assortative matching of high contributors",
+>>>>>>> bfb78e78cb41f8c3175bb0bbcaeec4ce6edebc9b
   "version": "0.2.0",
   "card": {
     "url": "https://github.com/nodeGame/meritocracy",

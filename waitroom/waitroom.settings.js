@@ -33,7 +33,7 @@ module.exports = {
      *
      * The size of each group dispatched by the waiting room
      */
-    GROUP_SIZE: 2,
+    GROUP_SIZE: 16,
 
     /**
      * ## POOL_SIZE (number) Optional
@@ -44,7 +44,7 @@ module.exports = {
      *
      * Default: GROUP_SIZE
      */
-    POOL_SIZE: 2,
+    POOL_SIZE: 16,
 
     /**
      * ## N_GAMES (number) Optional
@@ -217,5 +217,8 @@ module.exports = {
      * Disconnect a client if not selected for a game when dispatching
      */
     //DISCONNECT_IF_NOT_SELECTED: false,
+
+    
+    ALLOW_PLAY_WITH_BOTS: true
 
 };

@@ -3,7 +3,7 @@
   "url": "https://github.com/nodeGame/meritocracy",
   "abstract": "https://link.springer.com/article/10.1007/s00355-017-1081-5",
   "description": "Public-good game with assortative matching of high contributors.",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "card": {
     "url": "https://github.com/nodeGame/meritocracy",
     "publication": "https://link.springer.com/article/10.1007/s00355-017-1081-5",
@@ -23,6 +23,6 @@
   "license": "MIT/X11",
   "engines": {
     "node": "*",
-    "nodegame": ">= 3.0.0"
+    "nodegame": ">= 3.5.0"
   }
 }

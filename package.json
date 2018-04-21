@@ -1,5 +1,6 @@
 {
-  "name": "meritocracy",
+  "name": "meritocracy-game",
+  "channelName": "meritocracy",
   "url": "https://github.com/nodeGame/meritocracy",
   "abstract": "https://link.springer.com/article/10.1007/s00355-017-1081-5",
   "description": "Public-good game with assortative matching of high contributors.",

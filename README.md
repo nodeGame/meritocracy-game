@@ -1,4 +1,4 @@
-meritocracy
+Meritocracy
 ===========
 
-A Meritocracy-based nodeGame
+Public-good game with noisy assortitative matching of high contributors for nodeGame.

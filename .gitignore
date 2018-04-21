@@ -8,3 +8,5 @@ data/*
 
 *.mp3
 *.ogg
+
+npm-debug.log

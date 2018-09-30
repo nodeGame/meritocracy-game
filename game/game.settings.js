@@ -72,7 +72,7 @@ module.exports = {
     treatments: {
 
         exo_perfect: {
-            // description: 'No noise',
+            description: 'No noise',
             instrPage: 'instructions_exo_perfect.html',
             quizPage: 'quiz_exo_perfect.html'
         },

@@ -71,7 +71,7 @@ module.exports = {
      * ## START_DATE (string|object) Optional
      *
      * Time and date of the start of the game.
-     *
+<     *
      * Overrides `MAX_WAIT_TIME`.
      *
      * Accepted values: any valid argument to `Date` constructor.
@@ -219,6 +219,7 @@ module.exports = {
     //DISCONNECT_IF_NOT_SELECTED: false,
 
     
-    ALLOW_PLAY_WITH_BOTS: true
+    ALLOW_PLAY_WITH_BOTS: true,
 
+    ALLOW_SELECT_TREATMENT: true
 };

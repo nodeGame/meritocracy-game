@@ -72,29 +72,35 @@ module.exports = {
     treatments: {
 
         exo_perfect: {
+            description: 'No noise',
             instrPage: 'instructions_exo_perfect.html',
             quizPage: 'quiz_exo_perfect.html'
         },
         blackbox: {
+            description: 'Zero information given about rules of the game',
             instrPage: 'instructions_blackbox.html',
             bidderPage: 'bidder_blackbox.html',
             instructionsPage: 'instructions_blackbox.html',
             quizPage: 'quiz_blackbox.html'
         },
         endo: {
+            description: 'Endogeneous group formation',
             instrPage: 'instructions_endo.html',
             bidderPage: 'bidder_endo.html',
             resultsPage: 'results_endo.html',
             quizPage: 'quiz_endo.html'
         },
         random: {
+            description: 'Random subgroup matching (zero assortativity)',
             instrPage: 'instructions_random.html'            
         },
         exo_low: {
+            description: 'Gaussuian noise with low variance',
             instrPage: 'instructions_exo_lowhigh.html',
             quizPage: 'quiz_exo_lowhigh.html'
         },
         exo_high: {
+            description: 'Gaussian noise with high variance',
             instrPage: 'instructions_exo_lowhigh.html',
             quizPage: 'quiz_exo_lowhigh.html'
         }

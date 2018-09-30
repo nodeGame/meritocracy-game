@@ -1,6 +1,6 @@
 /**
  * # Game stages definition file
- * Copyright(c) 2017 Stefano Balietti
+ * Copyright(c) 2018 Stefano Balietti
  * MIT Licensed
  *
  * Stages are defined using the stager API
@@ -29,7 +29,7 @@ module.exports = function(stager, settings) {
     
 
 
-    // Modifty the stager to skip some stages.
+    // Modify the stager to skip some stages.
 
     // stager.skip('instructions');
     stager.skip('quiz');

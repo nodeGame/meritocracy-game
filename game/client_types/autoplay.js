@@ -38,17 +38,17 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             if (id === 'quiz' || id === 'questionnaire') {
                 node.widgets.lastAppended.setValues();
             }
-            else if (id === 'bid') {                
+            else if (id === 'bid') {
                 node.on('PLAYING', function() {
-                    node.timer.randomExec(function() {
+                    node.timer.random.exec(function() {
                         node.game.timer.doTimeUp();
                     });
                 });
             }
-                
+
             if (id !== 'end') {
-                node.timer.randomDone(2000);
-            }            
+                node.timer.random(2000).done();
+            }
         };
         return o;
     });

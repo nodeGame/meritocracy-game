@@ -27,7 +27,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
             if (id === 'bid') {
                 node.on('PLAYING', function() {
-                    node.timer.randomExec(function() {
+                    node.timer.random.exec(function() {
                         node.done({
                             contribution: J.randomInt(-1, 20),
                             demamd: J.randomInt(-1, 20)
@@ -36,7 +36,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                 });
             }
             else {
-                node.timer.randomDone(2000);
+                node.timer.random(2000).done();
             }
         };
         return o;

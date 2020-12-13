@@ -8,16 +8,16 @@
  * http://www.nodegame.org
  */
 
- var ngc = require('nodegame-client');
+ const ngc = require('nodegame-client');
 
 module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
-    var channel = gameRoom.channel;
-    var node = gameRoom.node;
+    let channel = gameRoom.channel;
+    let node = gameRoom.node;
 
-    var game, stager;
+    var stager;
 
-    game = gameRoom.getClientType('player');
+    let game = gameRoom.getClientType('player');
     game.nodename = 'autoplay';
 
     stager = ngc.getStager(game.plot);

@@ -7,20 +7,20 @@
  * ---
  */
 
-var path = require('path');
-var fs   = require('fs-extra');
+const path = require('path');
+const fs   = require('fs-extra');
 
-var ngc = require('nodegame-client');
-var GameStage = ngc.GameStage;
-var J = ngc.JSUS;
+const ngc = require('nodegame-client');
+const GameStage = ngc.GameStage;
+const J = ngc.JSUS;
 
 
 module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
-    var channel = gameRoom.channel;
-    var node = gameRoom.node;
+    let channel = gameRoom.channel;
+    let node = gameRoom.node;
 
-    var treatments;
+    let treatments;
 
     // Experimental!
     // Outgoing messages will be saved (use if reconnections are important).
@@ -45,8 +45,8 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
         // "STEPPING" is the last event emitted before the stage is updated.
         node.on('STEPPING', function() {
-            var currentStage, db, file;
-            
+            let currentStage, db, file;
+
             currentStage = node.game.getCurrentGameStage();
 
             // We do not save stage 0.0.0.
@@ -62,7 +62,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             db = node.game.memory.stage[currentStage];
 
             if (db && db.size()) {
-                try {                    
+                try {
                     // Saving each round results to FS.
                     file = gameRoom.dataDir + 'memory_' + currentStage;
                     db.save(file + '.csv');
@@ -84,7 +84,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
 
 // TODO: check if this needs updates.
-// Use if reconnections are important.        
+// Use if reconnections are important.
 //         // Register player disconnection, and wait for him...
 //         node.on.pdisconnect(function(p) {
 //             console.log('Warning: one player disconnected! ', p.id);
@@ -103,7 +103,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 //                     node.say('notEnoughPlayers', 'ALL');
 //
 //                     this.countdown = setTimeout(function() {
-//                         var i;
+//                         let i;
 //                         console.log('Countdown fired. Player/s did not reconnect.');
 //                         for (i in node.game.disconnected) {
 //                             if (node.game.disconnected.hasOwnProperty(i)) {
@@ -127,7 +127,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 //
 //         // Reconnections must be handled by the game developer.
 //         node.on.preconnect(function(p) {
-//             var code, curStage, state, i, len;
+//             let code, curStage, state, i, len;
 //
 //             console.log('Oh...somebody reconnected!', p);
 //             code = channel.registry.getClient(p.id);
@@ -251,7 +251,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     });
 
     // Extends Stages and Steps where needed.
-        
+
     stager.extendStep('results', {
         init: function() {
             this.savedResults = {};
@@ -286,7 +286,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                 //         info.partials = [ 10, -1, 7];
                 // }
             });
-            
+
             // Dump all memory.
             node.game.memory.save('memory_all.json');
         }

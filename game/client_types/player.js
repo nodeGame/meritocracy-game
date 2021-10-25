@@ -8,7 +8,7 @@
  */
 
 module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
-    
+
     // Variable here are available to all stages.
     stager.setDefaultGlobals({
         // Total number of players in group.
@@ -44,7 +44,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
         // Valid Bid and Demand.
         this.isValidDemand = this.isValidContribution = function(n) {
-            return false !== JSUS.isInt(n, 0, COINS);
+            return false !== JSUS.isInt(n, -1, (COINS+1));
         };
 
         // Takes in input the results of _checkInputs_ and correct eventual
@@ -249,18 +249,18 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             }
         };
 
-        
+
         // node.on.data('notEnoughPlayers', function(msg) {
         //     // Not yet 100% safe. Some players could forge the from field.
         //     if (msg.from !== '[ADMIN_SERVER]') return;
-        // 
+        //
         //     node.game.pause();
         //     W.lockScreen('One player disconnected. We are now waiting to ' +
         //                  'see if he or she reconnects. If not, the game ' +
         //                  'will continue with fewer players.');
         // });
-        
-        
+
+
         node.on('SOCKET_DISCONNECT', function() {
             // Disabled.
             return;
@@ -393,7 +393,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             // Clear contribution and demand inputs.
             W.getElementById('contribution').value = '';
             if (node.game.isEndo()) W.getElementById('demand').value = '';
-            
+
             console.log('Meritocracy: bid page.');
         },
         done: function() {

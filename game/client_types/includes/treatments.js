@@ -9,31 +9,33 @@
  * ---
  */
 
-var J = require('JSUS').JSUS;
-var ngc = require('nodegame-client');
+const J = require('JSUS').JSUS;
+const ngc = require('nodegame-client');
 
 // Share through channel.require.
-var channel = module.parent.exports.channel;
-var node = module.parent.exports.node;
-var settings = module.parent.exports.settings;
+const channel = module.parent.exports.channel;
+const node = module.parent.exports.node;
+const memory = node.game.memory;
+const settings = module.parent.exports.settings;
 
-var SUBGROUP_SIZE = settings.SUBGROUP_SIZE;
-var treatment = settings.treatmentName;
-var groupNames = settings.GROUP_NAMES;
+const SUBGROUP_SIZE = settings.SUBGROUP_SIZE;
+const treatment = settings.treatmentName;
+const groupNames = settings.GROUP_NAMES;
 
-var ENDO = treatment === 'endo';
+const ENDO = treatment === 'endo';
 
-var treatments = {};
+const treatments = {};
+
 module.exports = treatments;
 
 // Noise variance. High and low stands for "meritocracy", not for noise.
-var NOISE_HIGH = settings.NOISE_HIGH;
-var NOISE_LOW = settings.NOISE_LOW;
+const NOISE_HIGH = settings.NOISE_HIGH;
+const NOISE_LOW = settings.NOISE_LOW;
 
-var GROUP_ACCOUNT_DIVIDER = settings.GROUP_ACCOUNT_DIVIDER;
+const GROUP_ACCOUNT_DIVIDER = settings.GROUP_ACCOUNT_DIVIDER;
 
 // Number of coins for each player at the beginning of each round
-var INITIAL_COINS = settings.INITIAL_COINS;
+const INITIAL_COINS = settings.INITIAL_COINS;
 
 // Functions used in map-reduce.
 
@@ -478,8 +480,7 @@ treatments.exo_high = {
         currentStage = node.game.getCurrentGameStage();
         previousStage = node.game.plot.previous(currentStage);
 
-        receivedData = node.game.memory.stage[previousStage]
-            .selexec('key', '=', 'contrib');
+        receivedData = node.game.memory.stage[previousStage];
 
         sortedContribs = receivedData
             .sort(sortContributions)
@@ -535,8 +536,7 @@ treatments.exo_low = {
         currentStage = node.game.getCurrentGameStage();
         previousStage = node.game.plot.previous(currentStage);
 
-        receivedData = node.game.memory.stage[previousStage]
-            .selexec('key', '=', 'contrib');
+        receivedData = node.game.memory.stage[previousStage];
         
         if (!receivedData.db.length) {
             console.log('receivedData.db.length = 0!');
@@ -601,8 +601,7 @@ treatments.random = {
         currentStage = node.game.getCurrentGameStage();
         previousStage = node.game.plot.previous(currentStage);
 
-        receivedData = node.game.memory.stage[previousStage]
-            .selexec('key', '=', 'contrib');
+        receivedData = node.game.memory.stage[previousStage];
 
         // Shuffle contributions randomly.
         sortedContribs = receivedData
@@ -649,8 +648,7 @@ treatments.endo = {
         currentStage = node.game.getCurrentGameStage();
         previousStage = node.game.plot.previous(currentStage);
 
-        receivedData = node.game.memory.stage[previousStage]
-            .selexec('key', '=', 'contrib');
+        receivedData = memory.stage[previousStage];
 
         if (!receivedData) {
             console.log('receivedData empty!');
@@ -690,6 +688,3 @@ treatments.endo = {
 
 // BLACKBOX.
 treatments.blackbox = treatments.exo_perfect;
-
-// SINGAPORE.
-treatments.singapore = treatments.exo_perfect;

@@ -7,12 +7,12 @@
  * ---
  */
 
-var path = require('path');
-var fs   = require('fs-extra');
+const path = require('path');
+const fs   = require('fs-extra');
 
-var ngc = require('nodegame-client');
-var GameStage = ngc.GameStage;
-var J = ngc.JSUS;
+const ngc = require('nodegame-client');
+const GameStage = ngc.GameStage;
+const J = ngc.JSUS;
 
 
 module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
